@@ -12,9 +12,9 @@ template:
     \ on large proteins and led to many great publications. Recently, efforts have\
     \ increased to make use of the classic and more simple random fragmentation-based\
     \ short-read sequencing (\u201Cshotgun-sequencing\u201D). This saves time and\
-    \ money and due to its simpler experimental design is less prone to mistakes.\n\
-    dmscore handles the essential computational steps, processing the raw FASTQ files\
-    \ and generating a count table of variants. Along the way, it provides multiple\
+    \ money and due to its simpler experimental design is less prone to mistakes.\
+    \ dmscore handles the essential computational steps, processing the raw FASTQ\
+    \ files and generating a count table of variants. Along the way, it provides multiple\
     \ QC metrics, enabling users to quickly evaluate the success of their experimental\
     \ setup."
   author: Benjamin Wehnert & Max Stammnitz
