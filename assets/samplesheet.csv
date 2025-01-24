@@ -1,3 +1,10 @@
-sample,fastq_1,fastq_2
-SAMPLE_PAIRED_END,/path/to/fastq/files/AEG588A1_S1_L002_R1_001.fastq.gz,/path/to/fastq/files/AEG588A1_S1_L002_R2_001.fastq.gz
-SAMPLE_SINGLE_END,/path/to/fastq/files/AEG588A4_S4_L003_R1_001.fastq.gz,
+sample,type,replicate,file1,file2
+a_1,input,1,/path1/forward.fastq,/path1/reverse.fastq
+a_1,input,2,/path2/forward.fastq,/path2/reverse.fastq
+a_1,output,1,/path3/blabla_se.bam,
+a_3,input,1,/path4/forward.fastq,/path4/reverse.fastq
+a_3,input,2,/path5/forward.fastq,/path5/reverse.fastq
+a_3,output,1,/path6/forward.fastq,/path6/reverse.fastq
+a_3,output,2,/path7/forward.fastq,/path7/reverse.fastq
+b_1,quality,1,/path8/single_end.fastq,/path8/reverse.fastq
+b_1,quality,2,/path9/forward.fastq,/path9/reverse.fastq

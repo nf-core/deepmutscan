@@ -73,25 +73,39 @@ workflow PIPELINE_INITIALISATION {
     //
 
     Channel
-        .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
-        .map {
-            meta, fastq_1, fastq_2 ->
-                if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
-                } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
-                }
-        }
-        .groupTuple()
-        .map { samplesheet ->
-            validateInputSamplesheet(samplesheet)
-        }
-        .map {
-            meta, fastqs ->
-                return [ meta, fastqs.flatten() ]
-        }
-        .set { ch_samplesheet }
+    .fromPath(params.input)
+    .splitCsv(header: true)
+    .filter { row ->
+        // Skip rows where file1 or file2 are BAM files
+        !(row.file1.endsWith('.bam') || (row.file2 && row.file2.endsWith('.bam')))
+    }
+    .map { row ->
+        // Determine suffix based on the presence of file2
+        def suffix = row.file2 ? "_pe" : "_se"
 
+        // Construct metadata object with updated ID
+        def meta = [
+            id        : "${row.sample}_${row.type}_${row.replicate}${suffix}", // Base ID with suffix
+            sample    : row.sample,
+            type      : row.type,
+            replicate : row.replicate as int
+        ]
+
+        // Generate file paths based on the presence of file1 and file2
+        def reads = []
+        if (row.file1) {
+            reads << row.file1 // Add file1 path
+        }
+        if (row.file2) {
+            reads << row.file2 // Add file2 path
+        }
+
+        // Return metadata and file paths as a tuple
+        return [meta, reads]
+    }
+    .set { ch_samplesheet }
+
+// Emit the samplesheet channel and an empty version channel for use in the workflow
     emit:
     samplesheet = ch_samplesheet
     versions    = ch_versions
