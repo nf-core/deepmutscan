@@ -41,6 +41,9 @@ workflow DMSCORE {
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
 
+    // Normalize meta information for BWA_MEM: force ID "ref" for all reads
+    reads_for_bwa = FASTQC.out.fastq.map { meta, reads -> tuple( [ id: "ref" ], reads ) }
+
     //
     // Collate and save software versions
     //
@@ -105,7 +108,7 @@ workflow DMSCORE {
     //
     BWA_MEM (
         // [meta, reads]
-        FASTQC.out.fastq,             
+        reads_for_bwa,             
     
         // [meta, index files]
         BWA_INDEX.out.index,          
