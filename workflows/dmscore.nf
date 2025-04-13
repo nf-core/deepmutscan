@@ -104,13 +104,24 @@ workflow DMSCORE {
     // MODULE: BWA Mem
     //
     BWA_MEM (
-        ch_fasta
+        // [meta, reads]
+        FASTQC.out.fastq,             
+    
+        // [meta, index files]
+        BWA_INDEX.out.index,          
+    
+        // [meta, fasta file]
+        ch_fasta,                     
+    
+        // val: sort_bam
+        false                         
     )
 
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions // channel: [ path(versions.yml) ]
     bwa_index      = BWA_INDEX.out.index
+    aligned_bam    = BWA_MEM.out.bam
 
 }
 
