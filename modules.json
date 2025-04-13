@@ -10,6 +10,11 @@
                         "git_sha": "2d20463181b1c38981a02e90d3084b5f9fa8d540",
                         "installed_by": ["modules"]
                     },
+                    "bwa/mem": {
+                        "branch": "master",
+                        "git_sha": "a29f18660f5e3748d44d6f716241e70c942c065d",
+                        "installed_by": ["modules"]
+                    },
                     "fastqc": {
                         "branch": "master",
                         "git_sha": "dc94b6ee04a05ddb9f7ae050712ff30a13149164",
