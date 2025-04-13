@@ -20,6 +20,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_dmsc
 // Define fasta file as channel for BWA index 
 Channel
     .fromPath(params.fasta, checkIfExists: true)
+    .map { fasta -> tuple( { id: "ref" }, fasta ) }
     .set { ch_fasta }
 
 workflow DMSCORE {
