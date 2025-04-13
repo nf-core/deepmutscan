@@ -25,6 +25,9 @@ workflow DMSCORE {
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+    // Define fasta file as channel for BWA index Channel
+    .fromPath(params.fasta, checkIfExists: true)
+    .set { ch_fasta }
     //
     // MODULE: Run FastQC
     //
@@ -88,6 +91,18 @@ workflow DMSCORE {
 
     emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
+
+    //
+    // MODULE: BWA Index
+    //
+    BWA_INDEX (
+        ch_fasta
+    )
+
+    emit:
+    multiqc_report = MULTIQC.out.report.toList()
+    versions       = ch_versions
+    bwa_index      = BWA_INDEX.out.index
 
 }
 
