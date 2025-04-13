@@ -18,9 +18,9 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_dmsc
 */
 
 // Define fasta file as channel for BWA index 
-    Channel
-        .fromPath(params.fasta, checkIfExists: true)
-        .set { ch_fasta }
+Channel
+    .fromPath(params.fasta, checkIfExists: true)
+    .set { ch_fasta }
 
 workflow DMSCORE {
 
