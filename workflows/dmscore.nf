@@ -32,6 +32,9 @@ workflow DMSCORE {
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+    ch_reads = ch_samplesheet.map { row -> tuple( [ id: row.sample ], [ file(row.fastq_1), file(row.fastq_2) ] ) } // Parse reads from samplesheet (multi-sample support)
+
+
     //
     // MODULE: Run FastQC
     //
@@ -40,9 +43,6 @@ workflow DMSCORE {
     )
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
-
-    // Normalize meta information for BWA_MEM: force ID "ref" for all reads
-    reads_for_bwa = FASTQC.out.fastq.map { meta, reads -> tuple( [ id: "ref" ], reads ) }
 
     //
     // Collate and save software versions
@@ -103,21 +103,15 @@ workflow DMSCORE {
         ch_fasta
     )
 
-    //
-    // MODULE: BWA Mem
-    //
+    // Broadcast index and fasta to all samples
+    ch_bwa_index = BWA_INDEX.out.index.broadcast()
+    ch_fasta_broadcast = ch_fasta.broadcast()
+
     BWA_MEM (
-        // [meta, reads]
-        reads_for_bwa,             
-    
-        // [meta, index files]
-        BWA_INDEX.out.index,          
-    
-        // [meta, fasta file]
-        ch_fasta,                     
-    
-        // val: sort_bam
-        false                         
+    ch_reads,                 // each sample's reads: tuple [meta, reads]
+    ch_bwa_index,             // broadcasted index files
+    ch_fasta_broadcast,       // broadcasted fasta file
+    false                     // sort_bam: false for now
     )
 
     emit:
