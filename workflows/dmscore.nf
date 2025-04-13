@@ -17,6 +17,11 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_dmsc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+// Define fasta file as channel for BWA index 
+    Channel
+        .fromPath(params.fasta, checkIfExists: true)
+        .set { ch_fasta }
+
 workflow DMSCORE {
 
     take:
@@ -25,10 +30,6 @@ workflow DMSCORE {
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
-    // Define fasta file as channel for BWA index 
-    Channel
-        .fromPath(params.fasta, checkIfExists: true)
-        .set { ch_fasta }
     //
     // MODULE: Run FastQC
     //
