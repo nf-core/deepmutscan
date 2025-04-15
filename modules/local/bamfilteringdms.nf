@@ -59,17 +59,16 @@ process BAMFILTERINGDMS {
     // TODO nf-core: Please replace the example samtools command below with your module's command
     // TODO nf-core: Please indent the command appropriately (4 spaces!!) to help with readability ;)
     """
-    samtools \\
-        sort \\
-        $args \\
-        -@ $task.cpus \\
-        -o ${prefix}.bam \\
-        -T $prefix \\
-        $bam
+    samtools view -h -F 4 -F 256 -q 30 $bam | \
+    samtools view -h | \
+    awk '{if(\$6 !~ /I/ && \$6 !~ /D/ && \$6 !~ /N/) print \$0}' | \
+    samtools view -h | \
+    awk '{for(i=1;i<=NF;i++) if(\$i ~ /^NM:i:/ && \$i != "NM:i:0") {print \$0; next}} \$1 ~ /^@/' | \
+    samtools view -bS > filtered_reads.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bamfilteringdms: \$(samtools --version |& sed '1!d ; s/samtools //')
+        samtools: \$(samtools --version |& sed '1!d ; s/samtools //')
     END_VERSIONS
     """
 
