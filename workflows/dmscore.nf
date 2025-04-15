@@ -32,8 +32,6 @@ workflow DMSCORE {
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
-    ch_reads = ch_samplesheet.map { row -> tuple( [ id: row.sample ], [ file(row.fastq_1), file(row.fastq_2) ] ) } // Parse reads from samplesheet (multi-sample support)
-
 
     //
     // MODULE: Run FastQC
