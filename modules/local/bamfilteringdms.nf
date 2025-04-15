@@ -15,8 +15,8 @@
 // TODO nf-core: Optional inputs are not currently supported by Nextflow. However, using an empty
 //               list (`[]`) instead of a file can be used to work around this issue.
 
-process FILTERBAMAWK {
-    tag '$bam'
+process BAMFILTERINGDMS {
+    tag "$meta.id"
     label 'process_single'
 
     // TODO nf-core: List required Conda package(s).
@@ -35,11 +35,11 @@ process FILTERBAMAWK {
     //               https://github.com/nf-core/modules/blob/master/modules/nf-core/bwa/index/main.nf
     // TODO nf-core: Where applicable please provide/convert compressed files as input/output
     //               e.g. "*.fastq.gz" and NOT "*.fastq", "*.bam" and NOT "*.sam" etc.
-    path bam
+    tuple val(meta), path(bam)
 
     output:
     // TODO nf-core: Named file extensions MUST be emitted for ALL output channels
-    path "*.bam", emit: bam
+    tuple val(meta), path("*.bam"), emit: bam
     // TODO nf-core: List additional required output channels/values here
     path "versions.yml"           , emit: versions
 
@@ -48,7 +48,7 @@ process FILTERBAMAWK {
 
     script:
     def args = task.ext.args ?: ''
-    
+    def prefix = task.ext.prefix ?: "${meta.id}"
     // TODO nf-core: Where possible, a command MUST be provided to obtain the version number of the software e.g. 1.10
     //               If the software is unable to output a version number on the command-line then it can be manually specified
     //               e.g. https://github.com/nf-core/modules/blob/master/modules/nf-core/homer/annotatepeaks/main.nf
@@ -59,22 +59,23 @@ process FILTERBAMAWK {
     // TODO nf-core: Please replace the example samtools command below with your module's command
     // TODO nf-core: Please indent the command appropriately (4 spaces!!) to help with readability ;)
     """
-    samtools view -h -F 4 -F 256 -q 30 $bam | \
-samtools view -h | \
-awk '{if(\$6 !~ /I/ && \$6 !~ /D/ && \$6 !~ /N/) print \$0}' | \
-samtools view -h | \
-awk '{for(i=1;i<=NF;i++) if(\$i ~ /^NM:i:/ && \$i != "NM:i:0") {print \$0; next}} \$1 ~ /^@/' | \
-samtools view -bS > filtered_reads.bam
+    samtools \\
+        sort \\
+        $args \\
+        -@ $task.cpus \\
+        -o ${prefix}.bam \\
+        -T $prefix \\
+        $bam
 
-cat <<-END_VERSIONS > versions.yml
-"${task.process}":
-    samtools: \$(samtools --version |& sed '1!d ; s/samtools //')
-END_VERSIONS
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bamfilteringdms: \$(samtools --version |& sed '1!d ; s/samtools //')
+    END_VERSIONS
     """
 
     stub:
     def args = task.ext.args ?: ''
-    
+    def prefix = task.ext.prefix ?: "${meta.id}"
     // TODO nf-core: A stub section should mimic the execution of the original module as best as possible
     //               Have a look at the following examples:
     //               Simple example: https://github.com/nf-core/modules/blob/818474a292b4860ae8ff88e149fbcda68814114d/modules/nf-core/bcftools/annotate/main.nf#L47-L63
@@ -84,7 +85,7 @@ END_VERSIONS
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        filterbamawk: \$(samtools --version |& sed '1!d ; s/samtools //')
+        bamfilteringdms: \$(samtools --version |& sed '1!d ; s/samtools //')
     END_VERSIONS
     """
 }
