@@ -7,6 +7,7 @@ include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { BWA_INDEX              } from '../modules/nf-core/bwa/index/main'
 include { BWA_MEM                } from '../modules/nf-core/bwa/mem/main'
+include { BAM_FILTER             } from '../modules/local/bamfilteringdms'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -111,11 +112,16 @@ workflow DMSCORE {
     false                     // sort_bam
     )
 
+    BAM_FILTER (
+    BWA_MEM.out.bam
+    )
+
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions // channel: [ path(versions.yml) ]
     bwa_index      = BWA_INDEX.out.index
     aligned_bam    = BWA_MEM.out.bam
+    filtered_bam   = BAM_FILTER.out.bam
 
 }
 
