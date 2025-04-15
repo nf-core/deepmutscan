@@ -112,7 +112,7 @@ workflow DMSCORE {
     false                     // sort_bam
     )
 
-    BAM_FILTER (
+    BAMFILTERINGDMS (
     BWA_MEM.out.bam
     )
 
