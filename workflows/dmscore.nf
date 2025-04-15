@@ -108,7 +108,7 @@ workflow DMSCORE {
     ch_samplesheet,           // each sample's reads: tuple [meta, reads]
     ch_bwa_index,             // broadcasted index files
     ch_fasta,                 // broadcasted fasta file
-    false                     // sort_bam: false for now
+    false                     // sort_bam
     )
 
     emit:
