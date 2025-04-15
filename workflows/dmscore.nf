@@ -7,7 +7,7 @@ include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { BWA_INDEX              } from '../modules/nf-core/bwa/index/main'
 include { BWA_MEM                } from '../modules/nf-core/bwa/mem/main'
-include { BAMFILTERINGDMS             } from '../modules/local/bamfilteringdms'
+include { BAMFILTER_DMS          } from '../modules/local/bamfilteringdms'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -112,7 +112,7 @@ workflow DMSCORE {
     false                     // sort_bam
     )
 
-    BAMFILTERINGDMS (
+    BAMFILTER_DMS (
     BWA_MEM.out.bam
     )
 
@@ -121,7 +121,7 @@ workflow DMSCORE {
     versions       = ch_versions // channel: [ path(versions.yml) ]
     bwa_index      = BWA_INDEX.out.index
     aligned_bam    = BWA_MEM.out.bam
-    filtered_bam   = BAMFILTERINGDMS.out.bam
+    filtered_bam   = BAMFILTER_DMS.out.bam
 
 }
 
