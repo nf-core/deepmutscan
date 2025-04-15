@@ -105,7 +105,7 @@ workflow DMSCORE {
     ch_bwa_index = BWA_INDEX.out.index
 
     BWA_MEM (
-    ch_reads,                 // each sample's reads: tuple [meta, reads]
+    ch_samplesheet,           // each sample's reads: tuple [meta, reads]
     ch_bwa_index,             // broadcasted index files
     ch_fasta,                 // broadcasted fasta file
     false                     // sort_bam: false for now
