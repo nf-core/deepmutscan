@@ -121,7 +121,7 @@ workflow DMSCORE {
     versions       = ch_versions // channel: [ path(versions.yml) ]
     bwa_index      = BWA_INDEX.out.index
     aligned_bam    = BWA_MEM.out.bam
-    filtered_bam   = BAM_FILTER.out.bam
+    filtered_bam   = BAMFILTERINGDMS.out.bam
 
 }
 
