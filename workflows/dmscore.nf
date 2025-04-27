@@ -118,7 +118,8 @@ workflow DMSCORE {
     )
 
     PREMERGE(
-    BAMFILTER_DMS.out.bam
+    BAMFILTER_DMS.out.bam,
+    ch_fasta
     )
 
     emit:
