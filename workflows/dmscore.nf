@@ -121,6 +121,7 @@ workflow DMSCORE {
     BAMFILTER_DMS.out.bam,
     ch_fasta
     )
+    // try to use bwa_mem module inside of premerge script. Give only ch_bwa_index as an input instead of re-creating it -> see if error resolves automatically...
 
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
