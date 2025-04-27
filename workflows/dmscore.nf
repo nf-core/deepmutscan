@@ -118,7 +118,7 @@ workflow DMSCORE {
     )
 
     PREMERGE(
-    BAMFILTER_DMS.out,
+    BAMFILTER_DMS.out.bam,
     ch_fasta
     )
 
