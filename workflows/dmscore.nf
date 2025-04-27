@@ -8,6 +8,7 @@ include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { BWA_INDEX              } from '../modules/nf-core/bwa/index/main'
 include { BWA_MEM                } from '../modules/nf-core/bwa/mem/main'
 include { BAMFILTER_DMS          } from '../modules/local/bamfilteringdms'
+include { PREMERGE               } from '../modules/local/premerge'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -116,12 +117,17 @@ workflow DMSCORE {
     BWA_MEM.out.bam
     )
 
+    PREMERGE(
+    BAMFILTER_DMS.out.bam
+    )
+
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions // channel: [ path(versions.yml) ]
     bwa_index      = BWA_INDEX.out.index
     aligned_bam    = BWA_MEM.out.bam
     filtered_bam   = BAMFILTER_DMS.out.bam
+    premerged_bam  = PREMERGE.out.bam
 
 }
 
