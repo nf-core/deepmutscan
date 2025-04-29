@@ -29,7 +29,7 @@ Channel
 
 // Define reading_frame as channel (e.g. for gatk function)
 Channel
-    .value(params.reading_frame, checkIfExists: true)
+    .value(params.reading_frame)
     .set { reading_frame_ch }
 
 // Define min_counts as channel (e.g. for gatk function) -> if not set - default: 3
