@@ -26,7 +26,7 @@ process GATK_SATURATIONMUTAGENESIS {
     gatk CreateSequenceDictionary -R $wt_seq
 
     # Read start and stop codon from input
-    start_stop_codon=\$(cat $pos_range)
+    start_stop_codon="$pos_range"
 
     # Run GATK AnalyzeSaturationMutagenesis
     gatk AnalyzeSaturationMutagenesis \
