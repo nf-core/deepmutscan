@@ -28,7 +28,6 @@ process PREMERGE {
 
     output:
     tuple val(meta), path("merged_reads.bam"), emit: bam
-    tuple val(meta), path("merged_reads.fastq"), emit: fastq
     path "versions.yml", emit: versions
 
     when:
