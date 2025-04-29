@@ -118,7 +118,7 @@ workflow DMSCORE {
     )
 
     PREMERGE(
-    BAMFILTER_DMS.out.bam,
+    BAMFILTER_DMS.out,
     ch_fasta
     )
     // try to use bwa_mem module inside of premerge script. Give only ch_bwa_index as an input instead of re-creating it -> see if error resolves automatically...
