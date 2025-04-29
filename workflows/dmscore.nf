@@ -26,6 +26,18 @@ Channel
     .map { fasta -> tuple( { id: "ref" }, fasta ) }
     .set { ch_fasta }
 
+// Define reading_frame as channel (e.g. for gatk function)
+Channel
+    .fromPath(params.reading_frame, checkIfExists: true)
+    .set { reading_frame_ch }
+
+// Define min_counts as channel (e.g. for gatk function) -> if not set - default: 3
+params.min_counts = params.min_counts ?: 3
+Channel
+    .value(params.min_counts)
+    .set { min_counts_ch }
+
+
 workflow DMSCORE {
 
     take:
@@ -119,9 +131,15 @@ workflow DMSCORE {
 
     PREMERGE(
     BAMFILTER_DMS.out.bam,
-    ch_fasta.map{ it[1] }  // extrahiere fasta path aus dem Tuple
+    ch_fasta.map{ it[1] }     // extract fasta path from Tuple
     )
-    // try to use bwa_mem module inside of premerge script. Give only ch_bwa_index as an input instead of re-creating it -> see if error resolves automatically...
+
+    GATK_SATURATIONMUTAGENESIS(
+    PREMERGE.out.bam,             // merged reads (tuple(meta, merged_reads.fastq))
+    ch_fasta.map{ it[1] },        // fasta path (path)
+    reading_frame_ch,             // codon range (path)
+    min_counts_ch                 // min_counts (val)
+    )
 
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
