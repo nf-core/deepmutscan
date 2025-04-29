@@ -8,7 +8,7 @@ process GATK_SATURATIONMUTAGENESIS {
     input:
     tuple val(meta), path(premerged_reads)
     path wt_seq
-    path pos_range
+    val pos_range
     val min_counts
 
     output:
