@@ -1,0 +1,217 @@
+Apr-29 23:09:17.753 [main] DEBUG nextflow.cli.Launcher - $> nextflow run . -profile test,docker --fasta /Users/benjaminwehnert/GID1A_SUNi_ref_small.fasta --outdir ./results
+Apr-29 23:09:17.863 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.04.4
+Apr-29 23:09:17.894 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/Users/benjaminwehnert/.nextflow/plugins; core-plugins: nf-amazon@2.5.3,nf-azure@1.6.1,nf-cloudcache@0.4.1,nf-codecommit@0.2.1,nf-console@1.1.3,nf-ga4gh@1.3.0,nf-google@1.13.2-patch1,nf-tower@1.9.1,nf-wave@1.4.2-patch1
+Apr-29 23:09:17.908 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Apr-29 23:09:17.909 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Apr-29 23:09:17.913 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Apr-29 23:09:17.925 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Apr-29 23:09:18.797 [main] WARN  nextflow.config.Manifest - Invalid config manifest attribute `contributors`
+Apr-29 23:09:18.814 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /Users/benjaminwehnert/dmscore/nextflow.config
+Apr-29 23:09:18.815 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /Users/benjaminwehnert/dmscore/nextflow.config
+Apr-29 23:09:18.830 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /Users/benjaminwehnert/.nextflow/secrets/store.json
+Apr-29 23:09:18.833 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@606f81b5] - activable => nextflow.secret.LocalSecretsProvider@606f81b5
+Apr-29 23:09:18.843 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `test,docker`
+Apr-29 23:09:20.216 [main] DEBUG nextflow.config.ConfigBuilder - Available config profiles: [bih, cfc_dev, uzl_omics, ifb_core, embl_hd, denbi_qbic, alice, mjolnir_globe, uppmax, giga, incliva, ilifu, ki_luria, uge, icr_alma, rosalind_uge, lugh, mccleary, unibe_ibu, vai, czbiohub_aws, jax, roslin, ccga_med, tes, scw, unc_longleaf, tigem, tubingen_apg, google, apollo, ipop_up, vsc_calcua, pdc_kth, googlels, ceci_nic5, humantechnopole, stjude, daisybio, eddie, medair, biowulf, apptainer, bi, bigpurple, adcra, cedars, pawsey_setonix, vsc_kul_uhasselt, pawsey_nimbus, ucl_myriad, utd_ganymede, charliecloud, seattlechildrens, icr_davros, ceres, arm, munin, rosalind, hasta, cfc, uzh, shu_bmrc, ebi_codon_slurm, ebc, ccga_dx, crick, ku_sund_danhead, marvin, shifter, biohpc_gen, mana, mamba, york_viking, unc_lccc, wehi, awsbatch, wustl_htcf, arcc, ceci_dragon2, imperial, maestro, software_license, cannon, genotoul, nci_gadi, abims, janelia, nu_genomics, googlebatch, oist, sahmri, kaust, alliance_canada, mpcdf, leicester, vsc_ugent, create, sage, cambridge, jex, podman, ebi_codon, cheaha, xanadu, nyu_hpc, test, marjorie, computerome, ucd_sonic, seg_globe, sanger, dkfz, bluebear, pasteur, einstein, ethz_euler, m3c, test_full, imb, ucl_cscluster, tuos_stanage, azurebatch, hki, seadragon, crukmi, csiro_petrichor, qmul_apocrita, wave, docker, engaging, gis, hypatia, psmn, eva, unity, cropdiversityhpc, nygc, fgcz, conda, crg, singularity, mpcdf_viper, pe2, self_hosted_runner, tufts, uw_hyak_pedslabs, binac2, debug, genouest, cbe, unsw_katana, gitpod, phoenix, seawulf, uod_hpc, fub_curta, uct_hpc, aws_tower, binac, fsu_draco]
+Apr-29 23:09:20.271 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 by global default
+Apr-29 23:09:20.285 [main] DEBUG nextflow.cli.CmdRun - Launching `./main.nf` [intergalactic_northcutt] DSL2 - revision: 84101fc51c
+Apr-29 23:09:20.287 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins declared=[nf-schema@2.3.0]
+Apr-29 23:09:20.287 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Apr-29 23:09:20.287 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[nf-schema@2.3.0]
+Apr-29 23:09:20.288 [main] DEBUG nextflow.plugin.PluginUpdater - Installing plugin nf-schema version: 2.3.0
+Apr-29 23:09:20.297 [main] INFO  org.pf4j.AbstractPluginManager - Plugin 'nf-schema@2.3.0' resolved
+Apr-29 23:09:20.298 [main] INFO  org.pf4j.AbstractPluginManager - Start plugin 'nf-schema@2.3.0'
+Apr-29 23:09:20.304 [main] DEBUG nextflow.plugin.BasePlugin - Plugin started nf-schema@2.3.0
+Apr-29 23:09:20.355 [main] DEBUG nextflow.Session - Session UUID: f85367ca-5bb8-4421-882b-4615ea49f7a1
+Apr-29 23:09:20.355 [main] DEBUG nextflow.Session - Run name: intergalactic_northcutt
+Apr-29 23:09:20.355 [main] DEBUG nextflow.Session - Executor pool size: 8
+Apr-29 23:09:20.363 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Apr-29 23:09:20.367 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Apr-29 23:09:20.390 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 24.04.4 build 5917
+  Created: 01-08-2024 07:05 UTC (09:05 CEST)
+  System: Mac OS X 15.0
+  Runtime: Groovy 4.0.21 on OpenJDK 64-Bit Server VM 17.0.13+0
+  Encoding: UTF-8 (UTF-8)
+  Process: 94258@MacBook-Air-von-Benjamin.local [127.0.0.1]
+  CPUs: 8 - Mem: 8 GB (77.5 MB) - Swap: 9 GB (1.2 GB)
+Apr-29 23:09:20.402 [main] DEBUG nextflow.Session - Work-dir: /Users/benjaminwehnert/dmscore/work [Mac OS X]
+Apr-29 23:09:20.403 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /Users/benjaminwehnert/dmscore/bin
+Apr-29 23:09:20.418 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Apr-29 23:09:20.426 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Apr-29 23:09:20.445 [main] DEBUG nextflow.Session - Observer factory: ValidationObserverFactory
+Apr-29 23:09:20.486 [main] WARN  nextflow.config.Manifest - Invalid config manifest attribute `contributors`
+Apr-29 23:09:20.514 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Apr-29 23:09:20.523 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 9; maxThreads: 1000
+Apr-29 23:09:20.578 [main] DEBUG nextflow.Session - Session start
+Apr-29 23:09:20.579 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow started -- trace file: /Users/benjaminwehnert/dmscore/results/pipeline_info/execution_trace_2025-04-29_23-09-19.txt
+Apr-29 23:09:20.748 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Apr-29 23:09:21.595 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+Apr-29 23:09:22.067 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryLog:paramsSummaryLog]; plugin Id: nf-schema
+Apr-29 23:09:22.068 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [validateParameters:validateParameters]; plugin Id: nf-schema
+Apr-29 23:09:22.070 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+Apr-29 23:09:22.071 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [samplesheetToList:samplesheetToList]; plugin Id: nf-schema
+Apr-29 23:09:22.497 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryLog:paramsSummaryLog]; plugin Id: nf-schema
+Apr-29 23:09:22.498 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [validateParameters:validateParameters]; plugin Id: nf-schema
+Apr-29 23:09:22.500 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+Apr-29 23:09:22.501 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [samplesheetToList:samplesheetToList]; plugin Id: nf-schema
+Apr-29 23:09:22.752 [main] INFO  nextflow.Nextflow - 
+-[2m----------------------------------------------------[0m-
+                                        [0;32m,--.[0;30m/[0;32m,-.[0m
+[0;34m        ___     __   __   __   ___     [0;32m/,-._.--~'[0m
+[0;34m  |\ | |__  __ /  ` /  \ |__) |__         [0;33m}  {[0m
+[0;34m  | \| |       \__, \__/ |  \ |___     [0;32m\`-._,-`-,[0m
+                                        [0;32m`._,._,'[0m
+[0;35m  nf-core/dmscore 1.0.0dev[0m
+-[2m----------------------------------------------------[0m-
+[1mInput/output options[0m
+  [0;34minput                     : [0;32mhttps://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/samplesheet_qc_only.csv[0m
+  [0;34moutdir                    : [0;32m./results[0m
+
+[1mReference genome options[0m
+  [0;34mgenome                    : [0;32mR64-1-1[0m
+  [0;34mfasta                     : [0;32m/Users/benjaminwehnert/GID1A_SUNi_ref_small.fasta[0m
+
+[1mInstitutional config options[0m
+  [0;34mconfig_profile_name       : [0;32mTest profile[0m
+  [0;34mconfig_profile_description: [0;32mMinimal test dataset to check pipeline function[0m
+
+[1mGeneric options[0m
+  [0;34mtrace_report_suffix       : [0;32m2025-04-29_23-09-19[0m
+
+[1mCore Nextflow options[0m
+  [0;34mrunName                   : [0;32mintergalactic_northcutt[0m
+  [0;34mcontainerEngine           : [0;32mdocker[0m
+  [0;34mlaunchDir                 : [0;32m/Users/benjaminwehnert/dmscore[0m
+  [0;34mworkDir                   : [0;32m/Users/benjaminwehnert/dmscore/work[0m
+  [0;34mprojectDir                : [0;32m/Users/benjaminwehnert/dmscore[0m
+  [0;34muserName                  : [0;32mbenjaminwehnert[0m
+  [0;34mprofile                   : [0;32mtest,docker[0m
+  [0;34mconfigFiles               : [0;32m/Users/benjaminwehnert/dmscore/nextflow.config[0m
+
+!! Only displaying parameters that differ from the pipeline defaults !!
+-[2m----------------------------------------------------[0m-
+* The nf-core framework
+    https://doi.org/10.1038/s41587-020-0439-x
+
+* Software dependencies
+    https://github.com/nf-core/dmscore/blob/master/CITATIONS.md
+
+Apr-29 23:09:22.755 [main] DEBUG n.validation.ValidationExtension - Starting parameters validation
+Apr-29 23:09:23.139 [main] DEBUG nextflow.validation.SchemaEvaluator - Started validating /BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/samplesheet_qc_only.csv
+Apr-29 23:09:25.493 [main] DEBUG nextflow.validation.SchemaEvaluator - Validation of file 'https://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/samplesheet_qc_only.csv' passed!
+Apr-29 23:09:26.686 [main] DEBUG n.v.FormatDirectoryPathEvaluator - Cloud blob storage paths are not supported by 'FormatDirectoryPathEvaluator': 's3://ngi-igenomes/igenomes/'
+Apr-29 23:09:26.690 [main] DEBUG n.validation.ValidationExtension - Finishing parameters validation
+Apr-29 23:09:26.778 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_medium` matches labels `process_medium` for process with name NFCORE_DMSCORE:DMSCORE:FASTQC
+Apr-29 23:09:26.781 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:FASTQC` matches process NFCORE_DMSCORE:DMSCORE:FASTQC
+Apr-29 23:09:26.791 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Apr-29 23:09:26.792 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Apr-29 23:09:26.797 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Apr-29 23:09:26.801 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=8; memory=8 GB; capacity=8; pollInterval=100ms; dumpInterval=5m
+Apr-29 23:09:26.803 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+Apr-29 23:09:26.964 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_single` matches labels `process_single` for process with name NFCORE_DMSCORE:DMSCORE:MULTIQC
+Apr-29 23:09:26.965 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:MULTIQC` matches process NFCORE_DMSCORE:DMSCORE:MULTIQC
+Apr-29 23:09:26.968 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Apr-29 23:09:26.968 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Apr-29 23:09:26.979 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_single` matches labels `process_single` for process with name NFCORE_DMSCORE:DMSCORE:BWA_INDEX
+Apr-29 23:09:26.982 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Apr-29 23:09:26.982 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Apr-29 23:09:26.995 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_high` matches labels `process_high` for process with name NFCORE_DMSCORE:DMSCORE:BWA_MEM
+Apr-29 23:09:26.999 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Apr-29 23:09:26.999 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Apr-29 23:09:27.009 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_single` matches labels `process_single` for process with name NFCORE_DMSCORE:DMSCORE:BAMFILTER_DMS
+Apr-29 23:09:27.011 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Apr-29 23:09:27.011 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Apr-29 23:09:27.019 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_medium` matches labels `process_medium` for process with name NFCORE_DMSCORE:DMSCORE:PREMERGE
+Apr-29 23:09:27.022 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Apr-29 23:09:27.022 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Apr-29 23:09:27.040 [main] DEBUG nextflow.Session - Config process names validation disabled as requested
+Apr-29 23:09:27.046 [main] DEBUG nextflow.Session - Igniting dataflow network (17)
+Apr-29 23:09:27.052 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:FASTQC
+Apr-29 23:09:27.055 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:MULTIQC
+Apr-29 23:09:27.055 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:BWA_INDEX
+Apr-29 23:09:27.057 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:BWA_MEM
+Apr-29 23:09:27.057 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:BAMFILTER_DMS
+Apr-29 23:09:27.057 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:PREMERGE
+Apr-29 23:09:27.057 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_e5f965e09aa3641b: /Users/benjaminwehnert/dmscore/./workflows/../modules/local/premerge.nf
+  Script_113f045ba19c2c46: /Users/benjaminwehnert/dmscore/./workflows/../modules/nf-core/fastqc/main.nf
+  Script_4f612cfd8c52e8cd: /Users/benjaminwehnert/dmscore/./workflows/../subworkflows/local/utils_nfcore_dmscore_pipeline/../../nf-core/utils_nextflow_pipeline/main.nf
+  Script_215a636da7ab24a2: /Users/benjaminwehnert/dmscore/./workflows/../subworkflows/local/utils_nfcore_dmscore_pipeline/../../nf-core/utils_nfschema_plugin/main.nf
+  Script_68606fccdecc54d9: /Users/benjaminwehnert/dmscore/./subworkflows/local/utils_nfcore_dmscore_pipeline/main.nf
+  Script_0f3077e98f6a93f6: /Users/benjaminwehnert/dmscore/./workflows/../modules/nf-core/bwa/mem/main.nf
+  Script_5c4e8d4051efa81e: /Users/benjaminwehnert/dmscore/./workflows/../subworkflows/local/utils_nfcore_dmscore_pipeline/../../nf-core/utils_nfcore_pipeline/main.nf
+  Script_4ff7366a79e0ef06: /Users/benjaminwehnert/dmscore/./workflows/../modules/local/bamfilteringdms.nf
+  Script_5706c8cc12ed2c3e: /Users/benjaminwehnert/dmscore/./workflows/dmscore.nf
+  Script_c568aae5b239c1c5: /Users/benjaminwehnert/dmscore/main.nf
+  Script_4955288afd8ca61e: /Users/benjaminwehnert/dmscore/./workflows/../modules/nf-core/multiqc/main.nf
+  Script_25aa31c18d513c61: /Users/benjaminwehnert/dmscore/./workflows/../modules/nf-core/bwa/index/main.nf
+Apr-29 23:09:27.058 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+Apr-29 23:09:27.058 [main] DEBUG nextflow.Session - Session await
+Apr-29 23:09:27.157 [Actor Thread 10] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.001 s; external sort time: 0.017 s; total time: 0.018 s
+Apr-29 23:09:27.157 [Actor Thread 1] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.001 s; external sort time: 0.017 s; total time: 0.018 s
+Apr-29 23:09:27.162 [Actor Thread 1] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /Users/benjaminwehnert/dmscore/work/collect-file/52ef908653c9bf719aa469cfe21f3a30
+Apr-29 23:09:27.162 [Actor Thread 10] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /Users/benjaminwehnert/dmscore/work/collect-file/7ce3707a79436715f6c7474bc3e3e7ce
+Apr-29 23:09:27.173 [Actor Thread 10] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /var/folders/r0/ldrzd4wn1s3516hy0vsn8xzm0000gn/T/nxf-10246409531653428819
+Apr-29 23:09:27.173 [Actor Thread 1] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /var/folders/r0/ldrzd4wn1s3516hy0vsn8xzm0000gn/T/nxf-17840128110603128341
+Apr-29 23:09:27.180 [Actor Thread 4] DEBUG nextflow.util.HashBuilder - [WARN] Unknown hashing type: class Script_5706c8cc12ed2c3e$_runScript_closure1$_closure4
+Apr-29 23:09:27.261 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Apr-29 23:09:27.263 [Task submitter] INFO  nextflow.Session - [60/7b7f6b] Submitted process > NFCORE_DMSCORE:DMSCORE:BWA_INDEX (GID1A_SUNi_ref_small.fasta)
+Apr-29 23:09:27.524 [FileTransfer-1] DEBUG nextflow.file.FilePorter - Copying foreign file https://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/pMS190_GID1A_SUNi_S2_1_R1_50k.fastq to work dir: /Users/benjaminwehnert/dmscore/work/stage-f85367ca-5bb8-4421-882b-4615ea49f7a1/ca/48d11c2e7271ee34cc948495531277/pMS190_GID1A_SUNi_S2_1_R1_50k.fastq
+Apr-29 23:09:27.524 [FileTransfer-2] DEBUG nextflow.file.FilePorter - Copying foreign file https://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/pMS190_GID1A_SUNi_S2_1_R2_50k.fastq to work dir: /Users/benjaminwehnert/dmscore/work/stage-f85367ca-5bb8-4421-882b-4615ea49f7a1/74/ad28840a55d8285cd0b61430cb8ed1/pMS190_GID1A_SUNi_S2_1_R2_50k.fastq
+Apr-29 23:09:29.547 [Actor Thread 1] INFO  nextflow.file.FilePorter - Staging foreign file: https://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/pMS190_GID1A_SUNi_S2_1_R1_50k.fastq
+Apr-29 23:09:31.564 [Actor Thread 1] INFO  nextflow.file.FilePorter - Staging foreign file: https://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/pMS190_GID1A_SUNi_S2_1_R2_50k.fastq
+Apr-29 23:09:32.670 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: NFCORE_DMSCORE:DMSCORE:BWA_INDEX (GID1A_SUNi_ref_small.fasta); status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/60/7b7f6b5bf9b2a8a1c4462bed3dc193]
+Apr-29 23:09:32.673 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Apr-29 23:09:32.751 [TaskFinalizer-1] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'PublishDir' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+Apr-29 23:09:32.898 [Actor Thread 7] WARN  nextflow.processor.TaskContext - Cannot serialize context map. Cause: java.lang.IllegalArgumentException: Unable to create serializer "com.esotericsoftware.kryo.serializers.FieldSerializer" for class: java.lang.ref.ReferenceQueue -- Resume will not work on this process
+Apr-29 23:09:39.217 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Apr-29 23:09:39.218 [Task submitter] INFO  nextflow.Session - [17/9fd3ef] Submitted process > NFCORE_DMSCORE:DMSCORE:BWA_MEM (gid1a_1_quality_1_pe)
+Apr-29 23:09:43.924 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: NFCORE_DMSCORE:DMSCORE:BWA_MEM (gid1a_1_quality_1_pe); status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/17/9fd3ef8a622a9fc8a8f5c8d1b8397c]
+Apr-29 23:09:43.936 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Apr-29 23:09:43.936 [Task submitter] INFO  nextflow.Session - [ca/ae6468] Submitted process > NFCORE_DMSCORE:DMSCORE:FASTQC (gid1a_1_quality_1_pe)
+Apr-29 23:09:44.084 [TaskFinalizer-2] DEBUG nextflow.processor.TaskProcessor - Process NFCORE_DMSCORE:DMSCORE:BWA_MEM > Skipping output binding because one or more optional files are missing: fileoutparam<1:1>
+Apr-29 23:09:44.084 [TaskFinalizer-2] DEBUG nextflow.processor.TaskProcessor - Process NFCORE_DMSCORE:DMSCORE:BWA_MEM > Skipping output binding because one or more optional files are missing: fileoutparam<2:1>
+Apr-29 23:09:44.084 [TaskFinalizer-2] DEBUG nextflow.processor.TaskProcessor - Process NFCORE_DMSCORE:DMSCORE:BWA_MEM > Skipping output binding because one or more optional files are missing: fileoutparam<3:1>
+Apr-29 23:09:44.129 [Actor Thread 4] WARN  nextflow.processor.TaskContext - Cannot serialize context map. Cause: java.lang.IllegalArgumentException: Unable to create serializer "com.esotericsoftware.kryo.serializers.FieldSerializer" for class: java.lang.ref.ReferenceQueue -- Resume will not work on this process
+Apr-29 23:09:54.512 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: NFCORE_DMSCORE:DMSCORE:FASTQC (gid1a_1_quality_1_pe); status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/ca/ae646873842dc826f95e58e0508b6d]
+Apr-29 23:09:54.536 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Apr-29 23:09:54.537 [Task submitter] INFO  nextflow.Session - [c7/952c5e] Submitted process > NFCORE_DMSCORE:DMSCORE:BAMFILTER_DMS (gid1a_1_quality_1_pe)
+Apr-29 23:09:54.642 [Actor Thread 4] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 2; slices: 1; internal sort time: 0.003 s; external sort time: 0.001 s; total time: 0.004 s
+Apr-29 23:09:54.645 [Actor Thread 4] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /Users/benjaminwehnert/dmscore/work/collect-file/1172d3993855a8b4f3a6ae35d54320f1
+Apr-29 23:09:54.649 [Actor Thread 4] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /var/folders/r0/ldrzd4wn1s3516hy0vsn8xzm0000gn/T/nxf-3409379234343285724
+Apr-29 23:09:58.685 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 4; name: NFCORE_DMSCORE:DMSCORE:BAMFILTER_DMS (gid1a_1_quality_1_pe); status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/c7/952c5eaa65f9728c2a31229c8816fd]
+Apr-29 23:09:58.694 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Apr-29 23:09:58.695 [Task submitter] INFO  nextflow.Session - [ab/48ed5b] Submitted process > NFCORE_DMSCORE:DMSCORE:MULTIQC
+Apr-29 23:09:58.700 [Actor Thread 13] DEBUG nextflow.processor.TaskProcessor - Handling unexpected condition for
+  task: name=NFCORE_DMSCORE:DMSCORE:PREMERGE (1); work-dir=null
+  error [nextflow.exception.ProcessUnrecoverableException]: Not a valid path value type: Script_5706c8cc12ed2c3e$_runScript_closure1$_closure4 ()
+Apr-29 23:09:58.727 [Actor Thread 13] ERROR nextflow.processor.TaskProcessor - Error executing process > 'NFCORE_DMSCORE:DMSCORE:PREMERGE (1)'
+
+Caused by:
+  Not a valid path value type: Script_5706c8cc12ed2c3e$_runScript_closure1$_closure4 ()
+
+
+
+Tip: you can try to figure out what's wrong by changing to the process work dir and showing the script file named `.command.sh`
+Apr-29 23:09:58.729 [Actor Thread 13] INFO  nextflow.Session - Execution cancelled -- Finishing pending tasks before exit
+Apr-29 23:09:58.743 [Actor Thread 13] ERROR nextflow.Nextflow - Pipeline failed. Please refer to troubleshooting docs: https://nf-co.re/docs/usage/troubleshooting
+Apr-29 23:09:58.744 [main] DEBUG nextflow.Session - Session await > all processes finished
+Apr-29 23:09:58.748 [Actor Thread 10] DEBUG nextflow.processor.TaskProcessor - Handling unexpected condition for
+  task: name=NFCORE_DMSCORE:DMSCORE:PREMERGE; work-dir=null
+  error [java.lang.InterruptedException]: java.lang.InterruptedException
+Apr-29 23:10:08.729 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 5; name: NFCORE_DMSCORE:DMSCORE:MULTIQC; status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/ab/48ed5bed903c8f8bdbc4507c19909f]
+Apr-29 23:10:08.739 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+Apr-29 23:10:08.740 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Apr-29 23:10:08.766 [TaskFinalizer-5] DEBUG nextflow.processor.TaskProcessor - Process NFCORE_DMSCORE:DMSCORE:MULTIQC > Skipping output binding because one or more optional files are missing: fileoutparam<2>
+Apr-29 23:10:08.802 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'TaskFinalizer' shutdown completed (hard=false)
+Apr-29 23:10:08.804 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'PublishDir' shutdown completed (hard=false)
+Apr-29 23:10:08.818 [main] INFO  nextflow.Nextflow - -[0;35m[nf-core/dmscore][0;31m Pipeline completed with errors[0m-
+Apr-29 23:10:08.826 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=5; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=1m 1s; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=2; peakCpus=8; peakMemory=16 GB; ]
+Apr-29 23:10:08.826 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow completed -- saving trace file
+Apr-29 23:10:08.835 [main] DEBUG nextflow.trace.ReportObserver - Workflow completed -- rendering execution report
+Apr-29 23:10:10.258 [main] DEBUG nextflow.trace.TimelineObserver - Workflow completed -- rendering execution timeline
+Apr-29 23:10:10.573 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Apr-29 23:10:10.593 [main] INFO  org.pf4j.AbstractPluginManager - Stop plugin 'nf-schema@2.3.0'
+Apr-29 23:10:10.593 [main] DEBUG nextflow.plugin.BasePlugin - Plugin stopped nf-schema
+Apr-29 23:10:10.594 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
+Apr-29 23:10:10.597 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
