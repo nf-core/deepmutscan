@@ -3,7 +3,7 @@ process GATK_SATURATIONMUTAGENESIS {
     label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
-    container "community.wave.seqera.io/library/gatk_samtools_java-1.7.0-openjdk-conda-aarch64:50bbe1742b62bc8f"
+    container "community.wave.seqera.io/library/gatk4_samtools_java-1.7.0-openjdk-conda-aarch64:7c1f89018b5d5103"
 
     input:
     tuple val(meta), path(premerged_reads)
