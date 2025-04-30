@@ -1,6 +1,6 @@
 process GATK_SATURATIONMUTAGENESIS {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_high'
 
     conda "${moduleDir}/environment.yml"
     container "community.wave.seqera.io/library/gatk4_samtools_java-1.7.0-openjdk-conda-aarch64:7c1f89018b5d5103"
