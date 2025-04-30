@@ -40,7 +40,19 @@
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
                     "fa_icon": "fas fa-file-signature"
-                }
+                },
+                "reading_frame": {
+                "type": "string",
+                "description": "Start and stop codon positions in the format 'start-stop', e.g., '352-1383'.",
+                "pattern": "^\\d+-\\d+$",
+                "default": "352-1383"
+              },
+              "min_counts": {
+                "type": "integer",
+                "description": "Minimum number of variant observations required.",
+                "minimum": 1,
+                "default": 3
+              }
             }
         },
         "reference_genome_options": {
