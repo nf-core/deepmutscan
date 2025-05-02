@@ -17,7 +17,6 @@ process DMSANALYSIS_AASEQ {
     task.ext.when == null || task.ext.when
 
     script:
-    def prefix = task.ext.prefix ?: "${meta.id}"
     """
     start_stop_codon="$pos_range"
 
