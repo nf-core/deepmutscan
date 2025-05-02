@@ -24,10 +24,9 @@ process DMSANALYSIS_AASEQ {
 
     cat <<-END_VERSIONS > versions.yml
     "DMSANALYSIS_AASEQ":
-        r: $(R --version | head -n 1 | sed 's/^R version //')
+        r: \$\(R --version | head -n 1 | sed 's/^R version //'\)
         aa_seq_script: custom_R_script_bin
     END_VERSIONS
-
     """
 
     stub:
