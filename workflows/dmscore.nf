@@ -39,6 +39,12 @@ Channel
     .value(params.min_counts)
     .set { min_counts_ch }
 
+// Define R scripts as channels
+Channel
+    .fromPath("modules/local/dmsanalysis/bin/aa_seq.R", checkIfExists: true)
+    .set { aa_seq_script_ch }
+
+
 
 workflow DMSCORE {
 
@@ -145,7 +151,8 @@ workflow DMSCORE {
 
     DMSANALYSIS_AASEQ (
     ch_fasta,
-    reading_frame_ch
+    reading_frame_ch,
+    aa_seq_script_ch // path to aa_seq.R (defined at the top)
     )
 
     emit:
