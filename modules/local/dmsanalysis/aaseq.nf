@@ -2,7 +2,7 @@ process DMSANALYSIS_AASEQ {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    container "community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:8fa94107068d5af9"
+    container "community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa"
 
     input:
     tuple val(meta), path(wt_seq)
