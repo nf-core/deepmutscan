@@ -7,6 +7,7 @@ process DMSANALYSIS_AASEQ {
     input:
     tuple val(meta), path(wt_seq)
     val pos_range
+    path script  // aa_seq.R
 
     output:
     tuple val(meta), path("aa_seq.txt"), emit: aa_seq
@@ -19,7 +20,7 @@ process DMSANALYSIS_AASEQ {
     """
     start_stop_codon="$pos_range"
 
-    Rscript -e "source('../bin/aa_seq.R'); aa_seq('$wt_seq', '\$start_stop_codon', 'aa_seq.txt')"
+    Rscript -e "source('$script'); aa_seq('$wt_seq', '\$start_stop_codon', 'aa_seq.txt')"
 
     cat <<-END_VERSIONS > versions.yml
     "\${task.process}":
