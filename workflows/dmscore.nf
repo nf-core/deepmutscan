@@ -10,6 +10,7 @@ include { BWA_MEM                } from '../modules/nf-core/bwa/mem/main'
 include { BAMFILTER_DMS          } from '../modules/local/bamfilteringdms'
 include { PREMERGE               } from '../modules/local/premerge'
 include { GATK_SATURATIONMUTAGENESIS               } from '../modules/local/gatk/saturationmutagenesis'
+include { DMSANALYSIS_AASEQ      } from '../modules/local/dmsanalysis/aaseq'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -130,12 +131,12 @@ workflow DMSCORE {
     BWA_MEM.out.bam
     )
 
-    PREMERGE(
+    PREMERGE (
     BAMFILTER_DMS.out.bam,
     ch_fasta.map{ it[1] }     // extract fasta path from Tuple
     )
 
-    GATK_SATURATIONMUTAGENESIS(
+    GATK_SATURATIONMUTAGENESIS (
     PREMERGE.out.bam,             // merged reads (tuple(meta, merged_reads.fastq))
     ch_fasta.map{ it[1] },        // fasta path (path)
     reading_frame_ch,             // codon range (path)
