@@ -143,6 +143,11 @@ workflow DMSCORE {
     min_counts_ch                 // min_counts (val)
     )
 
+    DMSANALYSIS_AASEQ (
+    ch_fasta,
+    reading_frame_ch
+    )
+
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions // channel: [ path(versions.yml) ]
