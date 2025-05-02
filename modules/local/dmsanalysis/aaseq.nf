@@ -1,4 +1,5 @@
 process DMSANALYSIS_AASEQ {
+    tag "amino_acid_sequence"
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
