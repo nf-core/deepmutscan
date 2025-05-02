@@ -27,6 +27,7 @@ process DMSANALYSIS_AASEQ {
         r: $(R --version | head -n 1 | sed 's/^R version //')
         aa_seq_script: custom_R_script_bin
     END_VERSIONS
+
     """
 
     stub:
