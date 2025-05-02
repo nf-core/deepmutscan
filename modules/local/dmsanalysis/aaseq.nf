@@ -1,5 +1,4 @@
 process DMSANALYSIS_AASEQ {
-    tag "$meta.id"
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
