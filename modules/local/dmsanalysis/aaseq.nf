@@ -19,12 +19,14 @@ process DMSANALYSIS_AASEQ {
     script:
     """
     start_stop_codon="$pos_range"
-
+    
+    R_version=\$(R --version | head -n 1 | sed 's/^R version //')
+    
     Rscript -e "source('$script'); aa_seq('$wt_seq', '\$start_stop_codon', 'aa_seq.txt')"
-
+    
     cat <<-END_VERSIONS > versions.yml
     "DMSANALYSIS_AASEQ":
-        r: \$\(R --version | head -n 1 | sed 's/^R version //'\)
+        r: \$R_version
         aa_seq_script: custom_R_script_bin
     END_VERSIONS
     """
