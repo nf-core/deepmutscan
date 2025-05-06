@@ -1,4 +1,5 @@
 process DMSANALYSIS_POSSIBLE_MUTATIONS {
+    tag "table /w all possible variants"
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
