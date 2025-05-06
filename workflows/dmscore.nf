@@ -9,8 +9,9 @@ include { BWA_INDEX              } from '../modules/nf-core/bwa/index/main'
 include { BWA_MEM                } from '../modules/nf-core/bwa/mem/main'
 include { BAMFILTER_DMS          } from '../modules/local/bamfilteringdms'
 include { PREMERGE               } from '../modules/local/premerge'
-include { GATK_SATURATIONMUTAGENESIS               } from '../modules/local/gatk/saturationmutagenesis'
+include { GATK_SATURATIONMUTAGENESIS          } from '../modules/local/gatk/saturationmutagenesis'
 include { DMSANALYSIS_AASEQ      } from '../modules/local/dmsanalysis/aaseq'
+include { DMSANALYSIS_POSSIBLE_MUTATIONS      } from '../modules/local/dmsanalysis/possiblemutations'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -21,6 +22,12 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_dmsc
     RUN MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+
+// Params defaults
+params.min_counts = params.min_counts ?: 3                                       // minimum counts for variant to be recognized. All variants<min_counts will be set to 0
+params.mutagenesis_type = params.mutagenesis_type ?: 'nnk'                      // default library is set to nnk
+params.custom_codon_library = params.custom_codon_library ?: '/NULL'            // when mutagenesis_type is set to >>custom<< this variable has to be path to .txt with custom library
+
 
 // Define fasta file as channel (e.g. for BWA index)
 Channel
@@ -34,10 +41,19 @@ Channel
     .set { reading_frame_ch }
 
 // Define min_counts as channel (e.g. for gatk function) -> if not set - default: 3
-params.min_counts = params.min_counts ?: 3
 Channel
     .value(params.min_counts)
     .set { min_counts_ch }
+
+// Define custom library as channel
+Channel
+    .value(params.custom_codon_library)
+    .set { custom_codon_library_ch }
+
+// Define mutagenesis type as channel
+Channel
+    .value(params.mutagenesis_type)
+    .set { mutagenesis_type_ch }
 
 // Define R scripts as channels
 Channel.fromPath("modules/local/dmsanalysis/bin/SeqDepth_simulation.R", checkIfExists: true).set { seqdepth_simulation_script_ch }
@@ -169,6 +185,14 @@ workflow DMSCORE {
     ch_fasta,
     reading_frame_ch,
     aa_seq_script_ch // path to aa_seq.R (defined at the top)
+    )
+
+    DMSANALYSIS_POSSIBLE_MUTATIONS(
+    ch_fasta.map{ it[1] },     // wt_seq (as path)
+    reading_frame_ch,          // pos_range (as val)
+    mutagenesis_type_ch,       // mutagenesis_type (as val)
+    custom_codon_library_ch,   // custom_codon_library (as path)
+    possible_mutations_script_ch  // path to R script
     )
 
     emit:
