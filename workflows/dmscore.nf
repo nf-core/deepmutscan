@@ -40,9 +40,25 @@ Channel
     .set { min_counts_ch }
 
 // Define R scripts as channels
-Channel
-    .fromPath("modules/local/dmsanalysis/bin/aa_seq.R", checkIfExists: true)
-    .set { aa_seq_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/SeqDepth_simulation.R", checkIfExists: true).set { seqdepth_simulation_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/aa_seq.R", checkIfExists: true).set { aa_seq_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/complete_prefiltered_gatk.R", checkIfExists: true).set { complete_gatk_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/counts_heatmap.R", checkIfExists: true).set { counts_heatmap_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/counts_per_cov_heatmap.R", checkIfExists: true).set { counts_per_cov_heatmap_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/detect_codons.R", checkIfExists: true).set { detect_codons_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/filter_gatk_by_codon_library.R", checkIfExists: true).set { filter_by_library_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/fitness_heatmap.R", checkIfExists: true).set { fitness_heatmap_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/gatk_to_dimsum.R", checkIfExists: true).set { gatk_to_dimsum_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/global_position_biases_counts_and_counts_per_cov.R", checkIfExists: true).set { global_bias_counts_cov_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/global_position_biases_cov.R", checkIfExists: true).set { global_bias_cov_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/install_packages.R", checkIfExists: true).set { install_packages_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/logdiff.R", checkIfExists: true).set { logdiff_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/low_count_variants.R", checkIfExists: true).set { low_count_variants_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/possible_mutations.R", checkIfExists: true).set { possible_mutations_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/prepare_gatk_data_for_count_heatmaps.R", checkIfExists: true).set { prepare_counts_heatmap_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/prepare_gatk_data_for_fitness_heatmap.R", checkIfExists: true).set { prepare_fitness_heatmap_script_ch }
+Channel.fromPath("modules/local/dmsanalysis/bin/process_raw_gatk.R", checkIfExists: true).set { process_raw_gatk_script_ch }
+
 
 
 
