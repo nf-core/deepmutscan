@@ -1,4 +1,4 @@
-process DMSANALYSIS_PROCESSGATK {
+process DMSANALYSIS_PROCESS_GATK {
     tag "$meta.id"
     label 'process_single'
 
