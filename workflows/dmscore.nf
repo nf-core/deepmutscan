@@ -77,10 +77,10 @@ Channel.fromPath("modules/local/dmsanalysis/bin/process_raw_gatk.R", checkIfExis
 
 
 // Centralized output paths
-output_intermediate_files = "${params.outdir}/intermediate_files"
-output_gatk = "${params.outdir}/intermediate_files/gatk"
-output_final_plots = "${params.outdir}/final_plots"
-output_processed_gatk = "${params.outdir}/intermediate_files/processed_gatk_files"
+params.output_intermediate_files = "${params.outdir}/intermediate_files"
+params.output_gatk = "${params.outdir}/intermediate_files/gatk"
+params.output_final_plots = "${params.outdir}/final_plots"
+params.output_processed_gatk = "${params.outdir}/intermediate_files/processed_gatk_files"
 
 
 workflow DMSCORE {
