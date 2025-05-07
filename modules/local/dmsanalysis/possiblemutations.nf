@@ -31,10 +31,14 @@ process DMSANALYSIS_POSSIBLE_MUTATIONS {
         Rscript -e "source('$script'); generate_possible_variants('$wt_seq', '\$start_stop_codon', '$mutagenesis_type', '$custom_codon_library', 'possible_mutations.csv')"
     fi
 
-    # Capture R base and packages versions
-    echo "DMSANALYSIS_POSSIBLE_MUTATIONS:" > versions.yml
-    echo "  r-base: \$(R --version | head -n 1 | sed 's/^R version //')" >> versions.yml
-    echo "  biostrings: \$(Rscript -e 'packageVersion(\"Biostrings\")' | tail -n 1 | sed 's/\\[1\\] //')" >> versions.yml    
+    # Extract R base and packages versions
+    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
+    BIOSTRINGS_VERSION=\$(Rscript -e "packageVersion('Biostrings')" | grep -Eo '[0-9]+(\\.[0-9]+)+')
+    cat <<-END_VERSIONS > versions.yml
+    DMSANALYSIS_POSSIBLE_MUTATIONS:
+      r-base: \$R_VERSION
+      biostrings: \$BIOSTRINGS_VERSION
+    END_VERSIONS   
     """
 
     stub:
