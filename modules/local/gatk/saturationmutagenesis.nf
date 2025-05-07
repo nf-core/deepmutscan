@@ -12,7 +12,6 @@ process GATK_SATURATIONMUTAGENESIS {
     val min_counts
 
     output:
-    tuple val(meta), path("gatk_output.variantCounts"), emit: variantCounts
     tuple val(meta), path("gatk_output.*"), emit: gatk_output
     path "versions.yml", emit: versions
 
