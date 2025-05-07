@@ -27,7 +27,6 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_dmsc
 params.min_counts = params.min_counts ?: 3                                      // minimum counts for variant to be recognized. All variants<min_counts will be set to 0
 params.mutagenesis_type = params.mutagenesis_type ?: 'nnk'                      // default library is set to nnk
 params.custom_codon_library = params.custom_codon_library ?: '/NULL'            // when mutagenesis_type is set to >>custom<< this variable has to be path to .txt with custom library
-params.outdir = params.outdir ?: ./results
 
 // Define fasta file as channel (e.g. for BWA index)
 Channel
