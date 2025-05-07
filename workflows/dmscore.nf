@@ -179,7 +179,7 @@ workflow DMSCORE {
     min_counts_ch                 // min_counts (val)
     )
 
-    gatk_variantCounts_ch = gatk_ch
+    gatk_variantCounts_ch = GATK_SATURATIONMUTAGENESIS.out
         .map { paths -> 
             paths.find { it.endsWith('gatk_output.variantCounts') }
         }
