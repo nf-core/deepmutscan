@@ -179,6 +179,11 @@ workflow DMSCORE {
     min_counts_ch                 // min_counts (val)
     )
 
+    gatk_variantCounts_ch = gatk_ch
+        .map { paths -> 
+            paths.find { it.endsWith('gatk_output.variantCounts') }
+        }
+
     DMSANALYSIS_AASEQ (
     ch_fasta,
     reading_frame_ch,
@@ -196,9 +201,9 @@ workflow DMSCORE {
     ch_versions = ch_versions.mix(DMSANALYSIS_POSSIBLE_MUTATIONS.out.versions)
 
     DMSANALYSIS_PROCESS_GATK(
-    GATK_SATURATIONMUTAGENESIS.out.variantCounts,
-    DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations,
-    DMSANALYSIS_AASEQ.out.aa_seq,
+    gatk_variantCounts_ch,
+    DMSANALYSIS_POSSIBLE_MUTATIONS.out,
+    DMSANALYSIS_AASEQ.out,
     min_counts_ch,
     process_raw_gatk_script_ch,
     filter_by_library_script_ch,
