@@ -52,7 +52,17 @@
                 "description": "Minimum number of variant observations required.",
                 "minimum": 1,
                 "default": 3
+              },
+              "reading_frame": {
+                "type": "string",
+                "description": "Type of mutagenic primers. Choose from nnk, nns, max_diff_to_wt, custom. When using 'custom', also provide the parameter 'custom_codon_library'",
+                "default": "nnk"
               }
+              "custom_codon_library": {
+                "type": "string",
+                "format": "file-path",
+                "description": "Path to a comma-separated .txt file listing custom codons (e.g., 'AAA,AAC,AAG,...'). Required when mutagenesis_type is 'custom'."
+                }
             }
         },
         "reference_genome_options": {
