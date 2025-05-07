@@ -5,8 +5,6 @@ process DMSANALYSIS_POSSIBLE_MUTATIONS {
     conda "${moduleDir}/environment.yml"
     container "community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa"
 
-    publishDir "${params.outdir}/intermediate_files", mode: 'copy'
-
     input:
     tuple val(meta), path(wt_seq)
     val pos_range
