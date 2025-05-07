@@ -27,7 +27,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_dmsc
 params.min_counts = params.min_counts ?: 3                                      // minimum counts for variant to be recognized. All variants<min_counts will be set to 0
 params.mutagenesis_type = params.mutagenesis_type ?: 'nnk'                      // default library is set to nnk
 params.custom_codon_library = params.custom_codon_library ?: '/NULL'            // when mutagenesis_type is set to >>custom<< this variable has to be path to .txt with custom library
-params.outdir = params.outdir ?: './results'                                    // default output folder is "results" inside the wd
+params.outdir = params.outdir ?: "./results"                                    // default output folder is "results" inside the wd
 
 // Define fasta file as channel (e.g. for BWA index)
 Channel
@@ -77,10 +77,11 @@ Channel.fromPath("modules/local/dmsanalysis/bin/process_raw_gatk.R", checkIfExis
 
 
 // Centralized output paths
-params.output_intermediate_files = "${params.outdir}/intermediate_files"
+params.output_intermediate_files = params.output_intermediate_files ?: "${params.outdir}/intermediate_files"
 params.output_gatk = "${params.outdir}/intermediate_files/gatk"
 params.output_final_plots = "${params.outdir}/final_plots"
 params.output_processed_gatk = "${params.outdir}/intermediate_files/processed_gatk_files"
+
 
 
 workflow DMSCORE {
