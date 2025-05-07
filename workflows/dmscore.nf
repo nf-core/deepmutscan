@@ -183,6 +183,7 @@ workflow DMSCORE {
     reading_frame_ch,
     aa_seq_script_ch // path to aa_seq.R (defined at the top)
     )
+    ch_versions = ch_versions.mix(DMSANALYSIS_AASEQ.out.versions)
 
     DMSANALYSIS_POSSIBLE_MUTATIONS(
     ch_fasta,
@@ -191,7 +192,6 @@ workflow DMSCORE {
     custom_codon_library_ch,   // custom_codon_library (as path)
     possible_mutations_script_ch  // path to R script
     )
-
     ch_versions = ch_versions.mix(DMSANALYSIS_POSSIBLE_MUTATIONS.out.versions)
 
 
