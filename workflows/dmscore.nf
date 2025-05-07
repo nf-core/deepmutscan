@@ -76,14 +76,6 @@ Channel.fromPath("modules/local/dmsanalysis/bin/prepare_gatk_data_for_fitness_he
 Channel.fromPath("modules/local/dmsanalysis/bin/process_raw_gatk.R", checkIfExists: true).set { process_raw_gatk_script_ch }
 
 
-// Centralized output paths
-params.output_intermediate_files = params.output_intermediate_files ?: "${params.outdir}/intermediate_files"
-params.output_gatk = "${params.outdir}/intermediate_files/gatk"
-params.output_final_plots = "${params.outdir}/final_plots"
-params.output_processed_gatk = "${params.outdir}/intermediate_files/processed_gatk_files"
-
-
-
 workflow DMSCORE {
 
     take:
