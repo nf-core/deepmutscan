@@ -181,7 +181,7 @@ workflow DMSCORE {
 
     gatk_variantCounts_ch = GATK_SATURATIONMUTAGENESIS.out.gatk_output
         .map { meta, files -> 
-            tuple(meta, files.find { it.name.endsWith("variantCounts") })
+            tuple(meta, files.find { it.endsWith("variantCounts") })
         }
 
     DMSANALYSIS_AASEQ (
