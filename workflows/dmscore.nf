@@ -197,8 +197,8 @@ workflow DMSCORE {
 
     DMSANALYSIS_PROCESS_GATK(
     GATK_SATURATIONMUTAGENESIS.out.variantCounts,
-    DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations,
-    DMSANALYSIS_AASEQ.out.aa_seq,
+    DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map{ it[1] },
+    DMSANALYSIS_AASEQ.out.aa_seq.map{ it[1] },
     min_counts_ch,
     process_raw_gatk_script_ch,
     filter_by_library_script_ch,
