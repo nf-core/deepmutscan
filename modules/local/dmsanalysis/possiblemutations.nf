@@ -8,14 +8,14 @@ process DMSANALYSIS_POSSIBLE_MUTATIONS {
     publishDir "${params.outdir}/intermediate_files", mode: 'copy'
 
     input:
-    path wt_seq
+    tuple val(meta), path(wt_seq)
     val pos_range
     val mutagenesis_type
     path custom_codon_library
     path script // possible_mutations.R
 
     output:
-    path "possible_mutations.csv", emit: possible_mutations
+    tuple val(meta), path("possible_mutations.csv"), emit: possible_mutations
     path "versions.yml", emit: versions
 
     when:
