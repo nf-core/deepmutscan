@@ -179,9 +179,9 @@ workflow DMSCORE {
     min_counts_ch                 // min_counts (val)
     )
 
-    gatk_variantCounts_ch = GATK_SATURATIONMUTAGENESIS.out
-        .map { paths -> 
-            paths.find { it.endsWith('gatk_output.variantCounts') }
+    gatk_variantCounts_ch = GATK_SATURATIONMUTAGENESIS.out.gatk_output
+        .map { meta, files -> 
+            tuple(meta, files.find { it.name.endsWith("variantCounts") })
         }
 
     DMSANALYSIS_AASEQ (
@@ -202,14 +202,14 @@ workflow DMSCORE {
 
     DMSANALYSIS_PROCESS_GATK(
     gatk_variantCounts_ch,
-    DMSANALYSIS_POSSIBLE_MUTATIONS.out.csv,
-    DMSANALYSIS_AASEQ.out.txt,
+    DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations,
+    DMSANALYSIS_AASEQ.out.aa_seq,
     min_counts_ch,
     process_raw_gatk_script_ch,
     filter_by_library_script_ch,
     complete_gatk_script_ch,
     prepare_counts_heatmap_script_ch
-    )
+)
 
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
