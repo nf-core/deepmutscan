@@ -5,6 +5,8 @@ process DMSANALYSIS_AASEQ {
     conda "${moduleDir}/environment.yml"
     container "community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa"
 
+    publishDir "${params.outdir}/intermediate_files", mode: 'copy'
+
     input:
     tuple val(meta), path(wt_seq)
     val pos_range
@@ -25,20 +27,20 @@ process DMSANALYSIS_AASEQ {
     
     Rscript -e "source('$script'); aa_seq('$wt_seq', '\$start_stop_codon', 'aa_seq.txt')"
     
+    # Extract R base and packages versions
+    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
+    BIOSTRINGS_VERSION=\$(Rscript -e "packageVersion('Biostrings')" | grep -Eo '[0-9]+(\\.[0-9]+)+')
     cat <<-END_VERSIONS > versions.yml
-    "DMSANALYSIS_AASEQ":
-        r: \$R_version
-        aa_seq_script: custom_R_script_bin
-    END_VERSIONS
+    DMSANALYSIS_AASEQ:
+      r-base: \$R_VERSION
+      biostrings: \$BIOSTRINGS_VERSION
+    END_VERSIONS   
     """
 
     stub:
     """
     touch aa_seq.txt
-    
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        dmsanalysis_aaseq: dummy_version
-    END_VERSIONS
+    echo "DMSANALYSIS_AASEQ:" > versions.yml
+    echo "  stub-version: 0.0.0" >> versions.yml
     """
 }
