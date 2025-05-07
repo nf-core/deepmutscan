@@ -202,8 +202,8 @@ workflow DMSCORE {
 
     DMSANALYSIS_PROCESS_GATK(
     gatk_variantCounts_ch,
-    DMSANALYSIS_POSSIBLE_MUTATIONS.out,
-    DMSANALYSIS_AASEQ.out,
+    DMSANALYSIS_POSSIBLE_MUTATIONS.out.csv,
+    DMSANALYSIS_AASEQ.out.txt,
     min_counts_ch,
     process_raw_gatk_script_ch,
     filter_by_library_script_ch,
