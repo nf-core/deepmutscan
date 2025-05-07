@@ -185,7 +185,7 @@ workflow DMSCORE {
     )
 
     DMSANALYSIS_POSSIBLE_MUTATIONS(
-    ch_fasta.map{ it[1] },     // wt_seq (as path)
+    ch_fasta
     reading_frame_ch,          // pos_range (as val)
     mutagenesis_type_ch,       // mutagenesis_type (as val)
     custom_codon_library_ch,   // custom_codon_library (as path)
