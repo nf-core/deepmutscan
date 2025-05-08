@@ -211,6 +211,12 @@ workflow DMSCORE {
     library_completed_variantCounts_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, c) }
     variantCounts_for_heatmaps_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, d) }
 
+    DMSANALYSIS_VISUALIZATION_COUNTS_PER_COV(
+    variantCounts_for_heatmaps_ch,
+    min_counts_ch,
+    counts_per_cov_heatmap_script_ch
+    )
+
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions // channel: [ path(versions.yml) ]
