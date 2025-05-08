@@ -1,4 +1,4 @@
-process DMSANALYSIS_VISUALIZATION_COUNTS_PER_COV {
+process VISUALIZATION_COUNTS_PER_COV {
     tag "$meta.id"
     label 'process_single'
 
@@ -23,7 +23,7 @@ process DMSANALYSIS_VISUALIZATION_COUNTS_PER_COV {
 
     R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
     cat <<-END_VERSIONS > versions.yml
-    DMSANALYSIS_VISUALIZATION_COUNTS_PER_COV:
+    VISUALIZATION_COUNTS_PER_COV:
       r-base: \$R_VERSION
     END_VERSIONS
     """
@@ -31,7 +31,7 @@ process DMSANALYSIS_VISUALIZATION_COUNTS_PER_COV {
     stub:
     """
     touch counts_per_cov_heatmap.pdf
-    echo "DMSANALYSIS_VISUALIZATION_COUNTS_PER_COV:" > versions.yml
+    echo "VISUALIZATION_COUNTS_PER_COV:" > versions.yml
     echo "  stub-version: 0.0.0" >> versions.yml
     """
 }
