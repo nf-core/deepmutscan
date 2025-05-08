@@ -13,6 +13,7 @@ include { GATK_SATURATIONMUTAGENESIS          } from '../modules/local/gatk/satu
 include { DMSANALYSIS_AASEQ      } from '../modules/local/dmsanalysis/aaseq'
 include { DMSANALYSIS_POSSIBLE_MUTATIONS      } from '../modules/local/dmsanalysis/possiblemutations'
 include { DMSANALYSIS_PROCESS_GATK      } from '../modules/local/dmsanalysis/processgatk'
+include { DMSANALYSIS_VISUALIZATION_COUNTS_PER_COV      } from '../modules/local/dmsanalysis/visualization/visualization'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
