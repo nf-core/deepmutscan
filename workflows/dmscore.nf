@@ -19,7 +19,7 @@ include { VISUALIZATION_GLOBAL_POS_BIASES_COUNTS      } from '../modules/local/v
 include { VISUALIZATION_GLOBAL_POS_BIASES_COV      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_LOGDIFF      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_SEQDEPTH      } from '../modules/local/visualization/visualization'
-include { GATK_GATKTODIMSUM          } from '../modules/local/gatk/saturationmutagenesis'
+include { GATK_GATKTODIMSUM          } from '../modules/local/gatk/gatktodimsum'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
