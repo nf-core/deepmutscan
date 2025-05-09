@@ -63,6 +63,11 @@
                 "format": "file-path",
                 "description": "Path to a comma-separated .txt file listing custom codons (e.g., 'AAA,AAC,AAG,...'). Required when mutagenesis_type is 'custom'."
                 }
+              "run_seqdepth": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether to run the SeqDepth simulation module. This is computationally intensive and optional."
+                }
             }
         },
         "reference_genome_options": {
