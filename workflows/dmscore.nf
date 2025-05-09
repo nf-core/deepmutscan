@@ -280,12 +280,11 @@ workflow DMSCORE {
     }
 
     GATK_GATKTODIMSUM(
-        variantCounts_filtered_by_library_ch,
-        ch_fasta,
-        reading_frame_ch,
-        gatk_to_dimsum_script_ch
-        )
-    }
+    variantCounts_filtered_by_library_ch,
+    ch_fasta,
+    reading_frame_ch,
+    gatk_to_dimsum_script_ch
+    )
 
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
