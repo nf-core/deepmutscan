@@ -275,7 +275,7 @@ workflow DMSCORE {
         DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map{ it[1] },
         min_counts_ch,
         seqdepth_simulation_script_ch
-    )
+        )
     }
 
     emit:
