@@ -196,7 +196,7 @@ process VISUALIZATION_LOGDIFF {
 
 process VISUALIZATION_SEQDEPTH {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_high'
 
     conda "${moduleDir}/environment.yml"
     container "community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa"
