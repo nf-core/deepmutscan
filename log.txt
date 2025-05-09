@@ -1,124 +1,613 @@
-May-07 21:29:10.689 [main] DEBUG nextflow.cli.Launcher - $> nextflow run . -profile test,docker --fasta /Users/benjaminwehnert/GID1A_SUNi_ref_small.fasta --reading_frame 352-1383 --min_counts 2 --mutagenesis_type max_diff_to_wt --outdir ./results
-May-07 21:29:10.864 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.04.4
-May-07 21:29:10.887 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/Users/benjaminwehnert/.nextflow/plugins; core-plugins: nf-amazon@2.5.3,nf-azure@1.6.1,nf-cloudcache@0.4.1,nf-codecommit@0.2.1,nf-console@1.1.3,nf-ga4gh@1.3.0,nf-google@1.13.2-patch1,nf-tower@1.9.1,nf-wave@1.4.2-patch1
-May-07 21:29:10.897 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
-May-07 21:29:10.897 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
-May-07 21:29:10.900 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
-May-07 21:29:10.914 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
-May-07 21:29:11.769 [main] WARN  nextflow.config.Manifest - Invalid config manifest attribute `contributors`
-May-07 21:29:11.790 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /Users/benjaminwehnert/dmscore/nextflow.config
-May-07 21:29:11.798 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /Users/benjaminwehnert/dmscore/nextflow.config
-May-07 21:29:11.815 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /Users/benjaminwehnert/.nextflow/secrets/store.json
-May-07 21:29:11.818 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@6296474f] - activable => nextflow.secret.LocalSecretsProvider@6296474f
-May-07 21:29:11.830 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `test,docker`
-May-07 21:29:13.163 [main] ERROR nextflow.cli.Launcher - Unable to parse config file: '/Users/benjaminwehnert/dmscore/nextflow.config'
+May-07 23:01:49.322 [main] DEBUG nextflow.cli.Launcher - $> nextflow run . -profile test,docker --fasta /Users/benjaminwehnert/GID1A_SUNi_ref_small.fasta --reading_frame 352-1383 --min_counts 2 --mutagenesis_type max_diff_to_wt --outdir ./results
+May-07 23:01:49.500 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.04.4
+May-07 23:01:49.524 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/Users/benjaminwehnert/.nextflow/plugins; core-plugins: nf-amazon@2.5.3,nf-azure@1.6.1,nf-cloudcache@0.4.1,nf-codecommit@0.2.1,nf-console@1.1.3,nf-ga4gh@1.3.0,nf-google@1.13.2-patch1,nf-tower@1.9.1,nf-wave@1.4.2-patch1
+May-07 23:01:49.533 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+May-07 23:01:49.534 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+May-07 23:01:49.536 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+May-07 23:01:49.549 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+May-07 23:01:50.385 [main] WARN  nextflow.config.Manifest - Invalid config manifest attribute `contributors`
+May-07 23:01:50.406 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /Users/benjaminwehnert/dmscore/nextflow.config
+May-07 23:01:50.408 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /Users/benjaminwehnert/dmscore/nextflow.config
+May-07 23:01:50.426 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /Users/benjaminwehnert/.nextflow/secrets/store.json
+May-07 23:01:50.428 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@169268a7] - activable => nextflow.secret.LocalSecretsProvider@169268a7
+May-07 23:01:50.438 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `test,docker`
+May-07 23:01:51.909 [main] DEBUG nextflow.config.ConfigBuilder - Available config profiles: [bih, cfc_dev, uzl_omics, ifb_core, embl_hd, denbi_qbic, alice, mjolnir_globe, uppmax, giga, incliva, ilifu, ki_luria, uge, icr_alma, rosalind_uge, lugh, mccleary, unibe_ibu, vai, czbiohub_aws, jax, roslin, ccga_med, tes, scw, unc_longleaf, tigem, tubingen_apg, google, apollo, ipop_up, vsc_calcua, pdc_kth, googlels, ceci_nic5, humantechnopole, stjude, daisybio, eddie, medair, biowulf, apptainer, bi, bigpurple, adcra, cedars, pawsey_setonix, vsc_kul_uhasselt, pawsey_nimbus, ucl_myriad, utd_ganymede, charliecloud, seattlechildrens, icr_davros, ceres, arm, munin, rosalind, hasta, cfc, uzh, shu_bmrc, ebi_codon_slurm, ebc, ccga_dx, crick, ku_sund_danhead, marvin, shifter, biohpc_gen, mana, mamba, york_viking, unc_lccc, wehi, awsbatch, wustl_htcf, arcc, ceci_dragon2, imperial, maestro, software_license, cannon, genotoul, nci_gadi, abims, janelia, nu_genomics, googlebatch, oist, sahmri, kaust, alliance_canada, mpcdf, leicester, vsc_ugent, create, sage, cambridge, jex, podman, ebi_codon, cheaha, xanadu, nyu_hpc, test, marjorie, computerome, ucd_sonic, seg_globe, mssm, sanger, dkfz, bluebear, pasteur, einstein, ethz_euler, m3c, test_full, imb, ucl_cscluster, tuos_stanage, azurebatch, hki, seadragon, crukmi, csiro_petrichor, qmul_apocrita, wave, docker, engaging, gis, hypatia, psmn, eva, unity, cropdiversityhpc, nygc, fgcz, conda, crg, singularity, mpcdf_viper, pe2, self_hosted_runner, tufts, uw_hyak_pedslabs, binac2, debug, genouest, cbe, unsw_katana, gitpod, phoenix, seawulf, uod_hpc, fub_curta, uct_hpc, aws_tower, binac, fsu_draco]
+May-07 23:01:51.958 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 by global default
+May-07 23:01:51.972 [main] DEBUG nextflow.cli.CmdRun - Launching `./main.nf` [modest_coulomb] DSL2 - revision: 84101fc51c
+May-07 23:01:51.974 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins declared=[nf-schema@2.3.0]
+May-07 23:01:51.974 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+May-07 23:01:51.974 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[nf-schema@2.3.0]
+May-07 23:01:51.975 [main] DEBUG nextflow.plugin.PluginUpdater - Installing plugin nf-schema version: 2.3.0
+May-07 23:01:51.983 [main] INFO  org.pf4j.AbstractPluginManager - Plugin 'nf-schema@2.3.0' resolved
+May-07 23:01:51.983 [main] INFO  org.pf4j.AbstractPluginManager - Start plugin 'nf-schema@2.3.0'
+May-07 23:01:51.990 [main] DEBUG nextflow.plugin.BasePlugin - Plugin started nf-schema@2.3.0
+May-07 23:01:52.045 [main] DEBUG nextflow.Session - Session UUID: 2397b75e-3882-46d7-ba2c-8549f8a2b4a6
+May-07 23:01:52.045 [main] DEBUG nextflow.Session - Run name: modest_coulomb
+May-07 23:01:52.046 [main] DEBUG nextflow.Session - Executor pool size: 8
+May-07 23:01:52.053 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+May-07 23:01:52.057 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+May-07 23:01:52.077 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 24.04.4 build 5917
+  Created: 01-08-2024 07:05 UTC (09:05 CEST)
+  System: Mac OS X 15.0
+  Runtime: Groovy 4.0.21 on OpenJDK 64-Bit Server VM 17.0.13+0
+  Encoding: UTF-8 (UTF-8)
+  Process: 31358@MacBook-Air-von-Benjamin.local [127.0.0.1]
+  CPUs: 8 - Mem: 8 GB (94.6 MB) - Swap: 8 GB (737.5 MB)
+May-07 23:01:52.088 [main] DEBUG nextflow.Session - Work-dir: /Users/benjaminwehnert/dmscore/work [Mac OS X]
+May-07 23:01:52.088 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /Users/benjaminwehnert/dmscore/bin
+May-07 23:01:52.104 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+May-07 23:01:52.123 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+May-07 23:01:52.143 [main] DEBUG nextflow.Session - Observer factory: ValidationObserverFactory
+May-07 23:01:52.174 [main] WARN  nextflow.config.Manifest - Invalid config manifest attribute `contributors`
+May-07 23:01:52.195 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+May-07 23:01:52.205 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 9; maxThreads: 1000
+May-07 23:01:52.264 [main] DEBUG nextflow.Session - Session start
+May-07 23:01:52.266 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow started -- trace file: /Users/benjaminwehnert/dmscore/results/pipeline_info/execution_trace_2025-05-07_23-01-50.txt
+May-07 23:01:52.411 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+May-07 23:01:53.516 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+May-07 23:01:53.917 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryLog:paramsSummaryLog]; plugin Id: nf-schema
+May-07 23:01:53.918 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [validateParameters:validateParameters]; plugin Id: nf-schema
+May-07 23:01:53.920 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+May-07 23:01:53.921 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [samplesheetToList:samplesheetToList]; plugin Id: nf-schema
+May-07 23:01:54.131 [main] WARN  nextflow.script.ScriptBinding - Access to undefined parameter `custom_codon_library` -- Initialise it to a default value eg. `params.custom_codon_library = some_value`
+May-07 23:01:54.356 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryLog:paramsSummaryLog]; plugin Id: nf-schema
+May-07 23:01:54.357 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [validateParameters:validateParameters]; plugin Id: nf-schema
+May-07 23:01:54.359 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
+May-07 23:01:54.360 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [samplesheetToList:samplesheetToList]; plugin Id: nf-schema
+May-07 23:01:54.574 [main] INFO  nextflow.Nextflow - 
+-[2m----------------------------------------------------[0m-
+                                        [0;32m,--.[0;30m/[0;32m,-.[0m
+[0;34m        ___     __   __   __   ___     [0;32m/,-._.--~'[0m
+[0;34m  |\ | |__  __ /  ` /  \ |__) |__         [0;33m}  {[0m
+[0;34m  | \| |       \__, \__/ |  \ |___     [0;32m\`-._,-`-,[0m
+                                        [0;32m`._,._,'[0m
+[0;35m  nf-core/dmscore 1.0.0dev[0m
+-[2m----------------------------------------------------[0m-
+[1mInput/output options[0m
+  [0;34minput                     : [0;32mhttps://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/samplesheet_qc_only.csv[0m
+  [0;34moutdir                    : [0;32m./results[0m
+  [0;34mmin_counts                : [0;32m2[0m
+  [0;34mmutagenesis_type          : [0;32mmax_diff_to_wt[0m
 
-  Compile failed for sources FixedSetSources[name='/groovy/script/Script7BD980DA7F8768B9E9654BF7A071C3F7']. Cause: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
-  /groovy/script/Script7BD980DA7F8768B9E9654BF7A071C3F7: 13: Unexpected input: '{' @ line 13, column 9.
-     process {
-             ^
-  
-  1 error
+[1mReference genome options[0m
+  [0;34mgenome                    : [0;32mR64-1-1[0m
+  [0;34mfasta                     : [0;32m/Users/benjaminwehnert/GID1A_SUNi_ref_small.fasta[0m
 
-ch.artecat.grengine.except.CompileException: Compile failed for sources FixedSetSources[name='/groovy/script/Script7BD980DA7F8768B9E9654BF7A071C3F7']. Cause: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
-/groovy/script/Script7BD980DA7F8768B9E9654BF7A071C3F7: 13: Unexpected input: '{' @ line 13, column 9.
-   process {
-           ^
+[1mInstitutional config options[0m
+  [0;34mconfig_profile_name       : [0;32mTest profile[0m
+  [0;34mconfig_profile_description: [0;32mMinimal test dataset to check pipeline function[0m
 
-1 error
+[1mGeneric options[0m
+  [0;34mtrace_report_suffix       : [0;32m2025-05-07_23-01-50[0m
 
-	at ch.artecat.grengine.code.groovy.DefaultGroovyCompiler.compile(DefaultGroovyCompiler.java:260)
-	at ch.artecat.grengine.load.DefaultTopCodeCache.getUpToDateCode(DefaultTopCodeCache.java:80)
-	at ch.artecat.grengine.load.LayeredClassLoader.getTopLoader(LayeredClassLoader.java:251)
-	at ch.artecat.grengine.load.LayeredClassLoader.loadMainClass(LayeredClassLoader.java:202)
-	at ch.artecat.grengine.engine.LayeredEngine.loadMainClass(LayeredEngine.java:198)
-	at ch.artecat.grengine.Grengine.loadMainClass(Grengine.java:679)
-	at ch.artecat.grengine.BaseGrengine.load(BaseGrengine.java:538)
-	at ch.artecat.grengine.BaseGrengine.load(BaseGrengine.java:387)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.selectMethod(IndyInterface.java:355)
+[1mCore Nextflow options[0m
+  [0;34mrunName                   : [0;32mmodest_coulomb[0m
+  [0;34mcontainerEngine           : [0;32mdocker[0m
+  [0;34mlaunchDir                 : [0;32m/Users/benjaminwehnert/dmscore[0m
+  [0;34mworkDir                   : [0;32m/Users/benjaminwehnert/dmscore/work[0m
+  [0;34mprojectDir                : [0;32m/Users/benjaminwehnert/dmscore[0m
+  [0;34muserName                  : [0;32mbenjaminwehnert[0m
+  [0;34mprofile                   : [0;32mtest,docker[0m
+  [0;34mconfigFiles               : [0;32m/Users/benjaminwehnert/dmscore/nextflow.config[0m
+
+!! Only displaying parameters that differ from the pipeline defaults !!
+-[2m----------------------------------------------------[0m-
+* The nf-core framework
+    https://doi.org/10.1038/s41587-020-0439-x
+
+* Software dependencies
+    https://github.com/nf-core/dmscore/blob/master/CITATIONS.md
+
+May-07 23:01:54.576 [main] DEBUG n.validation.ValidationExtension - Starting parameters validation
+May-07 23:01:54.920 [main] DEBUG nextflow.validation.SchemaEvaluator - Started validating /BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/samplesheet_qc_only.csv
+May-07 23:01:55.945 [main] DEBUG nextflow.validation.SchemaEvaluator - Validation of file 'https://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/samplesheet_qc_only.csv' passed!
+May-07 23:01:56.095 [main] DEBUG n.v.FormatDirectoryPathEvaluator - Cloud blob storage paths are not supported by 'FormatDirectoryPathEvaluator': 's3://ngi-igenomes/igenomes/'
+May-07 23:01:56.099 [main] DEBUG n.validation.ValidationExtension - Finishing parameters validation
+May-07 23:01:56.178 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_medium` matches labels `process_medium` for process with name NFCORE_DMSCORE:DMSCORE:FASTQC
+May-07 23:01:56.182 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:FASTQC` matches process NFCORE_DMSCORE:DMSCORE:FASTQC
+May-07 23:01:56.196 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-07 23:01:56.196 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-07 23:01:56.202 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+May-07 23:01:56.206 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=8; memory=8 GB; capacity=8; pollInterval=100ms; dumpInterval=5m
+May-07 23:01:56.209 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+May-07 23:01:56.359 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_single` matches labels `process_single` for process with name NFCORE_DMSCORE:DMSCORE:MULTIQC
+May-07 23:01:56.360 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:MULTIQC` matches process NFCORE_DMSCORE:DMSCORE:MULTIQC
+May-07 23:01:56.362 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-07 23:01:56.363 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-07 23:01:56.372 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_single` matches labels `process_single` for process with name NFCORE_DMSCORE:DMSCORE:BWA_INDEX
+May-07 23:01:56.373 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:BWA_INDEX` matches process NFCORE_DMSCORE:DMSCORE:BWA_INDEX
+May-07 23:01:56.375 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-07 23:01:56.375 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-07 23:01:56.391 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_high` matches labels `process_high` for process with name NFCORE_DMSCORE:DMSCORE:BWA_MEM
+May-07 23:01:56.391 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:BWA_MEM` matches process NFCORE_DMSCORE:DMSCORE:BWA_MEM
+May-07 23:01:56.394 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-07 23:01:56.395 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-07 23:01:56.404 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_single` matches labels `process_single` for process with name NFCORE_DMSCORE:DMSCORE:BAMFILTER_DMS
+May-07 23:01:56.406 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:BAMFILTER_DMS` matches process NFCORE_DMSCORE:DMSCORE:BAMFILTER_DMS
+May-07 23:01:56.409 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-07 23:01:56.409 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-07 23:01:56.418 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_medium` matches labels `process_medium` for process with name NFCORE_DMSCORE:DMSCORE:PREMERGE
+May-07 23:01:56.418 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:PREMERGE` matches process NFCORE_DMSCORE:DMSCORE:PREMERGE
+May-07 23:01:56.420 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-07 23:01:56.420 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-07 23:01:56.429 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_high` matches labels `process_high` for process with name NFCORE_DMSCORE:DMSCORE:GATK_SATURATIONMUTAGENESIS
+May-07 23:01:56.430 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:GATK_SATURATIONMUTAGENESIS` matches process NFCORE_DMSCORE:DMSCORE:GATK_SATURATIONMUTAGENESIS
+May-07 23:01:56.433 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-07 23:01:56.433 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-07 23:01:56.443 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_single` matches labels `process_single` for process with name NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_AASEQ
+May-07 23:01:56.443 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:DMSANALYSIS_AASEQ` matches process NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_AASEQ
+May-07 23:01:56.446 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-07 23:01:56.446 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-07 23:01:56.458 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_single` matches labels `process_single` for process with name NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_POSSIBLE_MUTATIONS
+May-07 23:01:56.459 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:DMSANALYSIS_POSSIBLE_MUTATIONS` matches process NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_POSSIBLE_MUTATIONS
+May-07 23:01:56.461 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-07 23:01:56.461 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-07 23:01:56.480 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withLabel:process_single` matches labels `process_single` for process with name NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_PROCESS_GATK
+May-07 23:01:56.481 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:DMSANALYSIS_PROCESS_GATK` matches process NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_PROCESS_GATK
+May-07 23:01:56.484 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+May-07 23:01:56.484 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+May-07 23:01:56.499 [main] DEBUG nextflow.Session - Config process names validation disabled as requested
+May-07 23:01:56.500 [main] DEBUG nextflow.Session - Igniting dataflow network (43)
+May-07 23:01:56.508 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:FASTQC
+May-07 23:01:56.508 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:MULTIQC
+May-07 23:01:56.509 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:BWA_INDEX
+May-07 23:01:56.509 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:BWA_MEM
+May-07 23:01:56.511 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:BAMFILTER_DMS
+May-07 23:01:56.512 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:PREMERGE
+May-07 23:01:56.512 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:GATK_SATURATIONMUTAGENESIS
+May-07 23:01:56.512 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_AASEQ
+May-07 23:01:56.512 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_POSSIBLE_MUTATIONS
+May-07 23:01:56.512 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_PROCESS_GATK
+May-07 23:01:56.514 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_e5f965e09aa3641b: /Users/benjaminwehnert/dmscore/./workflows/../modules/local/bamprocessing/premerge.nf
+  Script_113f045ba19c2c46: /Users/benjaminwehnert/dmscore/./workflows/../modules/nf-core/fastqc/main.nf
+  Script_4f612cfd8c52e8cd: /Users/benjaminwehnert/dmscore/./subworkflows/local/utils_nfcore_dmscore_pipeline/../../nf-core/utils_nextflow_pipeline/main.nf
+  Script_215a636da7ab24a2: /Users/benjaminwehnert/dmscore/./workflows/../subworkflows/local/utils_nfcore_dmscore_pipeline/../../nf-core/utils_nfschema_plugin/main.nf
+  Script_68606fccdecc54d9: /Users/benjaminwehnert/dmscore/./subworkflows/local/utils_nfcore_dmscore_pipeline/main.nf
+  Script_0f3077e98f6a93f6: /Users/benjaminwehnert/dmscore/./workflows/../modules/nf-core/bwa/mem/main.nf
+  Script_5c4e8d4051efa81e: /Users/benjaminwehnert/dmscore/./subworkflows/local/utils_nfcore_dmscore_pipeline/../../nf-core/utils_nfcore_pipeline/main.nf
+  Script_3bf8120d0b5bcde1: /Users/benjaminwehnert/dmscore/./workflows/../modules/local/dmsanalysis/possiblemutations.nf
+  Script_d65a0ba0a319d7db: /Users/benjaminwehnert/dmscore/./workflows/../modules/local/dmsanalysis/aaseq.nf
+  Script_4ff7366a79e0ef06: /Users/benjaminwehnert/dmscore/./workflows/../modules/local/bamprocessing/bamfilteringdms.nf
+  Script_c568aae5b239c1c5: /Users/benjaminwehnert/dmscore/main.nf
+  Script_09ccfa79b2802f41: /Users/benjaminwehnert/dmscore/./workflows/dmscore.nf
+  Script_4955288afd8ca61e: /Users/benjaminwehnert/dmscore/./workflows/../modules/nf-core/multiqc/main.nf
+  Script_a1878766b1a6b241: /Users/benjaminwehnert/dmscore/./workflows/../modules/local/dmsanalysis/processgatk.nf
+  Script_37dcd664b2773148: /Users/benjaminwehnert/dmscore/./workflows/../modules/local/gatk/saturationmutagenesis.nf
+  Script_25aa31c18d513c61: /Users/benjaminwehnert/dmscore/./workflows/../modules/nf-core/bwa/index/main.nf
+May-07 23:01:56.514 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+May-07 23:01:56.514 [main] DEBUG nextflow.Session - Session await
+May-07 23:01:56.605 [Actor Thread 1] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.001 s; external sort time: 0.011 s; total time: 0.012 s
+May-07 23:01:56.605 [Actor Thread 2] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.001 s; external sort time: 0.011 s; total time: 0.012 s
+May-07 23:01:56.611 [Actor Thread 2] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /Users/benjaminwehnert/dmscore/work/collect-file/4640128d9cfd4a45636425a4f43db374
+May-07 23:01:56.611 [Actor Thread 1] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /Users/benjaminwehnert/dmscore/work/collect-file/04a58cc29ef1c76e5af4e2fb20a13ad7
+May-07 23:01:56.619 [Actor Thread 1] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /var/folders/r0/ldrzd4wn1s3516hy0vsn8xzm0000gn/T/nxf-1651345332501275985
+May-07 23:01:56.619 [Actor Thread 2] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /var/folders/r0/ldrzd4wn1s3516hy0vsn8xzm0000gn/T/nxf-12321695686053957190
+May-07 23:01:56.623 [Actor Thread 3] DEBUG nextflow.util.HashBuilder - [WARN] Unknown hashing type: class Script_09ccfa79b2802f41$_runScript_closure1$_closure26
+May-07 23:01:56.624 [Actor Thread 14] DEBUG nextflow.util.HashBuilder - Unable to get file attributes file: /NULL -- Cause: java.nio.file.NoSuchFileException: /NULL
+May-07 23:01:56.697 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+May-07 23:01:56.698 [Task submitter] INFO  nextflow.Session - [d4/e141d7] Submitted process > NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_AASEQ (amino_acid_sequence)
+May-07 23:01:56.730 [FileTransfer-2] DEBUG nextflow.file.FilePorter - Copying foreign file https://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/pMS190_GID1A_SUNi_S2_1_R2_50k.fastq to work dir: /Users/benjaminwehnert/dmscore/work/stage-2397b75e-3882-46d7-ba2c-8549f8a2b4a6/6a/8815724cee5e2e4e17200e98e8c0ad/pMS190_GID1A_SUNi_S2_1_R2_50k.fastq
+May-07 23:01:56.730 [FileTransfer-1] DEBUG nextflow.file.FilePorter - Copying foreign file https://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/pMS190_GID1A_SUNi_S2_1_R1_50k.fastq to work dir: /Users/benjaminwehnert/dmscore/work/stage-2397b75e-3882-46d7-ba2c-8549f8a2b4a6/40/dfe72a8fa5ce1b038fdf1aa1fb4749/pMS190_GID1A_SUNi_S2_1_R1_50k.fastq
+May-07 23:01:58.744 [Actor Thread 15] INFO  nextflow.file.FilePorter - Staging foreign file: https://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/pMS190_GID1A_SUNi_S2_1_R1_50k.fastq
+May-07 23:02:00.581 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_AASEQ (amino_acid_sequence); status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/d4/e141d76a7c3b4130080bcdf8a831a3]
+May-07 23:02:00.585 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+May-07 23:02:00.612 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+May-07 23:02:00.613 [Task submitter] INFO  nextflow.Session - [49/349fd9] Submitted process > NFCORE_DMSCORE:DMSCORE:BWA_INDEX (GID1A_SUNi_ref_small.fasta)
+May-07 23:02:00.663 [TaskFinalizer-1] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'PublishDir' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
+May-07 23:02:00.756 [Actor Thread 15] INFO  nextflow.file.FilePorter - Staging foreign file: https://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/pMS190_GID1A_SUNi_S2_1_R2_50k.fastq
+May-07 23:02:00.757 [Actor Thread 4] WARN  nextflow.processor.TaskContext - Cannot serialize context map. Cause: java.lang.IllegalArgumentException: Unable to create serializer "com.esotericsoftware.kryo.serializers.FieldSerializer" for class: java.lang.ref.ReferenceQueue -- Resume will not work on this process
+May-07 23:02:00.763 [Actor Thread 4] DEBUG nextflow.processor.TaskContext - Failed to serialize delegate map items: [ 
+  'meta':[Script_09ccfa79b2802f41$_runScript_closure1$_closure26] = 
+  'pos_range':[java.lang.String] = 352-1383
+  '$':[java.lang.Boolean] = true
+  'wt_seq':[nextflow.processor.TaskPath] = GID1A_SUNi_ref_small.fasta
+  'script':[nextflow.processor.TaskPath] = aa_seq.R
+  'task':[nextflow.processor.TaskConfig] = [container:community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa, withName:PREMERGE:[publishDir:[path:./results/intermediate_files/bam_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure9$_closure21@26dc7ffc]], memory:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure6$_closure15@13f9d575, withName:FASTQC:[ext:[args:--quiet], containerOptions:], withLabel:error_retry:[errorStrategy:retry, maxRetries:2], when:nextflow.script.TaskClosure@264d7648, withLabel:process_high:[cpus:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure9$_closure23@1b36f3f3, memory:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure9$_closure24@5e504cf6, time:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure9$_closure25@35f6834], withLabel:error_ignore:[errorStrategy:ignore], resourceLimits:[cpus:4, memory:8.GB, time:1.h], withName:DMSANALYSIS_AASEQ:[publishDir:[path:./results/intermediate_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure13$_closure25@4eeda121]], withLabel:process_high_memory:[memory:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure11$_closure27@62e86a64], withName:BAMFILTER_DMS:[publishDir:[path:./results/intermediate_files/bam_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure8$_closure20@3e03bd33]], publishDir:[[path:./results/intermediate_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure13$_closure25@4eeda121]], withName:BWA_MEM:[publishDir:[path:./results/intermediate_files/bam_files/bwa/mem, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure7$_closure19@46e56c0f]], executor:local, stub:nextflow.script.TaskClosure@6522395b, conda:null/environment.yml, withName:GATK_SATURATIONMUTAGENESIS:[publishDir:[path:./results/intermediate_files/gatk, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure10$_closure22@4438d4d1]], cacheable:true, withLabel:process_low:[cpus:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure7$_closure17@67f11340, memory:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure7$_closure18@a998ea5, time:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure7$_closure19@7e85964c], withLabel:process_medium:[cpus:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure8$_closure20@7c995b11, memory:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure8$_closure21@131d3cd1, time:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure8$_closure22@55b774b1], tag:amino_acid_sequence, withName:MULTIQC:[ext:[args:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure5$_closure15@7d2bfbd], publishDir:[path:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure5$_closure16@31a52d85, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure5$_closure17@4ba464d4]], workDir:/Users/benjaminwehnert/dmscore/work/d4/e141d76a7c3b4130080bcdf8a831a3, exitStatus:0, ext:[:], withLabel:process_single:[cpus:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure6$_closure14@255893ed, memory:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure6$_closure15@13f9d575, time:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure6$_closure16@37e5efac], withName:BWA_INDEX:[publishDir:[path:./results/intermediate_files/bam_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure6$_closure18@2f3435d0]], process:NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_AASEQ, debug:false, cpus:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure6$_closure14@255893ed, index:1, label:[process_single], withLabel:process_long:[time:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure10$_closure26@475e6626], maxRetries:1, maxErrors:-1, shell:bash
+
+set -e # Exit if a tool returns a non-zero status/exit code
+set -u # Treat unset variables and parameters as an error
+set -o pipefail # Returns the status of the last command to exit with a non-zero status or zero if all successfully execute
+set -C # No clobber - prevent output redirection from overwriting files.
+, withName:DMSANALYSIS_POSSIBLE_MUTATIONS:[publishDir:[path:./results/intermediate_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure11$_closure23@267852db]], name:NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_AASEQ (amino_acid_sequence), containerOptions:-u $(id -u):$(id -g), errorStrategy:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure5@3e785137, time:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure6$_closure16@37e5efac, withName:DMSANALYSIS_PROCESS_GATK:[publishDir:[path:./results/intermediate_files/processed_gatk_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure14$_closure26@30ec799d]], hash:d4e141d76a7c3b4130080bcdf8a831a3]
+]
+com.esotericsoftware.kryo.KryoException: java.lang.IllegalArgumentException: Unable to create serializer "com.esotericsoftware.kryo.serializers.FieldSerializer" for class: java.lang.ref.ReferenceQueue
+Serialization trace:
+queue (org.codehaus.groovy.util.ReferenceManager$CallBackedManager)
+manager (org.codehaus.groovy.util.ReferenceManager$1)
+manager (org.codehaus.groovy.util.ReferenceBundle)
+bundle (org.codehaus.groovy.reflection.CachedClass$4)
+cachedSuperClass (org.codehaus.groovy.reflection.stdclasses.ObjectCachedClass)
+cachedClass (org.codehaus.groovy.reflection.CachedMethod)
+allMethods (groovy.lang.MetaClassImpl)
+delegate (groovy.runtime.metaclass.NextflowDelegatingMetaClass)
+metaClass (groovyx.gpars.dataflow.DataflowVariable)
+first (groovyx.gpars.dataflow.stream.DataflowStream)
+asyncHead (groovyx.gpars.dataflow.stream.DataflowStreamReadAdapter)
+source (nextflow.extension.MapOp)
+owner (nextflow.extension.MapOp$_apply_closure1)
+code (groovyx.gpars.dataflow.operator.DataflowOperatorActor)
+actor (groovyx.gpars.dataflow.operator.DataflowOperator)
+allOperators (nextflow.Session)
+session (nextflow.validation.ValidationExtension)
+target (nextflow.script.FunctionDef)
+definitions (nextflow.script.ScriptMeta)
+meta (nextflow.script.ScriptBinding)
+binding (Script_09ccfa79b2802f41)
+delegate (Script_09ccfa79b2802f41$_runScript_closure1)
+delegate (Script_09ccfa79b2802f41$_runScript_closure1$_closure26)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:82)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeClassAndObject(Kryo.java:599)
+	at com.esotericsoftware.kryo.serializers.CollectionSerializer.write(CollectionSerializer.java:82)
+	at com.esotericsoftware.kryo.serializers.CollectionSerializer.write(CollectionSerializer.java:22)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeClassAndObject(Kryo.java:599)
+	at com.esotericsoftware.kryo.serializers.CollectionSerializer.write(CollectionSerializer.java:82)
+	at com.esotericsoftware.kryo.serializers.CollectionSerializer.write(CollectionSerializer.java:22)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeClassAndObject(Kryo.java:599)
+	at com.esotericsoftware.kryo.serializers.MapSerializer.write(MapSerializer.java:95)
+	at com.esotericsoftware.kryo.serializers.MapSerializer.write(MapSerializer.java:21)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeClassAndObject(Kryo.java:599)
+	at com.esotericsoftware.kryo.serializers.MapSerializer.write(MapSerializer.java:95)
+	at com.esotericsoftware.kryo.serializers.MapSerializer.write(MapSerializer.java:21)
+	at com.esotericsoftware.kryo.Kryo.writeClassAndObject(Kryo.java:599)
 	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
-	at nextflow.config.ConfigBase.includeConfig(ConfigBase.groovy:112)
+	at nextflow.util.KryoHelper.serialize(SerializationHelper.groovy:166)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.processor.TaskContext.serialize(TaskContext.groovy:198)
+	at nextflow.cache.CacheDB.writeTaskEntry0(CacheDB.groovy:148)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
 	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.selectMethod(IndyInterface.java:355)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
-	at nextflow.config.ConfigParser$_parse_closure5.doCall(ConfigParser.groovy:457)
-	at jdk.internal.reflect.GeneratedMethodAccessor19.invoke(Unknown Source)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
-	at org.codehaus.groovy.runtime.metaclass.ClosureMetaMethod.invoke(ClosureMetaMethod.java:88)
-	at groovy.lang.ExpandoMetaClass.invokeMethod(ExpandoMetaClass.java:1140)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+	at groovy.lang.MetaClassImpl.doInvokeMethod(MetaClassImpl.java:1333)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1088)
 	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
-	at groovy.lang.DelegatingMetaClass.invokeMethod(DelegatingMetaClass.java:165)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokePogoMethod(InvokerHelper.java:645)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:628)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethodSafe(InvokerHelper.java:82)
+	at nextflow.cache.CacheDB$_putTaskAsync_closure1.doCall(CacheDB.groovy:157)
+	at nextflow.cache.CacheDB$_putTaskAsync_closure1.call(CacheDB.groovy)
+	at groovyx.gpars.agent.AgentBase.onMessage(AgentBase.java:102)
+	at groovyx.gpars.agent.Agent.handleMessage(Agent.java:84)
+	at groovyx.gpars.agent.AgentCore$1.handleMessage(AgentCore.java:48)
+	at groovyx.gpars.util.AsyncMessagingCore.run(AsyncMessagingCore.java:132)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.lang.IllegalArgumentException: Unable to create serializer "com.esotericsoftware.kryo.serializers.FieldSerializer" for class: java.lang.ref.ReferenceQueue
+	at com.esotericsoftware.kryo.factories.ReflectionSerializerFactory.makeSerializer(ReflectionSerializerFactory.java:48)
+	at com.esotericsoftware.kryo.factories.ReflectionSerializerFactory.makeSerializer(ReflectionSerializerFactory.java:26)
+	at com.esotericsoftware.kryo.Kryo.newDefaultSerializer(Kryo.java:351)
+	at com.esotericsoftware.kryo.Kryo.getDefaultSerializer(Kryo.java:344)
+	at com.esotericsoftware.kryo.util.DefaultClassResolver.registerImplicit(DefaultClassResolver.java:56)
+	at com.esotericsoftware.kryo.Kryo.getRegistration(Kryo.java:461)
+	at com.esotericsoftware.kryo.util.DefaultClassResolver.writeClass(DefaultClassResolver.java:79)
+	at com.esotericsoftware.kryo.Kryo.writeClass(Kryo.java:488)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:57)
+	... 106 common frames omitted
+Caused by: java.lang.reflect.InvocationTargetException: null
+	at jdk.internal.reflect.GeneratedConstructorAccessor39.newInstance(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+	at com.esotericsoftware.kryo.factories.ReflectionSerializerFactory.makeSerializer(ReflectionSerializerFactory.java:35)
+	... 114 common frames omitted
+Caused by: java.lang.reflect.InaccessibleObjectException: Unable to make field private final java.lang.ref.ReferenceQueue$Lock java.lang.ref.ReferenceQueue.lock accessible: module java.base does not "opens java.lang.ref" to unnamed module @7b02881e
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:354)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:297)
+	at java.base/java.lang.reflect.Field.checkCanSetAccessible(Field.java:178)
+	at java.base/java.lang.reflect.Field.setAccessible(Field.java:172)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.buildValidFields(FieldSerializer.java:282)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.rebuildCachedFields(FieldSerializer.java:217)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.rebuildCachedFields(FieldSerializer.java:156)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.<init>(FieldSerializer.java:133)
+	... 119 common frames omitted
+May-07 23:02:02.378 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: NFCORE_DMSCORE:DMSCORE:BWA_INDEX (GID1A_SUNi_ref_small.fasta); status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/49/349fd93ff7dd98e92e426a30457fb9]
+May-07 23:02:02.387 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+May-07 23:02:02.388 [Task submitter] INFO  nextflow.Session - [36/b138e8] Submitted process > NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_POSSIBLE_MUTATIONS (table /w all possible variants)
+May-07 23:02:02.422 [Actor Thread 8] WARN  nextflow.processor.TaskContext - Cannot serialize context map. Cause: java.lang.IllegalArgumentException: Unable to create serializer "com.esotericsoftware.kryo.serializers.FieldSerializer" for class: java.lang.ref.ReferenceQueue -- Resume will not work on this process
+May-07 23:02:13.067 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_POSSIBLE_MUTATIONS (table /w all possible variants); status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/36/b138e8e27f7423eea98b17aaf74451]
+May-07 23:02:13.085 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+May-07 23:02:13.085 [Task submitter] INFO  nextflow.Session - [67/c2a06b] Submitted process > NFCORE_DMSCORE:DMSCORE:BWA_MEM (gid1a_1_quality_1_pe)
+May-07 23:02:13.133 [Actor Thread 6] WARN  nextflow.processor.TaskContext - Cannot serialize context map. Cause: java.lang.IllegalArgumentException: Unable to create serializer "com.esotericsoftware.kryo.serializers.FieldSerializer" for class: java.lang.ref.ReferenceQueue -- Resume will not work on this process
+May-07 23:02:13.136 [Actor Thread 6] DEBUG nextflow.processor.TaskContext - Failed to serialize delegate map items: [ 
+  'meta':[Script_09ccfa79b2802f41$_runScript_closure1$_closure26] = 
+  'pos_range':[java.lang.String] = 352-1383
+  'mutagenesis_type':[java.lang.String] = max_diff_to_wt
+  '$':[java.lang.Boolean] = true
+  'wt_seq':[nextflow.processor.TaskPath] = GID1A_SUNi_ref_small.fasta
+  'custom_codon_library':[nextflow.processor.TaskPath] = NULL
+  'script':[nextflow.processor.TaskPath] = possible_mutations.R
+  'task':[nextflow.processor.TaskConfig] = [container:community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa, withName:PREMERGE:[publishDir:[path:./results/intermediate_files/bam_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure9$_closure21@26dc7ffc]], memory:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure6$_closure15@13f9d575, withName:FASTQC:[ext:[args:--quiet], containerOptions:], withLabel:error_retry:[errorStrategy:retry, maxRetries:2], when:nextflow.script.TaskClosure@5f4899a5, withLabel:process_high:[cpus:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure9$_closure23@1b36f3f3, memory:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure9$_closure24@5e504cf6, time:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure9$_closure25@35f6834], withLabel:error_ignore:[errorStrategy:ignore], resourceLimits:[cpus:4, memory:8.GB, time:1.h], withName:DMSANALYSIS_AASEQ:[publishDir:[path:./results/intermediate_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure13$_closure25@4eeda121]], withLabel:process_high_memory:[memory:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure11$_closure27@62e86a64], withName:BAMFILTER_DMS:[publishDir:[path:./results/intermediate_files/bam_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure8$_closure20@3e03bd33]], publishDir:[[path:./results/intermediate_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure11$_closure23@267852db]], withName:BWA_MEM:[publishDir:[path:./results/intermediate_files/bam_files/bwa/mem, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure7$_closure19@46e56c0f]], executor:local, stub:nextflow.script.TaskClosure@7069093e, conda:null/environment.yml, withName:GATK_SATURATIONMUTAGENESIS:[publishDir:[path:./results/intermediate_files/gatk, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure10$_closure22@4438d4d1]], cacheable:true, withLabel:process_low:[cpus:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure7$_closure17@67f11340, memory:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure7$_closure18@a998ea5, time:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure7$_closure19@7e85964c], withLabel:process_medium:[cpus:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure8$_closure20@7c995b11, memory:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure8$_closure21@131d3cd1, time:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure8$_closure22@55b774b1], tag:table /w all possible variants, withName:MULTIQC:[ext:[args:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure5$_closure15@7d2bfbd], publishDir:[path:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure5$_closure16@31a52d85, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure5$_closure17@4ba464d4]], workDir:/Users/benjaminwehnert/dmscore/work/36/b138e8e27f7423eea98b17aaf74451, exitStatus:0, ext:[:], withLabel:process_single:[cpus:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure6$_closure14@255893ed, memory:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure6$_closure15@13f9d575, time:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure6$_closure16@37e5efac], withName:BWA_INDEX:[publishDir:[path:./results/intermediate_files/bam_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure6$_closure18@2f3435d0]], process:NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_POSSIBLE_MUTATIONS, debug:false, cpus:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure6$_closure14@255893ed, index:1, label:[process_single], withLabel:process_long:[time:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure10$_closure26@475e6626], maxRetries:1, maxErrors:-1, shell:bash
+
+set -e # Exit if a tool returns a non-zero status/exit code
+set -u # Treat unset variables and parameters as an error
+set -o pipefail # Returns the status of the last command to exit with a non-zero status or zero if all successfully execute
+set -C # No clobber - prevent output redirection from overwriting files.
+, withName:DMSANALYSIS_POSSIBLE_MUTATIONS:[publishDir:[path:./results/intermediate_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure11$_closure23@267852db]], name:NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_POSSIBLE_MUTATIONS (table /w all possible variants), containerOptions:-u $(id -u):$(id -g), errorStrategy:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure5@3e785137, time:Script126E8BAA3BC9692B58F2A1C965A1D472$_run_closure1$_closure6$_closure16@37e5efac, withName:DMSANALYSIS_PROCESS_GATK:[publishDir:[path:./results/intermediate_files/processed_gatk_files, mode:copy, saveAs:ScriptE8646A4B8FFA7429020F836DC9CB8146$_run_closure1$_closure14$_closure26@30ec799d]], hash:36b138e8e27f7423eea98b17aaf74451]
+]
+com.esotericsoftware.kryo.KryoException: java.lang.IllegalArgumentException: Unable to create serializer "com.esotericsoftware.kryo.serializers.FieldSerializer" for class: java.lang.ref.ReferenceQueue
+Serialization trace:
+queue (org.codehaus.groovy.util.ReferenceManager$CallBackedManager)
+manager (org.codehaus.groovy.util.ReferenceManager$1)
+manager (org.codehaus.groovy.util.ReferenceBundle)
+bundle (org.codehaus.groovy.reflection.CachedClass$4)
+cachedSuperClass (org.codehaus.groovy.reflection.stdclasses.ObjectCachedClass)
+cachedClass (org.codehaus.groovy.reflection.CachedMethod)
+allMethods (groovy.lang.MetaClassImpl)
+delegate (groovy.runtime.metaclass.NextflowDelegatingMetaClass)
+metaClass (groovyx.gpars.dataflow.DataflowVariable)
+first (groovyx.gpars.dataflow.stream.DataflowStream)
+asyncHead (groovyx.gpars.dataflow.stream.DataflowStreamReadAdapter)
+source (nextflow.extension.MapOp)
+owner (nextflow.extension.MapOp$_apply_closure1)
+code (groovyx.gpars.dataflow.operator.DataflowOperatorActor)
+actor (groovyx.gpars.dataflow.operator.DataflowOperator)
+allOperators (nextflow.Session)
+session (nextflow.validation.ValidationExtension)
+target (nextflow.script.FunctionDef)
+definitions (nextflow.script.ScriptMeta)
+meta (nextflow.script.ScriptBinding)
+binding (Script_09ccfa79b2802f41)
+delegate (Script_09ccfa79b2802f41$_runScript_closure1)
+delegate (Script_09ccfa79b2802f41$_runScript_closure1$_closure26)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:82)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeClassAndObject(Kryo.java:599)
+	at com.esotericsoftware.kryo.serializers.CollectionSerializer.write(CollectionSerializer.java:82)
+	at com.esotericsoftware.kryo.serializers.CollectionSerializer.write(CollectionSerializer.java:22)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeClassAndObject(Kryo.java:599)
+	at com.esotericsoftware.kryo.serializers.CollectionSerializer.write(CollectionSerializer.java:82)
+	at com.esotericsoftware.kryo.serializers.CollectionSerializer.write(CollectionSerializer.java:22)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeClassAndObject(Kryo.java:599)
+	at com.esotericsoftware.kryo.serializers.MapSerializer.write(MapSerializer.java:95)
+	at com.esotericsoftware.kryo.serializers.MapSerializer.write(MapSerializer.java:21)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeObject(Kryo.java:523)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:61)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.write(FieldSerializer.java:495)
+	at com.esotericsoftware.kryo.Kryo.writeClassAndObject(Kryo.java:599)
+	at com.esotericsoftware.kryo.serializers.MapSerializer.write(MapSerializer.java:95)
+	at com.esotericsoftware.kryo.serializers.MapSerializer.write(MapSerializer.java:21)
+	at com.esotericsoftware.kryo.Kryo.writeClassAndObject(Kryo.java:599)
 	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
-	at _nf_config_af5e21ee.run(_nf_config_af5e21ee:288)
+	at nextflow.util.KryoHelper.serialize(SerializationHelper.groovy:166)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.processor.TaskContext.serialize(TaskContext.groovy:198)
+	at nextflow.cache.CacheDB.writeTaskEntry0(CacheDB.groovy:148)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
 	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
-	at nextflow.config.ConfigParser$_parse_closure5.doCall(ConfigParser.groovy:457)
-	at jdk.internal.reflect.GeneratedMethodAccessor19.invoke(Unknown Source)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:343)
-	at org.codehaus.groovy.runtime.metaclass.ClosureMetaMethod.invoke(ClosureMetaMethod.java:88)
-	at groovy.lang.ExpandoMetaClass.invokeMethod(ExpandoMetaClass.java:1140)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:328)
+	at groovy.lang.MetaClassImpl.doInvokeMethod(MetaClassImpl.java:1333)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1088)
 	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:1007)
-	at groovy.lang.DelegatingMetaClass.invokeMethod(DelegatingMetaClass.java:165)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.selectMethod(IndyInterface.java:355)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
-	at nextflow.config.ConfigParser.parse(ConfigParser.groovy:486)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
-	at nextflow.config.ConfigParser.parse(ConfigParser.groovy:312)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
-	at nextflow.config.ConfigBuilder.parse0(ConfigBuilder.groovy:439)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
-	at nextflow.config.ConfigBuilder.merge0(ConfigBuilder.groovy:425)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
-	at nextflow.config.ConfigBuilder.buildConfig0(ConfigBuilder.groovy:375)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
-	at nextflow.config.ConfigBuilder.buildGivenFiles(ConfigBuilder.groovy:320)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
-	at nextflow.config.ConfigBuilder.buildConfigObject(ConfigBuilder.groovy:814)
-	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
-	at nextflow.config.ConfigBuilder.build(ConfigBuilder.groovy:827)
-	at nextflow.cli.CmdRun.run(CmdRun.groovy:328)
-	at nextflow.cli.Launcher.run(Launcher.groovy:503)
-	at nextflow.cli.Launcher.main(Launcher.groovy:657)
-Caused by: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
-/groovy/script/Script7BD980DA7F8768B9E9654BF7A071C3F7: 13: Unexpected input: '{' @ line 13, column 9.
-   process {
-           ^
+	at org.codehaus.groovy.runtime.InvokerHelper.invokePogoMethod(InvokerHelper.java:645)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:628)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethodSafe(InvokerHelper.java:82)
+	at nextflow.cache.CacheDB$_putTaskAsync_closure1.doCall(CacheDB.groovy:157)
+	at nextflow.cache.CacheDB$_putTaskAsync_closure1.call(CacheDB.groovy)
+	at groovyx.gpars.agent.AgentBase.onMessage(AgentBase.java:102)
+	at groovyx.gpars.agent.Agent.handleMessage(Agent.java:84)
+	at groovyx.gpars.agent.AgentCore$1.handleMessage(AgentCore.java:48)
+	at groovyx.gpars.util.AsyncMessagingCore.run(AsyncMessagingCore.java:132)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.lang.IllegalArgumentException: Unable to create serializer "com.esotericsoftware.kryo.serializers.FieldSerializer" for class: java.lang.ref.ReferenceQueue
+	at com.esotericsoftware.kryo.factories.ReflectionSerializerFactory.makeSerializer(ReflectionSerializerFactory.java:48)
+	at com.esotericsoftware.kryo.factories.ReflectionSerializerFactory.makeSerializer(ReflectionSerializerFactory.java:26)
+	at com.esotericsoftware.kryo.Kryo.newDefaultSerializer(Kryo.java:351)
+	at com.esotericsoftware.kryo.Kryo.getDefaultSerializer(Kryo.java:344)
+	at com.esotericsoftware.kryo.util.DefaultClassResolver.registerImplicit(DefaultClassResolver.java:56)
+	at com.esotericsoftware.kryo.Kryo.getRegistration(Kryo.java:461)
+	at com.esotericsoftware.kryo.util.DefaultClassResolver.writeClass(DefaultClassResolver.java:79)
+	at com.esotericsoftware.kryo.Kryo.writeClass(Kryo.java:488)
+	at com.esotericsoftware.kryo.serializers.ObjectField.write(ObjectField.java:57)
+	... 106 common frames omitted
+Caused by: java.lang.reflect.InvocationTargetException: null
+	at jdk.internal.reflect.GeneratedConstructorAccessor39.newInstance(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+	at com.esotericsoftware.kryo.factories.ReflectionSerializerFactory.makeSerializer(ReflectionSerializerFactory.java:35)
+	... 114 common frames omitted
+Caused by: java.lang.reflect.InaccessibleObjectException: Unable to make field private final java.lang.ref.ReferenceQueue$Lock java.lang.ref.ReferenceQueue.lock accessible: module java.base does not "opens java.lang.ref" to unnamed module @7b02881e
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:354)
+	at java.base/java.lang.reflect.AccessibleObject.checkCanSetAccessible(AccessibleObject.java:297)
+	at java.base/java.lang.reflect.Field.checkCanSetAccessible(Field.java:178)
+	at java.base/java.lang.reflect.Field.setAccessible(Field.java:172)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.buildValidFields(FieldSerializer.java:282)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.rebuildCachedFields(FieldSerializer.java:217)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.rebuildCachedFields(FieldSerializer.java:156)
+	at com.esotericsoftware.kryo.serializers.FieldSerializer.<init>(FieldSerializer.java:133)
+	... 119 common frames omitted
+May-07 23:02:17.570 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 5; name: NFCORE_DMSCORE:DMSCORE:BWA_MEM (gid1a_1_quality_1_pe); status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/67/c2a06b1c7b4781da339f3e7aacd574]
+May-07 23:02:17.585 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+May-07 23:02:17.586 [Task submitter] INFO  nextflow.Session - [48/c69654] Submitted process > NFCORE_DMSCORE:DMSCORE:FASTQC (gid1a_1_quality_1_pe)
+May-07 23:02:17.748 [TaskFinalizer-4] DEBUG nextflow.processor.TaskProcessor - Process NFCORE_DMSCORE:DMSCORE:BWA_MEM > Skipping output binding because one or more optional files are missing: fileoutparam<1:1>
+May-07 23:02:17.749 [TaskFinalizer-4] DEBUG nextflow.processor.TaskProcessor - Process NFCORE_DMSCORE:DMSCORE:BWA_MEM > Skipping output binding because one or more optional files are missing: fileoutparam<2:1>
+May-07 23:02:17.749 [TaskFinalizer-4] DEBUG nextflow.processor.TaskProcessor - Process NFCORE_DMSCORE:DMSCORE:BWA_MEM > Skipping output binding because one or more optional files are missing: fileoutparam<3:1>
+May-07 23:02:17.828 [Actor Thread 14] WARN  nextflow.processor.TaskContext - Cannot serialize context map. Cause: java.lang.IllegalArgumentException: Unable to create serializer "com.esotericsoftware.kryo.serializers.FieldSerializer" for class: java.lang.ref.ReferenceQueue -- Resume will not work on this process
+May-07 23:02:28.533 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 4; name: NFCORE_DMSCORE:DMSCORE:FASTQC (gid1a_1_quality_1_pe); status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/48/c69654e9b29a194ea81b7c28f63819]
+May-07 23:02:28.582 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+May-07 23:02:28.583 [Task submitter] INFO  nextflow.Session - [4e/7ee9bd] Submitted process > NFCORE_DMSCORE:DMSCORE:BAMFILTER_DMS (gid1a_1_quality_1_pe)
+May-07 23:02:28.752 [Actor Thread 12] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 2; slices: 1; internal sort time: 0.013 s; external sort time: 0.008 s; total time: 0.021 s
+May-07 23:02:28.776 [Actor Thread 12] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /Users/benjaminwehnert/dmscore/work/collect-file/c1149f4a215bbe0651400d7f32cdafdc
+May-07 23:02:28.784 [Actor Thread 12] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /var/folders/r0/ldrzd4wn1s3516hy0vsn8xzm0000gn/T/nxf-15345989576056151242
+May-07 23:02:32.866 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 6; name: NFCORE_DMSCORE:DMSCORE:BAMFILTER_DMS (gid1a_1_quality_1_pe); status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/4e/7ee9bd66291d03ed6f3c2bbdfefe0d]
+May-07 23:02:32.872 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+May-07 23:02:32.873 [Task submitter] INFO  nextflow.Session - [55/5dd043] Submitted process > NFCORE_DMSCORE:DMSCORE:MULTIQC
+May-07 23:02:43.262 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 7; name: NFCORE_DMSCORE:DMSCORE:MULTIQC; status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/55/5dd0430083da5c332e7950544ac6e0]
+May-07 23:02:43.292 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+May-07 23:02:43.294 [Task submitter] INFO  nextflow.Session - [aa/6e83ae] Submitted process > NFCORE_DMSCORE:DMSCORE:PREMERGE (gid1a_1_quality_1_pe)
+May-07 23:02:43.298 [TaskFinalizer-7] DEBUG nextflow.processor.TaskProcessor - Process NFCORE_DMSCORE:DMSCORE:MULTIQC > Skipping output binding because one or more optional files are missing: fileoutparam<2>
+May-07 23:02:46.384 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 8; name: NFCORE_DMSCORE:DMSCORE:PREMERGE (gid1a_1_quality_1_pe); status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/aa/6e83aebc1b031afabb4d8df09e97f3]
+May-07 23:02:46.488 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+May-07 23:02:46.489 [Task submitter] INFO  nextflow.Session - [f2/f878d3] Submitted process > NFCORE_DMSCORE:DMSCORE:GATK_SATURATIONMUTAGENESIS (gid1a_1_quality_1_pe)
+May-07 23:03:05.753 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 9; name: NFCORE_DMSCORE:DMSCORE:GATK_SATURATIONMUTAGENESIS (gid1a_1_quality_1_pe); status: COMPLETED; exit: 0; error: -; workDir: /Users/benjaminwehnert/dmscore/work/f2/f878d301d101b20d245c27be19bbf3]
+May-07 23:03:05.837 [Actor Thread 2] DEBUG nextflow.processor.TaskProcessor - Handling unexpected condition for
+  task: name=NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_PROCESS_GATK (1); work-dir=null
+  error [nextflow.exception.ProcessUnrecoverableException]: Path value cannot be null
+May-07 23:03:05.858 [Actor Thread 2] ERROR nextflow.processor.TaskProcessor - Error executing process > 'NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_PROCESS_GATK (1)'
 
-1 error
+Caused by:
+  Path value cannot be null
 
-	at org.codehaus.groovy.control.ErrorCollector.failIfErrors(ErrorCollector.java:292)
-	at org.codehaus.groovy.control.ErrorCollector.addFatalError(ErrorCollector.java:148)
-	at org.apache.groovy.parser.antlr4.AstBuilder.collectSyntaxError(AstBuilder.java:4753)
-	at org.apache.groovy.parser.antlr4.AstBuilder.access$100(AstBuilder.java:169)
-	at org.apache.groovy.parser.antlr4.AstBuilder$3.syntaxError(AstBuilder.java:4764)
-	at groovyjarjarantlr4.v4.runtime.ProxyErrorListener.syntaxError(ProxyErrorListener.java:44)
-	at groovyjarjarantlr4.v4.runtime.Parser.notifyErrorListeners(Parser.java:543)
-	at groovyjarjarantlr4.v4.runtime.DefaultErrorStrategy.notifyErrorListeners(DefaultErrorStrategy.java:154)
-	at org.apache.groovy.parser.antlr4.internal.DescriptiveErrorStrategy.reportInputMismatch(DescriptiveErrorStrategy.java:104)
-	at org.apache.groovy.parser.antlr4.internal.DescriptiveErrorStrategy.recover(DescriptiveErrorStrategy.java:55)
-	at org.apache.groovy.parser.antlr4.internal.DescriptiveErrorStrategy.recoverInline(DescriptiveErrorStrategy.java:68)
-	at groovyjarjarantlr4.v4.runtime.Parser.match(Parser.java:213)
-	at org.apache.groovy.parser.antlr4.GroovyParser.compilationUnit(GroovyParser.java:368)
-	at org.apache.groovy.parser.antlr4.AstBuilder.buildCST(AstBuilder.java:243)
-	at org.apache.groovy.parser.antlr4.AstBuilder.buildCST(AstBuilder.java:221)
-	at org.apache.groovy.parser.antlr4.AstBuilder.buildAST(AstBuilder.java:262)
-	at org.apache.groovy.parser.antlr4.Antlr4ParserPlugin.buildAST(Antlr4ParserPlugin.java:58)
-	at org.codehaus.groovy.control.SourceUnit.buildAST(SourceUnit.java:256)
-	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
-	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1845)
-	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:762)
-	at org.codehaus.groovy.control.CompilationUnit.compile(CompilationUnit.java:663)
-	at ch.artecat.grengine.code.groovy.DefaultGroovyCompiler.compile(DefaultGroovyCompiler.java:229)
-	... 63 common frames omitted
+
+
+Tip: you can replicate the issue by changing to the process work dir and entering the command `bash .command.run`
+May-07 23:03:05.860 [Actor Thread 2] INFO  nextflow.Session - Execution cancelled -- Finishing pending tasks before exit
+May-07 23:03:05.865 [Actor Thread 2] ERROR nextflow.Nextflow - Pipeline failed. Please refer to troubleshooting docs: https://nf-co.re/docs/usage/troubleshooting
+May-07 23:03:05.866 [main] DEBUG nextflow.Session - Session await > all processes finished
+May-07 23:03:05.867 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+May-07 23:03:05.867 [main] DEBUG nextflow.Session - Session await > all barriers passed
+May-07 23:03:05.868 [Actor Thread 12] DEBUG nextflow.processor.TaskProcessor - Handling unexpected condition for
+  task: name=NFCORE_DMSCORE:DMSCORE:DMSANALYSIS_PROCESS_GATK; work-dir=null
+  error [java.lang.InterruptedException]: java.lang.InterruptedException
+May-07 23:03:05.872 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'TaskFinalizer' shutdown completed (hard=false)
+May-07 23:03:05.872 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'PublishDir' shutdown completed (hard=false)
+May-07 23:03:05.880 [main] INFO  nextflow.Nextflow - -[0;35m[nf-core/dmscore][0;31m Pipeline completed with errors[0m-
+May-07 23:03:05.897 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=9; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=2m 24s; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=2; peakCpus=8; peakMemory=16 GB; ]
+May-07 23:03:05.898 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow completed -- saving trace file
+May-07 23:03:05.900 [main] DEBUG nextflow.trace.ReportObserver - Workflow completed -- rendering execution report
+May-07 23:03:07.314 [main] DEBUG nextflow.trace.TimelineObserver - Workflow completed -- rendering execution timeline
+May-07 23:03:07.511 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+May-07 23:03:07.545 [main] INFO  org.pf4j.AbstractPluginManager - Stop plugin 'nf-schema@2.3.0'
+May-07 23:03:07.545 [main] DEBUG nextflow.plugin.BasePlugin - Plugin stopped nf-schema
+May-07 23:03:07.546 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
+May-07 23:03:07.547 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
