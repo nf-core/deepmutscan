@@ -127,7 +127,7 @@ process VISUALIZATION_GLOBAL_POS_BIASES_COV {
     path aa_seq
     val sliding_window_size
     val aimed_cov
-    path script // global_position_biases_counts_and_counts_per_cov.R
+    path script // R script
 
     output:
     tuple val(meta), path("rolling_coverage.pdf"), emit: rolling_coverage
@@ -164,7 +164,7 @@ process VISUALIZATION_LOGDIFF {
 
     input:
     tuple val(meta), path(library_completed_variantCounts)
-    path script // global_position_biases_counts_and_counts_per_cov.R
+    path script // R script
 
     output:
     tuple val(meta), path("logdiff_plot.pdf"), emit: logdiff_plot
@@ -189,6 +189,45 @@ process VISUALIZATION_LOGDIFF {
     """
     touch logdiff_plot.pdf
     touch logdiff_varying_bases.pdf
+    echo "VISUALIZATION_COUNTS_HEATMAP:" > versions.yml
+    echo "  stub-version: 0.0.0" >> versions.yml
+    """
+}
+
+process VISUALIZATION_SEQDEPTH {
+    tag "$meta.id"
+    label 'process_single'
+
+    conda "${moduleDir}/environment.yml"
+    container "community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa"
+
+    input:
+    tuple val(meta), path(variantCounts_filtered_by_library)
+    path possible_mutations
+    val min_counts
+    path script // R script
+
+    output:
+    tuple val(meta), path("SeqDepth.pdf"), emit: SeqDepth
+    path "versions.yml", emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    """
+    Rscript -e "source('$script'); SeqDepth_simulation_plot('$variantCounts_filtered_by_library', '$possible_mutations', 'SeqDepth.pdf', 0.01, $min_counts)"
+
+    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
+    cat <<-END_VERSIONS > versions.yml
+    VISUALIZATION_COUNTS_PER_COV:
+      r-base: \$R_VERSION
+    END_VERSIONS
+    """
+
+    stub:
+    """
+    touch SeqDepth.pdf
     echo "VISUALIZATION_COUNTS_HEATMAP:" > versions.yml
     echo "  stub-version: 0.0.0" >> versions.yml
     """
