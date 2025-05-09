@@ -18,6 +18,7 @@ include { VISUALIZATION_COUNTS_HEATMAP      } from '../modules/local/visualizati
 include { VISUALIZATION_GLOBAL_POS_BIASES_COUNTS      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_GLOBAL_POS_BIASES_COV      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_LOGDIFF      } from '../modules/local/visualization/visualization'
+include { VISUALIZATION_SEQDEPTH      } from '../modules/local/visualization/visualization'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -259,6 +260,13 @@ workflow DMSCORE {
     VISUALIZATION_LOGDIFF(
     library_completed_variantCounts_ch,
     logdiff_script_ch
+    )
+
+    VISUALIZATION_SEQDEPTH(
+    variantCounts_filtered_by_library_ch,
+    DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map{ it[1] },
+    min_counts_ch,
+    seqdepth_simulation_script_ch
     )
 
     emit:
