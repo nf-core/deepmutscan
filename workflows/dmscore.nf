@@ -16,7 +16,7 @@ include { DMSANALYSIS_PROCESS_GATK      } from '../modules/local/dmsanalysis/pro
 include { VISUALIZATION_COUNTS_PER_COV      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_COUNTS_HEATMAP      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_GLOBAL_POS_BIASES_COUNTS      } from '../modules/local/visualization/visualization'
-include { VISUALIZATION_GLOBAL_POS_BIASES_COVERAGE      } from '../modules/local/visualization/visualization'
+include { VISUALIZATION_GLOBAL_POS_BIASES_COV      } from '../modules/local/visualization/visualization'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -247,7 +247,7 @@ workflow DMSCORE {
     global_bias_counts_cov_script_ch
     )
 
-    VISUALIZATION_GLOBAL_POS_BIASES_COVERAGE(
+    VISUALIZATION_GLOBAL_POS_BIASES_COV(
     variantCounts_filtered_by_library_ch,
     DMSANALYSIS_AASEQ.out.aa_seq.map{ it[1] },
     sliding_window_size_ch,
