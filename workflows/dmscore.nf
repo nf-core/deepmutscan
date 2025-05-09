@@ -281,7 +281,7 @@ workflow DMSCORE {
 
     GATK_GATKTODIMSUM(
     variantCounts_filtered_by_library_ch,
-    ch_fasta,
+    ch_fasta.map{ it[1] },
     reading_frame_ch,
     gatk_to_dimsum_script_ch
     )
