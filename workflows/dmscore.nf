@@ -16,6 +16,7 @@ include { DMSANALYSIS_PROCESS_GATK      } from '../modules/local/dmsanalysis/pro
 include { VISUALIZATION_COUNTS_PER_COV      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_COUNTS_HEATMAP      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_GLOBAL_POS_BIASES_COUNTS      } from '../modules/local/visualization/visualization'
+include { VISUALIZATION_GLOBAL_POS_BIASES_COVERAGE      } from '../modules/local/visualization/visualization'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -32,6 +33,7 @@ params.min_counts = params.min_counts ?: 3                                      
 params.mutagenesis_type = params.mutagenesis_type ?: 'nnk'                      // default library is set to nnk
 params.custom_codon_library = params.custom_codon_library ?: '/NULL'            // when mutagenesis_type is set to >>custom<< this variable has to be path to .txt with custom library
 params.sliding_window_size = params.sliding_window_size ?: 10                   // sliding window size to flatten graphs in plots (e.g. GLOBAL_POS_BIASES_COUNTS function)
+params.aimed_cov = params.aimed_cov ?: 100                                      // aimed coverage (assuming equal spread) to visualize threshold in plots
 
 // Define fasta file as channel (e.g. for BWA index)
 Channel
@@ -63,6 +65,11 @@ Channel
 Channel
     .value(params.sliding_window_size)
     .set { sliding_window_size_ch }
+
+// Define aimed_cov as channel (e.g. for GLOBAL_POS_BIASES_COVERAGE function) -> if not set - default: 100
+Channel
+    .value(params.aimed_cov)
+    .set { aimed_cov_ch }
 
 
 // Define R scripts as channels
@@ -238,6 +245,14 @@ workflow DMSCORE {
     DMSANALYSIS_AASEQ.out.aa_seq.map{ it[1] },
     sliding_window_size_ch,
     global_bias_counts_cov_script_ch
+    )
+
+    VISUALIZATION_GLOBAL_POS_BIASES_COVERAGE(
+    variantCounts_filtered_by_library_ch,
+    DMSANALYSIS_AASEQ.out.aa_seq.map{ it[1] },
+    sliding_window_size_ch,
+    aimed_cov_ch,
+    global_bias_cov_script_ch
     )
 
     emit:
