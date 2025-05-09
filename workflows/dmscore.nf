@@ -36,6 +36,8 @@ params.mutagenesis_type = params.mutagenesis_type ?: 'nnk'                      
 params.custom_codon_library = params.custom_codon_library ?: '/NULL'            // when mutagenesis_type is set to >>custom<< this variable has to be path to .txt with custom library
 params.sliding_window_size = params.sliding_window_size ?: 10                   // sliding window size to flatten graphs in plots (e.g. GLOBAL_POS_BIASES_COUNTS function)
 params.aimed_cov = params.aimed_cov ?: 100                                      // aimed coverage (assuming equal spread) to visualize threshold in plots
+params.run_seqdepth = params.run_seqdepth ?: false                              // creating seqdepth simulation plot, is computationally quite heavy. per default disabled.
+
 
 // Define fasta file as channel (e.g. for BWA index)
 Channel
@@ -72,6 +74,11 @@ Channel
 Channel
     .value(params.aimed_cov)
     .set { aimed_cov_ch }
+
+// Define if seqdepth plot should be executed
+Channel
+    .value(params.run_seqdepth)
+    .set { run_seqdepth_ch }
 
 
 // Define R scripts as channels
@@ -262,12 +269,14 @@ workflow DMSCORE {
     logdiff_script_ch
     )
 
+    if (params.run_seqdepth) {
     VISUALIZATION_SEQDEPTH(
-    variantCounts_filtered_by_library_ch,
-    DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map{ it[1] },
-    min_counts_ch,
-    seqdepth_simulation_script_ch
+        variantCounts_filtered_by_library_ch,
+        DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map{ it[1] },
+        min_counts_ch,
+        seqdepth_simulation_script_ch
     )
+    }
 
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
