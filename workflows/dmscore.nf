@@ -222,7 +222,7 @@ workflow DMSCORE {
     VISUALIZATION_COUNTS_HEATMAP(
     variantCounts_for_heatmaps_ch,
     min_counts_ch,
-    counts_per_cov_heatmap_script_ch
+    counts_heatmap_script_ch
     )
 
     emit:
