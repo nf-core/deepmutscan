@@ -17,6 +17,7 @@ include { VISUALIZATION_COUNTS_PER_COV      } from '../modules/local/visualizati
 include { VISUALIZATION_COUNTS_HEATMAP      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_GLOBAL_POS_BIASES_COUNTS      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_GLOBAL_POS_BIASES_COV      } from '../modules/local/visualization/visualization'
+include { VISUALIZATION_LOGDIFF      } from '../modules/local/visualization/visualization'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -253,6 +254,11 @@ workflow DMSCORE {
     sliding_window_size_ch,
     aimed_cov_ch,
     global_bias_cov_script_ch
+    )
+
+    VISUALIZATION_LOGDIFF(
+    library_completed_variantCounts_ch,
+    logdiff_script_ch
     )
 
     emit:
