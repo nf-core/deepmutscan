@@ -14,6 +14,7 @@ include { DMSANALYSIS_AASEQ      } from '../modules/local/dmsanalysis/aaseq'
 include { DMSANALYSIS_POSSIBLE_MUTATIONS      } from '../modules/local/dmsanalysis/possiblemutations'
 include { DMSANALYSIS_PROCESS_GATK      } from '../modules/local/dmsanalysis/processgatk'
 include { VISUALIZATION_COUNTS_PER_COV      } from '../modules/local/visualization/visualization'
+include { VISUALIZATION_COUNTS_HEATMAP      } from '../modules/local/visualization/visualization'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -213,6 +214,12 @@ workflow DMSCORE {
     variantCounts_for_heatmaps_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, d) }
 
     VISUALIZATION_COUNTS_PER_COV(
+    variantCounts_for_heatmaps_ch,
+    min_counts_ch,
+    counts_per_cov_heatmap_script_ch
+    )
+
+    VISUALIZATION_COUNTS_HEATMAP(
     variantCounts_for_heatmaps_ch,
     min_counts_ch,
     counts_per_cov_heatmap_script_ch
