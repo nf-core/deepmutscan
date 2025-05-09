@@ -15,6 +15,7 @@ include { DMSANALYSIS_POSSIBLE_MUTATIONS      } from '../modules/local/dmsanalys
 include { DMSANALYSIS_PROCESS_GATK      } from '../modules/local/dmsanalysis/processgatk'
 include { VISUALIZATION_COUNTS_PER_COV      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_COUNTS_HEATMAP      } from '../modules/local/visualization/visualization'
+include { VISUALIZATION_GLOBAL_POS_BIASES_COUNTS      } from '../modules/local/visualization/visualization'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -30,6 +31,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_dmsc
 params.min_counts = params.min_counts ?: 3                                      // minimum counts for variant to be recognized. All variants<min_counts will be set to 0
 params.mutagenesis_type = params.mutagenesis_type ?: 'nnk'                      // default library is set to nnk
 params.custom_codon_library = params.custom_codon_library ?: '/NULL'            // when mutagenesis_type is set to >>custom<< this variable has to be path to .txt with custom library
+params.sliding_window_size = params.sliding_window_size ?: 10                   // sliding window size to flatten graphs in plots (e.g. GLOBAL_POS_BIASES_COUNTS function)
 
 // Define fasta file as channel (e.g. for BWA index)
 Channel
@@ -56,6 +58,12 @@ Channel
 Channel
     .value(params.mutagenesis_type)
     .set { mutagenesis_type_ch }
+
+// Define sliding_window_size as channel (e.g. for GLOBAL_POS_BIASES_COUNTS function) -> if not set - default: 10
+Channel
+    .value(params.sliding_window_size)
+    .set { sliding_window_size_ch }
+
 
 // Define R scripts as channels
 Channel.fromPath("modules/local/dmsanalysis/bin/SeqDepth_simulation.R", checkIfExists: true).set { seqdepth_simulation_script_ch }
@@ -223,6 +231,13 @@ workflow DMSCORE {
     variantCounts_for_heatmaps_ch,
     min_counts_ch,
     counts_heatmap_script_ch
+    )
+
+    VISUALIZATION_GLOBAL_POS_BIASES_COUNTS(
+    variantCounts_filtered_by_library_ch,
+    DMSANALYSIS_AASEQ.out.aa_seq.map{ it[1] },
+    sliding_window_size_ch,
+    global_bias_counts_cov_script_ch
     )
 
     emit:
