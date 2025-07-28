@@ -5,8 +5,6 @@
   </picture>
 </h1>
 
-
-
 [![GitHub Actions CI Status](https://github.com/nf-core/dmscore/actions/workflows/ci.yml/badge.svg)](https://github.com/nf-core/dmscore/actions/workflows/ci.yml)
 [![GitHub Actions Linting Status](https://github.com/nf-core/dmscore/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/dmscore/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/dmscore/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
@@ -17,9 +15,10 @@
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 [![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/dmscore)
 
-## Introduction
+Overview
+**nf-core/dms** is a reproducible, scalable, and community-curated pipeline for analyzing deep mutational scanning (DMS) data using shotgun DNA sequencing. DMS enables researchers to measure the fitness effects of thousands of gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn fundamental rules of virus evolution, protein architecture, splicing or small-molecule interactions.
 
-**nf-core/dmscore** is a bioinformatics pipeline that ...
+This pipeline simplifies and standardizes the complex steps involved in shotgun sequencing-based DMS experiments—particularly for long open reading frames (ORFs)—from read alignment to fitness inference and QC reporting.
 
 <!-- TODO nf-core:
    Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
