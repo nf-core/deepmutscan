@@ -15,12 +15,12 @@
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 [![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/dmscore)
 
-## Overview
+## 1. Overview
 **nf-core/dms** is a reproducible, scalable, and community-curated pipeline for analyzing deep mutational scanning (DMS) data using shotgun DNA sequencing. DMS enables researchers to measure the fitness effects of thousands of gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn fundamental rules of virus evolution, protein architecture, splicing or small-molecule interactions.
 
 This pipeline simplifies and standardizes the complex steps involved in shotgun sequencing-based DMS experiments – particularly for long open reading frames (ORFs) – from read alignment to QC reporting and fitness landscape inferences.
 
-## Features of nf-core/dms
+## 2. Features of nf-core/dms
 - Modular, three-stage workflow: alignment → QC → fitness estimation
 - Scalable across HPC and cloud systems
 - Integrates with popular statistical tools like [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
@@ -28,7 +28,7 @@ This pipeline simplifies and standardizes the complex steps involved in shotgun 
 - Containerized via Docker/Singularity
 - Monitors compute resources and carbon footprint
 
-## Installation
+## 3. Installation
 **nf-core/dms** uses [Nextflow](https://nf-co.re/docs/usage/getting_started/installation), which must be installed on your system:
 
 ```bash
@@ -42,6 +42,26 @@ The pipeline itself requires no installation – Nextflow will fetch it directly
 
 ```bash
 nextflow run nf-core/dms -profile docker
+```
+
+## 4. Getting Started
+
+```markdown
+## Usage
+
+Prepare a CSV sample sheet (see [example](link)) and your reference FASTA file.
+
+### Basic command:
+
+```bash
+nextflow run nf-core/dms \
+  -profile singularity,local \
+  --input ./input.csv \
+  --outdir ./results \
+  --fasta ./ref.fa \
+  --reading_frame 352-1383 \
+  --mutagenesis_type NNK \
+  --run_seqdepth true
 ```
 
 <!-- TODO nf-core:
