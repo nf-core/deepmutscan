@@ -15,7 +15,6 @@
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 [![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/dmscore)
 
-# nf-core/dms
 ## Overview
 **nf-core/dms** is a reproducible, scalable, and community-curated pipeline for analyzing deep mutational scanning (DMS) data using shotgun DNA sequencing. DMS enables researchers to measure the fitness effects of thousands of gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn fundamental rules of virus evolution, protein architecture, splicing or small-molecule interactions.
 
