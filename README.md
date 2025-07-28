@@ -60,7 +60,10 @@ Prepare:
 - A **sample sheet** CSV to specify input/output labels, replicates, etc. (see [example](link))
 - A **reference FASTA** file for the gene or region of interest
 
-Then run the basic command:
+> [!WARNING]
+> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
+
+To execute **nf-core/dms**, run the basic command:
 
 ```bash
 nextflow run nf-core/dms \
@@ -96,52 +99,45 @@ More options and advanced configuration: [see vignette](link)
 
 ---
 
+## 5. Input Data
 
+The primary pipeline input is a sample sheet `.csv` file listing:
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+- Paths to paired-end `.fastq.gz` files from shotgun sequencing
+- Their classification as either input or output samples
+- Replicate IDs
+- Associated experimental metadata
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+See [sample CSV](link) for formatting.
 
-## Usage
+---
 
-> [!NOTE]
-> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
+## 6. Output Data
 
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
+After execution, the pipeline creates the following directory structure:
 
-First, prepare a samplesheet with your input data that looks as follows:
-
-`samplesheet.csv`:
-
-```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+```
+results/
+├── plots/               # PDF visualizations: coverage, variant heatmaps, etc.
+├── intermediate_files/  # Raw alignments, filtered variant tables, QC reports
+├── final_files/         # Fitness and error tables from downstream tools
+├── timeline.html        # Runtime timeline
+└── report.html          # Summary report incl. resource and CO₂ usage
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
+---
 
--->
+## Citation
 
-Now, you can run the pipeline using:
+If you use this pipeline in your research, please cite:
+> _bioRxiv preprint, 2025_ (link coming soon)
 
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
+Please also cite the nf-core framework:
+> Ewels et al., _Nature Biotechnology_, 2020  
+> [https://doi.org/10.1038/s41587-020-0439-x](https://doi.org/10.1038/s41587-020-0439-x)
 
-```bash
-nextflow run nf-core/dmscore \
-   -profile <docker/singularity/.../institute> \
-   --input samplesheet.csv \
-   --outdir <OUTDIR>
-```
+---
 
-> [!WARNING]
-> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
 For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/dmscore/usage) and the [parameter documentation](https://nf-co.re/dmscore/parameters).
 
