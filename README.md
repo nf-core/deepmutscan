@@ -147,14 +147,12 @@ Please also cite the nf-core framework:
 
 We welcome contributions from the community!
 
-- 🛠 Suggest or implement new modules
-- 🐛 Report bugs or issues
-- ✍️ Help improve the documentation
-- 🔁 Request support for new fitness estimation tools
+Please open an [issue](link) or [pull request](link) via this GitHub page, to:
+- Suggest or help implementing new modules for custom workflows
+- Report bugs and other challenges in running **nf-core/dms**
+- Help improve this documentation
 
-Please open an [issue](link) or [pull request](link) via this GitHub page.
-
-You can also reach out on via **nf-core Slack** in the `#dms` channel ([join here](link)).
+You can also reach out to us via the **nf-core Slack** in the `#dms` channel ([join here](link)).
 
 ---
 
