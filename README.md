@@ -23,17 +23,19 @@ This pipeline simplifies and standardizes the complex steps involved in shotgun 
 ## Features of nf-core/dms
 - Modular, three-stage workflow: alignment → QC → fitness estimation
 - Scalable across HPC and cloud systems
-- Integrates with tools like [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
+- Integrates with popular statistical tools like [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
 - Supports multiple mutagenesis strategies (e.g. nicking by NNK and NNS codons)
 - Containerized via Docker/Singularity
 - Monitors compute resources and carbon footprint
 
 ## Installation
-
-This pipeline uses [Nextflow](https://www.nextflow.io), which must be installed on your system:
+This pipeline uses [Nextflow](https://nf-co.re/docs/usage/getting_started/installation), which must be installed on your system:
 
 ```bash
-curl -s https://get.nextflow.io | bash
+java -version                           # Check that Java v11+ is installed
+curl -s https://get.nextflow.io | bash  # Download Nextflow
+chmod +x nextflow                       # Make executable
+mv nextflow ~/bin/                      # Add to user's $PATH
 
 
 <!-- TODO nf-core:
