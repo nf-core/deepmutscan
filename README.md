@@ -18,7 +18,9 @@
 ## 1. Overview
 **nf-core/dms** is a reproducible, scalable, and community-curated pipeline for analyzing deep mutational scanning (DMS) data using shotgun DNA sequencing. DMS enables researchers to measure the fitness effects of thousands of gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn fundamental rules of virus evolution, protein architecture, splicing or small-molecule interactions.
 
-This pipeline simplifies and standardizes the complex steps involved in shotgun sequencing-based DMS experiments – particularly for long open reading frames (ORFs) – from read alignment to QC reporting and fitness landscape inferences.
+While DNA synthesis and sequencing technologies have advanced rapidly, long open reading frame (ORF) targets still pose major analytical challenges for DMS studies. Shotgun DNA sequencing can be used to greatly speed up the inference of long ORF mutant fitness landscapes, theoretically at no expense in accuracy. We have designed and implemented the **nf-core/dms** pipeline to unlock the power of shotgun sequencing based DMS studies, to simplify and standardise the complex steps involved in the data processing of such experiments – from read alignment to QC reporting and fitness landscape inferences.
+
+> 📄 Reference: Wehnert et al., 2025 (bioRxiv preprint, coming soon)
 
 ## 2. Features of nf-core/dms
 - Modular, three-stage workflow: alignment → QC → fitness estimation
