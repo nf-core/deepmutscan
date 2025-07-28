@@ -15,20 +15,27 @@
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 [![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/dmscore)
 
+---
+
 ## 1. Overview
 **nf-core/dms** is a reproducible, scalable, and community-curated pipeline for analyzing deep mutational scanning (DMS) data using shotgun DNA sequencing. DMS enables researchers to measure the fitness effects of thousands of gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn fundamental rules of virus evolution, protein architecture, splicing or small-molecule interactions.
 
-While DNA synthesis and sequencing technologies have advanced rapidly, long open reading frame (ORF) targets still pose major analytical challenges for DMS studies. Shotgun DNA sequencing can be used to greatly speed up the inference of long ORF mutant fitness landscapes, theoretically at no expense in accuracy. We have designed and implemented the **nf-core/dms** pipeline to unlock the power of shotgun sequencing based DMS studies, to simplify and standardise the complex steps involved in the data processing of such experiments – from read alignment to QC reporting and fitness landscape inferences.
+While DNA synthesis and sequencing technologies have advanced substantially, long open reading frame (ORF) targets still present major challenges for DMS studies. Shotgun DNA sequencing can be used to greatly speed up the inference of long ORF mutant fitness landscapes, theoretically at no expense in accuracy. We have designed the **nf-core/dms** pipeline to unlock the power of shotgun sequencing based DMS studies, to simplify and standardise the complex bioinformatics steps involved in data processing of such experiments – from read alignment to QC reporting and fitness landscape inferences.
 
 > 📄 Reference: Wehnert et al., 2025 (bioRxiv preprint, coming soon)
 
+---
+
 ## 2. Features of nf-core/dms
+- End-to-end analysis of DMS shotgun sequencing data
 - Modular, three-stage workflow: alignment → QC → fitness estimation
-- Scalable across HPC and cloud systems
 - Integrates with popular statistical tools like [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
 - Supports multiple mutagenesis strategies (e.g. nicking by NNK and NNS codons)
 - Containerized via Docker/Singularity
-- Monitors compute resources and carbon footprint
+- Scalable across HPC and cloud systems
+- Monitors CPU, memory, and CO₂ usage
+
+---
 
 ## 3. Installation
 **nf-core/dms** uses [Nextflow](https://nf-co.re/docs/usage/getting_started/installation), which must be installed on your system:
@@ -46,14 +53,14 @@ The pipeline itself requires no installation – Nextflow will fetch it directly
 nextflow run nf-core/dms -profile docker
 ```
 
-## 4. Getting Started
+---
 
-```markdown
-## Usage
+## 4. Usage
+Prepare:
+- A **sample sheet** CSV to specify input/output labels, replicates, etc. (see [example](link))
+- A **reference FASTA** file for the gene or region of interest
 
-Prepare a CSV sample sheet (see [example](link)) and your reference FASTA file.
-
-### Basic command:
+Then run the basic command:
 
 ```bash
 nextflow run nf-core/dms \
@@ -61,10 +68,35 @@ nextflow run nf-core/dms \
   --input ./input.csv \
   --outdir ./results \
   --fasta ./ref.fa \
-  --reading_frame 352-1383 \
-  --mutagenesis_type NNK \
-  --run_seqdepth true
+  --reading-frame 1-300 \
+  --mutagenesis NNK-NNS \
+  --seq-rarefaction false
 ```
+
+### Required parameters
+
+| Parameter          | Description                                         |
+|--------------------|-----------------------------------------------------|
+| `--input`          | Path to sample sheet CSV                            |
+| `--outdir`         | Path to output directory                            |
+| `--fasta`          | Reference FASTA file                                |
+| `--reading_frame`  | Start and end nucleotide (e.g. `1-300`)             |
+
+### Optional parameters
+
+| Parameter              | Default     | Description                                     |
+|------------------------|-------------|-------------------------------------------------|
+| `--read-align`         | `bwa-mem`   | Read aligner                                    |
+| `--mutagenesis`        | `NNK-NNS`   | Deep mutational scanning strategy used          |
+| `--seq-rarefaction`    | `false`     | Estimate sequencing saturation by rarefaction   |
+| `--error-estimation`   | `input`     | Error model used to correct 1nt counts          |
+| `--fitness-estimation` | `dimsum`    | Downstream fitness inference module             |
+
+More options and advanced configuration: [see vignette](link)
+
+---
+
+
 
 <!-- TODO nf-core:
    Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
