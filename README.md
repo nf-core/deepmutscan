@@ -36,10 +36,13 @@ java -version                           # Check that Java v11+ is installed
 curl -s https://get.nextflow.io | bash  # Download Nextflow
 chmod +x nextflow                       # Make executable
 mv nextflow ~/bin/                      # Add to user's $PATH
+```bash
 
 The pipeline itself requires no installation – Nextflow will fetch it directly from GitHub:
-nextflow run nf-core/dms -profile docker
 
+```bash
+nextflow run nf-core/dms -profile docker
+```bash
 
 <!-- TODO nf-core:
    Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
