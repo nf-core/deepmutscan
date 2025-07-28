@@ -22,7 +22,7 @@
 
 While DNA synthesis and sequencing technologies have advanced substantially, long open reading frame (ORF) targets still present major challenges for DMS studies. Shotgun DNA sequencing can be used to greatly speed up the inference of long ORF mutant fitness landscapes, theoretically at no expense in accuracy. We have designed the **nf-core/dms** pipeline to unlock the power of shotgun sequencing based DMS studies, to simplify and standardise the complex bioinformatics steps involved in data processing of such experiments – from read alignment to QC reporting and fitness landscape inferences.
 
-> 📄 Reference: Wehnert et al., 2025 (bioRxiv preprint, coming soon)
+> 📄 Reference: Wehnert et al., _bioRxiv_ preprint (coming soon)
 
 ---
 
@@ -59,9 +59,6 @@ nextflow run nf-core/dms -profile docker
 Prepare:
 - A **sample sheet** CSV to specify input/output labels, replicates, etc. (see [example](link))
 - A **reference FASTA** file for the gene or region of interest
-
-> [!WARNING]
-> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
 To execute **nf-core/dms**, run the basic command:
 
@@ -127,53 +124,48 @@ results/
 
 ---
 
-## Citation
+## 7. Citation
 
 If you use this pipeline in your research, please cite:
-> _bioRxiv preprint, 2025_ (link coming soon)
+> 📄 Reference: Wehnert et al., _bioRxiv_ preprint (coming soon)
 
 Please also cite the nf-core framework:
-> Ewels et al., _Nature Biotechnology_, 2020  
+> 📄 Ewels et al., _Nature Biotechnology_, 2020  
 > [https://doi.org/10.1038/s41587-020-0439-x](https://doi.org/10.1038/s41587-020-0439-x)
 
 ---
 
+## 8. License
 
-For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/dmscore/usage) and the [parameter documentation](https://nf-co.re/dmscore/parameters).
+[MIT License](link)
 
-## Pipeline output
+&copy; 2025 Benjamin Wehnert, Taylor Mighell, Fei Sang, Ben Lehner, Maximilian Stammnitz
 
-To see the results of an example test run with a full size dataset refer to the [results](https://nf-co.re/dmscore/results) tab on the nf-core website pipeline page.
-For more details about the output files and reports, please refer to the
-[output documentation](https://nf-co.re/dmscore/output).
+---
 
-## Credits
+## 9. Contributing
 
-nf-core/dmscore was originally written by Benjamin Wehnert & Max Stammnitz.
+We welcome contributions from the community!
 
-We thank the following people for their extensive assistance in the development of this pipeline:
+- 🛠 Suggest or implement new modules
+- 🐛 Report bugs or issues
+- ✍️ Help improve the documentation
+- 🔁 Request support for new fitness estimation tools
 
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
+Please open an [issue](link) or [pull request](link) via this GitHub page.
 
-## Contributions and Support
+You can also reach out on via **nf-core Slack** in the `#dms` channel ([join here](link)).
 
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
+---
 
-For further information or help, don't hesitate to get in touch on the [Slack `#dmscore` channel](https://nfcore.slack.com/channels/dmscore) (you can join with [this invite](https://nf-co.re/join/slack)).
+## 10. Contact
 
-## Citations
+For detailled scientific or technical questions, feel free to reach out to us directly:
 
-<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use nf-core/dmscore for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+- Benjamin Wehnert — wehnertbenjamin@gmail.com  
+- Taylor Mighell — taylor.mighell@crg.eu  
+- Fei Sang — fs18@sanger.ac.uk  
+- Ben Lehner — bl11@sanger.ac.uk  
+- Maximilian Stammnitz — maximilian.stammnitz@crg.eu
 
-<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
-
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
-
-You can cite the `nf-core` publication as follows:
-
-> **The nf-core framework for community-curated bioinformatics pipelines.**
->
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
->
-> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
+---
