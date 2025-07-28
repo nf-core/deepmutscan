@@ -35,7 +35,7 @@ This pipeline uses [Nextflow](https://nf-co.re/docs/usage/getting_started/instal
 java -version                           # Check that Java v11+ is installed
 curl -s https://get.nextflow.io | bash  # Download Nextflow
 chmod +x nextflow                       # Make executable
-mv nextflow ~/bin/                      # Add to user's $PATH
+mv nextflow ~/bin/                      # Add to user's $PATH | bash
 
 
 <!-- TODO nf-core:
