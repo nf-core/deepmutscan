@@ -29,13 +29,16 @@ This pipeline simplifies and standardizes the complex steps involved in shotgun 
 - Monitors compute resources and carbon footprint
 
 ## Installation
-This pipeline uses [Nextflow](https://nf-co.re/docs/usage/getting_started/installation), which must be installed on your system:
+**nf-core/dms** uses [Nextflow](https://nf-co.re/docs/usage/getting_started/installation), which must be installed on your system:
 
 ```bash
 java -version                           # Check that Java v11+ is installed
 curl -s https://get.nextflow.io | bash  # Download Nextflow
 chmod +x nextflow                       # Make executable
-mv nextflow ~/bin/ | bash               # Add to user's $PATH
+mv nextflow ~/bin/                      # Add to user's $PATH
+
+The pipeline itself requires no installation – Nextflow will fetch it directly from GitHub:
+nextflow run nf-core/dms -profile docker
 
 
 <!-- TODO nf-core:
