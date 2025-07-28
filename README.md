@@ -127,7 +127,7 @@ results/
 ## 7. Citation
 
 If you use this pipeline in your research, please cite:
-> 📄 Reference: Wehnert et al., _bioRxiv_ preprint (coming soon)
+> 📄 Wehnert et al., _bioRxiv_ preprint (coming soon)
 
 Please also cite the nf-core framework:
 > 📄 Ewels et al., _Nature Biotechnology_, 2020  
