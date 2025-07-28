@@ -27,12 +27,12 @@ While DNA synthesis and sequencing technologies have advanced substantially, lon
 ---
 
 ## 2. Features of nf-core/dms
-- End-to-end analysis of DMS shotgun sequencing data
-- Modular, three-stage workflow: alignment → QC → fitness estimation
+- End-to-end analyses of DMS shotgun sequencing data
+- Modular, three-stage workflow: alignment → QC → error-aware fitness estimation
 - Integrates with popular statistical tools like [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
-- Supports multiple mutagenesis strategies (e.g. nicking by NNK and NNS codons)
-- Containerized via Docker/Singularity
-- Scalable across HPC and cloud systems
+- Supports multiple mutagenesis strategies, e.g. nicking by NNK and NNS codons
+- Containerized via Docker, Singularity and Apptainer
+- Scalable across HPC and Cloud systems
 - Monitors CPU, memory, and CO₂ usage
 
 ---
@@ -152,13 +152,13 @@ Please open an [issue](link) or [pull request](link) via this GitHub page, to:
 - Report bugs and other challenges in running **nf-core/dms**
 - Help improve this documentation
 
-You can also reach out to us via the **nf-core Slack** in the `#dms` channel ([join here](link)).
+You can also reach out to us via the **nf-core Slack**, by use of the `#dms` channel ([join here](link)).
 
 ---
 
 ## 10. Contact
 
-For detailled scientific or technical questions, feel free to reach out to us directly:
+For detailled scientific or technical questions, feedback and experimental discussions, feel free to contact us directly:
 
 - Benjamin Wehnert — wehnertbenjamin@gmail.com  
 - Taylor Mighell — taylor.mighell@crg.eu  
