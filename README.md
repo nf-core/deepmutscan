@@ -15,92 +15,155 @@
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 [![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/dmscore)
 
-[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23dmscore-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/dmscore)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
+---
 
-## Introduction
+## 1. Overview
+**nf-core/dms** is a reproducible, scalable, and community-curated pipeline for analyzing deep mutational scanning (DMS) data using shotgun DNA sequencing. DMS enables researchers to measure the fitness effects of thousands of gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn fundamental rules of virus evolution, protein architecture, splicing or small-molecule interactions.
 
-**nf-core/dmscore** is a bioinformatics pipeline that ...
+While DNA synthesis and sequencing technologies have advanced substantially, long open reading frame (ORF) targets still present major challenges for DMS studies. Shotgun DNA sequencing can be used to greatly speed up the inference of long ORF mutant fitness landscapes, theoretically at no expense in accuracy. We have designed the **nf-core/dms** pipeline to unlock the power of shotgun sequencing based DMS studies, to simplify and standardise the complex bioinformatics steps involved in data processing of such experiments – from read alignment to QC reporting and fitness landscape inferences.
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+> 📄 Reference: Wehnert et al., _bioRxiv_ preprint (coming soon)
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+---
 
-## Usage
+## 2. Features of nf-core/dms
+- End-to-end analyses of DMS shotgun sequencing data
+- Modular, three-stage workflow: alignment → QC → error-aware fitness estimation
+- Integrates with popular statistical tools like [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
+- Supports multiple mutagenesis strategies, e.g. nicking by NNK and NNS codons
+- Containerized via Docker, Singularity and Apptainer
+- Scalable across HPC and Cloud systems
+- Monitors CPU, memory, and CO₂ usage
 
-> [!NOTE]
-> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
+---
 
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
-
-First, prepare a samplesheet with your input data that looks as follows:
-
-`samplesheet.csv`:
-
-```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-```
-
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
-
--->
-
-Now, you can run the pipeline using:
-
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
+## 3. Installation
+**nf-core/dms** uses [Nextflow](https://nf-co.re/docs/usage/getting_started/installation), which must be installed on your system:
 
 ```bash
-nextflow run nf-core/dmscore \
-   -profile <docker/singularity/.../institute> \
-   --input samplesheet.csv \
-   --outdir <OUTDIR>
+java -version                           # Check that Java v11+ is installed
+curl -s https://get.nextflow.io | bash  # Download Nextflow
+chmod +x nextflow                       # Make executable
+mv nextflow ~/bin/                      # Add to user's $PATH
 ```
 
-> [!WARNING]
-> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
+The pipeline itself requires no installation – Nextflow will fetch it directly from GitHub:
 
-For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/dmscore/usage) and the [parameter documentation](https://nf-co.re/dmscore/parameters).
+```bash
+nextflow run nf-core/dms -profile docker
+```
 
-## Pipeline output
+---
 
-To see the results of an example test run with a full size dataset refer to the [results](https://nf-co.re/dmscore/results) tab on the nf-core website pipeline page.
-For more details about the output files and reports, please refer to the
-[output documentation](https://nf-co.re/dmscore/output).
+## 4. Usage
+Prepare:
+- A **sample sheet** CSV to specify input/output labels, replicates, etc. (see [example](link))
+- A **reference FASTA** file for the gene or region of interest
 
-## Credits
+To execute **nf-core/dms**, run the basic command:
 
-nf-core/dmscore was originally written by Benjamin Wehnert & Max Stammnitz.
+```bash
+nextflow run nf-core/dms \
+  -profile singularity,local \
+  --input ./input.csv \
+  --outdir ./results \
+  --fasta ./ref.fa \
+  --reading-frame 1-300 \
+  --mutagenesis NNK-NNS \
+  --seq-rarefaction false
+```
 
-We thank the following people for their extensive assistance in the development of this pipeline:
+### Required parameters
 
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
+| Parameter          | Description                                         |
+|--------------------|-----------------------------------------------------|
+| `--input`          | Path to sample sheet CSV                            |
+| `--outdir`         | Path to output directory                            |
+| `--fasta`          | Reference FASTA file                                |
+| `--reading_frame`  | Start and end nucleotide (e.g. `1-300`)             |
 
-## Contributions and Support
+### Optional parameters
 
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
+| Parameter              | Default     | Description                                     |
+|------------------------|-------------|-------------------------------------------------|
+| `--read-align`         | `bwa-mem`   | Read aligner                                    |
+| `--mutagenesis`        | `NNK-NNS`   | Deep mutational scanning strategy used          |
+| `--seq-rarefaction`    | `false`     | Estimate sequencing saturation by rarefaction   |
+| `--error-estimation`   | `input`     | Error model used to correct 1nt counts          |
+| `--fitness-estimation` | `dimsum`    | Downstream fitness inference module             |
 
-For further information or help, don't hesitate to get in touch on the [Slack `#dmscore` channel](https://nfcore.slack.com/channels/dmscore) (you can join with [this invite](https://nf-co.re/join/slack)).
+More options and advanced configuration: [see vignette](link)
 
-## Citations
+---
 
-<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use nf-core/dmscore for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+## 5. Input Data
 
-<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
+The primary pipeline input is a sample sheet `.csv` file listing:
 
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
+- Paths to paired-end `.fastq.gz` files from shotgun sequencing
+- Their classification as either input or output samples
+- Replicate IDs
+- Associated experimental metadata
 
-You can cite the `nf-core` publication as follows:
+See [sample CSV](link) for formatting.
 
-> **The nf-core framework for community-curated bioinformatics pipelines.**
->
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
->
-> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
+---
+
+## 6. Output Data
+
+After execution, the pipeline creates the following directory structure:
+
+```
+results/
+├── plots/               # PDF visualizations: coverage, variant heatmaps, etc.
+├── intermediate_files/  # Raw alignments, filtered variant tables, QC reports
+├── final_files/         # Fitness and error tables from downstream tools
+├── timeline.html        # Runtime timeline
+└── report.html          # Summary report incl. resource and CO₂ usage
+```
+
+---
+
+## 7. Citation
+
+If you use this pipeline in your research, please cite:
+> 📄 Wehnert et al., _bioRxiv_ preprint (coming soon)
+
+Please also cite the nf-core framework:
+> 📄 Ewels et al., _Nature Biotechnology_, 2020  
+> [https://doi.org/10.1038/s41587-020-0439-x](https://doi.org/10.1038/s41587-020-0439-x)
+
+---
+
+## 8. License
+
+[MIT License](link)
+
+&copy; 2025 Benjamin Wehnert, Taylor Mighell, Fei Sang, Ben Lehner, Maximilian Stammnitz
+
+---
+
+## 9. Contributing
+
+We welcome contributions from the community!
+
+Please open an [issue](link) or [pull request](link) via this GitHub page, to:
+- Suggest or help implementing new modules for custom workflows
+- Report bugs and other challenges in running **nf-core/dms**
+- Help improve this documentation
+
+You can also reach out to us via the **nf-core Slack**, by use of the `#dms` channel ([join here](link)).
+
+---
+
+## 10. Contact
+
+For detailled scientific or technical questions, feedback and experimental discussions, feel free to contact us directly:
+
+- Benjamin Wehnert — wehnertbenjamin@gmail.com  
+- Taylor Mighell — taylor.mighell@crg.eu  
+- Fei Sang — fs18@sanger.ac.uk  
+- Ben Lehner — bl11@sanger.ac.uk  
+- Maximilian Stammnitz — maximilian.stammnitz@crg.eu
+
+---
