@@ -105,7 +105,7 @@ The primary pipeline input is a sample sheet `.csv` file listing:
 - Replicate IDs
 - Associated experimental metadata
 
-See [sample CSV](link) for formatting.
+See [sample CSV](assets/samplesheet.csv) for formatting.
 
 ---
 
