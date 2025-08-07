@@ -57,7 +57,7 @@ nextflow run nf-core/dms -profile docker
 
 ## 4. Usage
 Prepare:
-- A **sample sheet** CSV to specify input/output labels, replicates, etc. (see [example](link))
+- A **sample sheet** CSV to specify input/output labels, replicates, etc. (see [example](assets/samplesheet.csv))
 - A **reference FASTA** file for the gene or region of interest
 
 To execute **nf-core/dms**, run the basic command:
@@ -147,12 +147,12 @@ Please also cite the nf-core framework:
 
 We welcome contributions from the community!
 
-Please open an [issue](link) or [pull request](link) via this GitHub page, to:
+Please open an [issue](../../issues/new) or [pull request](../../compare) via this GitHub page, to:
 - Suggest or help implementing new modules for custom workflows
 - Report bugs and other challenges in running **nf-core/dms**
 - Help improve this documentation
 
-You can also reach out to us via the **nf-core Slack**, by use of the `#dms` channel ([join here](link)).
+You can also reach out to us via the **nf-core Slack**, by use of the `#dms` channel ([join here](https://join.slack.com/share/enQtOTMyMDc3MTA0Mzg0Mi04YmRiNDEwZTBlOTRiN2M2ZGU5ZGVmOWQ3YzA0YjA4NzhiNjFhNTVlNDA4ZTZjOTE2MjE5MmIzYWZjZTljMTE3)).
 
 ---
 
@@ -161,9 +161,6 @@ You can also reach out to us via the **nf-core Slack**, by use of the `#dms` cha
 For detailled scientific or technical questions, feedback and experimental discussions, feel free to contact us directly:
 
 - Benjamin Wehnert — wehnertbenjamin@gmail.com  
-- Taylor Mighell — taylor.mighell@crg.eu  
-- Fei Sang — fs18@sanger.ac.uk  
-- Ben Lehner — bl11@sanger.ac.uk  
 - Maximilian Stammnitz — maximilian.stammnitz@crg.eu
 
 ---
