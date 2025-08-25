@@ -183,28 +183,58 @@ workflow DMSCORE {
     // Broadcast index to all samples
     ch_bwa_index = BWA_INDEX.out.index
 
-    BWA_MEM (
-    ch_samplesheet,           // each sample's reads: tuple [meta, reads]
-    ch_bwa_index,             // broadcasted index files
-    ch_fasta,                 // broadcasted fasta file
-    false                     // sort_bam
+
+
+
+    // Broadcast the index to all samples
+    ch_bwa_index_broadcast = ch_samplesheet
+      .combine(ch_bwa_index)
+      .map { [it[2], it[3]] }
+
+    // Broadcast the fasta to all samples
+    ch_fasta_broadcast = ch_fasta
+      .combine(ch_samplesheet)
+      .map { [it[0], it[1]] }
+
+    // Broadcast the sort flag to all samples
+    ch_sort_bam = ch_samplesheet.map { false }
+
+    // Run BWA_MEM with all four inputs aligned
+    BWA_MEM(
+      ch_samplesheet,
+      ch_bwa_index_broadcast,
+      ch_fasta_broadcast,
+      ch_sort_bam
     )
+
 
     BAMFILTER_DMS (
     BWA_MEM.out.bam
     )
 
-    PREMERGE (
-    BAMFILTER_DMS.out.bam,
-    ch_fasta.map{ it[1] }     // extract fasta path from Tuple
+    // Broadcast the FASTA path to every BAM emitted by BAMFILTER_DMS
+    ch_fasta_path_broadcast = ch_fasta
+      .combine(BAMFILTER_DMS.out.bam)   // flattened item: [meta3, fasta, meta, bam]
+      .map { it[1] }                    // keep only the fasta path (N emissions)
+
+    PREMERGE(
+      BAMFILTER_DMS.out.bam,     // tuple(val(meta), path(bam))
+      ch_fasta_path_broadcast    // path(fasta)
     )
 
-    GATK_SATURATIONMUTAGENESIS (
-    PREMERGE.out.bam,             // merged reads (tuple(meta, merged_reads.fastq))
-    ch_fasta.map{ it[1] },        // fasta path (path)
-    reading_frame_ch,             // codon range (path)
-    min_counts_ch                 // min_counts (val)
-    )
+// FASTA path for GATK: broadcast to N
+ch_fasta_for_gatk  = ch_fasta.combine(PREMERGE.out.bam).map { it[1] }     // path -- N
+// Reading frame for GATK: broadcast to N (it's a val string)
+ch_rf_for_gatk     = reading_frame_ch.combine(PREMERGE.out.bam).map { it[0] }  // val  -- N
+// min_counts for GATK: broadcast to N (also a val)
+ch_min_for_gatk    = min_counts_ch.combine(PREMERGE.out.bam).map { it[0] }     // val  -- N
+
+GATK_SATURATIONMUTAGENESIS(
+  PREMERGE.out.bam,   // merged reads - tuple(val(meta), path(bam))
+  ch_fasta_for_gatk,  // path(fasta)
+  ch_rf_for_gatk,     // val(reading_frame string)
+  ch_min_for_gatk     // val(min_counts)
+)
 
     DMSANALYSIS_AASEQ (
     ch_fasta,

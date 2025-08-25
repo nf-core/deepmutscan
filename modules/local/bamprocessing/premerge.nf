@@ -27,7 +27,7 @@ process PREMERGE {
     path wt_seq
 
     output:
-    tuple val(meta), path("merged_reads.bam"), emit: bam
+    tuple val(meta), path("*.bam"), emit: bam
     path "versions.yml", emit: versions
 
     when:
@@ -44,7 +44,7 @@ process PREMERGE {
 
     # Re-align merged reads
     bwa index $wt_seq
-    bwa mem $wt_seq merged_reads.fastq | samtools view -Sb - > merged_reads.bam
+    bwa mem $wt_seq merged_reads.fastq | samtools view -Sb - > ${prefix}_merged.bam
 
     # Save version information
     cat <<-END_VERSIONS > versions.yml

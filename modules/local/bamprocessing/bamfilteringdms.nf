@@ -64,7 +64,7 @@ process BAMFILTER_DMS {
     awk '{if(\$6 !~ /I/ && \$6 !~ /D/ && \$6 !~ /N/) print \$0}' | \
     samtools view -h | \
     awk '{for(i=1;i<=NF;i++) if(\$i ~ /^NM:i:/ && \$i != "NM:i:0") {print \$0; next}} \$1 ~ /^@/' | \
-    samtools view -bS > filtered_reads.bam
+    samtools view -bS > ${meta.id}_filtered.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
