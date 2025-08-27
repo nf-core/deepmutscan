@@ -183,9 +183,6 @@ workflow DMSCORE {
     // Broadcast index to all samples
     ch_bwa_index = BWA_INDEX.out.index
 
-
-
-
     // Broadcast the index to all samples
     ch_bwa_index_broadcast = ch_samplesheet
       .combine(ch_bwa_index)
@@ -206,7 +203,6 @@ workflow DMSCORE {
       ch_fasta_broadcast,
       ch_sort_bam
     )
-
 
     BAMFILTER_DMS (
     BWA_MEM.out.bam
@@ -252,68 +248,116 @@ workflow DMSCORE {
     )
     ch_versions = ch_versions.mix(DMSANALYSIS_POSSIBLE_MUTATIONS.out.versions)
 
+    // Anchor (N items; one per sample)
+    def ch_vc = GATK_SATURATIONMUTAGENESIS.out.variantCounts   // tuple(val(meta), path)
+
+    // Fan-out helpers (broadcast singleton → N)
+    def fanout = { ch_singleton -> ch_singleton.combine(ch_vc).map { it[0] } }
+
+    // Build per-sample inputs
+    ch_possible_mut_for_proc = fanout( DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map { it[1] } )
+    ch_aa_seq_for_proc       = fanout( DMSANALYSIS_AASEQ.out.aa_seq.map { it[1] } )
+    ch_min_counts_for_proc   = fanout( min_counts_ch )
+    ch_proc_raw_script       = fanout( process_raw_gatk_script_ch )
+    ch_filter_lib_script     = fanout( filter_by_library_script_ch )
+    ch_complete_script       = fanout( complete_gatk_script_ch )
+    ch_prepare_heatmap_script= fanout( prepare_counts_heatmap_script_ch )
+
+    // Call with all inputs aligned (each has N items now)
     DMSANALYSIS_PROCESS_GATK(
-    GATK_SATURATIONMUTAGENESIS.out.variantCounts,
-    DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map{ it[1] },
-    DMSANALYSIS_AASEQ.out.aa_seq.map{ it[1] },
-    min_counts_ch,
-    process_raw_gatk_script_ch,
-    filter_by_library_script_ch,
-    complete_gatk_script_ch,
-    prepare_counts_heatmap_script_ch
-    )
+      ch_vc,                        // tuple(val(meta), path(variantCounts))  -- N
+      ch_possible_mut_for_proc,     // path(possible_mutations)               -- N
+      ch_aa_seq_for_proc,           // path(aa_seq)                           -- N
+      ch_min_counts_for_proc,       // val(min_counts)                        -- N
+      ch_proc_raw_script,           // path(R script)                         -- N
+      ch_filter_lib_script,         // path(R script)                         -- N
+      ch_complete_script,           // path(R script)                         -- N
+      ch_prepare_heatmap_script     // path(R script)                         -- N
+    )    
 
     annotated_variantCounts_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, a) }
     variantCounts_filtered_by_library_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, b) }
     library_completed_variantCounts_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, c) }
     variantCounts_for_heatmaps_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, d) }
 
+    // Broadcast `singleton` so it emits once per item in `anchorN`
+    def fanoutTo = { anchorN, singleton -> singleton.combine(anchorN).map { it[0] } }
+
+    // --- For VISUALIZATION_COUNTS_PER_COV (anchor: variantCounts_for_heatmaps_ch)
+    min_counts_for_cov_ch          = fanoutTo(variantCounts_for_heatmaps_ch, min_counts_ch)
+    counts_per_cov_heatmap_scriptN = fanoutTo(variantCounts_for_heatmaps_ch, counts_per_cov_heatmap_script_ch)
+
+    // --- For VISUALIZATION_COUNTS_HEATMAP (anchor: variantCounts_for_heatmaps_ch)
+    min_counts_for_heatmap_ch      = fanoutTo(variantCounts_for_heatmaps_ch, min_counts_ch)
+    counts_heatmap_scriptN         = fanoutTo(variantCounts_for_heatmaps_ch, counts_heatmap_script_ch)
+
+    // --- For VISUALIZATION_GLOBAL_POS_BIASES_* (anchor: variantCounts_filtered_by_library_ch)
+    aa_seq_for_bias_ch             = fanoutTo(variantCounts_filtered_by_library_ch, DMSANALYSIS_AASEQ.out.aa_seq.map { it[1] })
+    sliding_window_size_N          = fanoutTo(variantCounts_filtered_by_library_ch, sliding_window_size_ch)
+    aimed_cov_N                    = fanoutTo(variantCounts_filtered_by_library_ch, aimed_cov_ch)
+    global_bias_counts_cov_scriptN = fanoutTo(variantCounts_filtered_by_library_ch, global_bias_counts_cov_script_ch)
+    global_bias_cov_scriptN        = fanoutTo(variantCounts_filtered_by_library_ch, global_bias_cov_script_ch)
+
+    // --- For VISUALIZATION_LOGDIFF (anchor: library_completed_variantCounts_ch)
+logdiff_scriptN                = fanoutTo(library_completed_variantCounts_ch, logdiff_script_ch)
+
+    // --- For VISUALIZATION_SEQDEPTH (anchor: variantCounts_filtered_by_library_ch)
+    possible_mutations_N           = fanoutTo(variantCounts_filtered_by_library_ch, DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map { it[1] })
+    min_counts_for_seqdepth_ch     = fanoutTo(variantCounts_filtered_by_library_ch, min_counts_ch)
+    seqdepth_simulation_scriptN    = fanoutTo(variantCounts_filtered_by_library_ch, seqdepth_simulation_script_ch)
+
     VISUALIZATION_COUNTS_PER_COV(
-    variantCounts_for_heatmaps_ch,
-    min_counts_ch,
-    counts_per_cov_heatmap_script_ch
+      variantCounts_for_heatmaps_ch,
+      min_counts_for_cov_ch,
+      counts_per_cov_heatmap_scriptN
     )
 
     VISUALIZATION_COUNTS_HEATMAP(
-    variantCounts_for_heatmaps_ch,
-    min_counts_ch,
-    counts_heatmap_script_ch
+      variantCounts_for_heatmaps_ch,
+      min_counts_for_heatmap_ch,
+      counts_heatmap_scriptN
     )
 
     VISUALIZATION_GLOBAL_POS_BIASES_COUNTS(
-    variantCounts_filtered_by_library_ch,
-    DMSANALYSIS_AASEQ.out.aa_seq.map{ it[1] },
-    sliding_window_size_ch,
-    global_bias_counts_cov_script_ch
+      variantCounts_filtered_by_library_ch,
+      aa_seq_for_bias_ch,
+      sliding_window_size_N,
+      global_bias_counts_cov_scriptN
     )
 
     VISUALIZATION_GLOBAL_POS_BIASES_COV(
-    variantCounts_filtered_by_library_ch,
-    DMSANALYSIS_AASEQ.out.aa_seq.map{ it[1] },
-    sliding_window_size_ch,
-    aimed_cov_ch,
-    global_bias_cov_script_ch
+      variantCounts_filtered_by_library_ch,
+      aa_seq_for_bias_ch,
+      sliding_window_size_N,
+      aimed_cov_N,
+      global_bias_cov_scriptN
     )
 
     VISUALIZATION_LOGDIFF(
-    library_completed_variantCounts_ch,
-    logdiff_script_ch
+      library_completed_variantCounts_ch,
+      logdiff_scriptN
     )
 
     if (params.run_seqdepth) {
-    VISUALIZATION_SEQDEPTH(
+      VISUALIZATION_SEQDEPTH(
         variantCounts_filtered_by_library_ch,
-        DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map{ it[1] },
-        min_counts_ch,
-        seqdepth_simulation_script_ch
-        )
+        possible_mutations_N,
+        min_counts_for_seqdepth_ch,
+        seqdepth_simulation_scriptN
+      )
     }
 
+    // Broadcast singletons to N (one per sample), anchored on variantCounts_filtered_by_library_ch
+    ch_fasta_for_dimsum    = ch_fasta.combine(variantCounts_filtered_by_library_ch).map { it[1] }   // path(fasta) -- N
+    ch_rf_for_dimsum       = reading_frame_ch.combine(variantCounts_filtered_by_library_ch).map { it[0] }  // val(range) -- N
+    ch_script_for_dimsum   = gatk_to_dimsum_script_ch.combine(variantCounts_filtered_by_library_ch).map { it[0] } // path(script) -- N
+
+    // Call with aligned inputs
     GATK_GATKTODIMSUM(
-    variantCounts_filtered_by_library_ch,
-    ch_fasta.map{ it[1] },
-    reading_frame_ch,
-    gatk_to_dimsum_script_ch
+      variantCounts_filtered_by_library_ch,  // tuple(val(meta), path)
+      ch_fasta_for_dimsum,                   // path(fasta)
+      ch_rf_for_dimsum,                      // val(reading_frame)
+      ch_script_for_dimsum                   // path(R script)
     )
 
     emit:
