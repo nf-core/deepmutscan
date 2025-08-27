@@ -35,6 +35,8 @@ While DNA synthesis and sequencing technologies have advanced substantially, lon
 - Scalable across HPC and Cloud systems
 - Monitors CPU, memory, and CO₂ usage
 
+For details of the pipeline and potential future expansions, please consider reading our [detailed description](docs/pipeline_steps.md).
+
 ---
 
 ## 3. Installation
