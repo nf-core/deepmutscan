@@ -42,9 +42,8 @@ To this end, we use [**samtools view**](https://www.htslib.org/doc/samtools.html
 
 Even the highest-accuracy next-generation sequencing platforms do not have perfect base accuracy. To minimise the effect of base errors (which would otherwise be counted as "false mutations"), nf-core/dms uses the overlap of each aligned read pair. With base errors on the forward and reverse read being independent, the pipeline applies the [**vsearch fastq_mergepairs**](https://github.com/torognes/vsearch) function to convert each read pair into a single consensus molecule with adjusted base error scores.
 
-:::tip
-Optimal merging performance is usually obtained if the average DNA fragment size matches the read size. For example, libraries sequenced with 150 bp paired-end reads should ideally also be sheared/tagmented to a mean size of 150 bp.
-:::
+> [!TIP]
+> Optimal merging performance is usually obtained if the average DNA fragment size matches the read size. For example, libraries sequenced with 150 bp paired-end reads should ideally also be sheared/tagmented to a mean size of 150 bp.
 
 Future versions may offer additional options depending on sequencing type and error profiles.
 
