@@ -1,10 +1,6 @@
 # nf-core/dms: Detailed Pipeline Steps
 
-This page provides an in-depth description of the data processing
-modules implemented in **nf-core/dms**.\
-It is intended for advanced users and developers who want to understand
-the rationale behind design choices, explore implementation details, and
-consider potential future extensions.
+This page provides an in-depth description of the data processing modules implemented in **nf-core/dms**. It is intended for advanced users and developers who want to understand the rationale behind design choices, explore implementation details, and consider potential future extensions.
 
 ------------------------------------------------------------------------
 
