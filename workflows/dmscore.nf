@@ -222,19 +222,19 @@ workflow DMSCORE {
       ch_fasta_path_broadcast    // path(fasta)
     )
 
-// FASTA path for GATK: broadcast to N
-ch_fasta_for_gatk  = ch_fasta.combine(PREMERGE.out.bam).map { it[1] }     // path -- N
-// Reading frame for GATK: broadcast to N (it's a val string)
-ch_rf_for_gatk     = reading_frame_ch.combine(PREMERGE.out.bam).map { it[0] }  // val  -- N
-// min_counts for GATK: broadcast to N (also a val)
-ch_min_for_gatk    = min_counts_ch.combine(PREMERGE.out.bam).map { it[0] }     // val  -- N
+    // FASTA path for GATK: broadcast to N
+    ch_fasta_for_gatk  = ch_fasta.combine(PREMERGE.out.bam).map { it[1] }     // path -- N
+    // Reading frame for GATK: broadcast to N (it's a val string)
+    ch_rf_for_gatk     = reading_frame_ch.combine(PREMERGE.out.bam).map { it[0] }  // val  -- N
+    // min_counts for GATK: broadcast to N (also a val)
+    ch_min_for_gatk    = min_counts_ch.combine(PREMERGE.out.bam).map { it[0] }     // val  -- N
 
-GATK_SATURATIONMUTAGENESIS(
-  PREMERGE.out.bam,   // merged reads - tuple(val(meta), path(bam))
-  ch_fasta_for_gatk,  // path(fasta)
-  ch_rf_for_gatk,     // val(reading_frame string)
-  ch_min_for_gatk     // val(min_counts)
-)
+    GATK_SATURATIONMUTAGENESIS(
+      PREMERGE.out.bam,   // merged reads - tuple(val(meta), path(bam))
+      ch_fasta_for_gatk,  // path(fasta)
+      ch_rf_for_gatk,     // val(reading_frame string)
+      ch_min_for_gatk     // val(min_counts)
+    )
 
     DMSANALYSIS_AASEQ (
     ch_fasta,
