@@ -16,6 +16,8 @@ The pipeline processes deep mutational scanning (DMS) sequencing data in several
 7. Single nucleotide variant error correction *(in development)*
 8. Fitness estimation *(in development)*
 
+![pipeline](/docs/pipeline.png)
+
 Each step is explained below. Links are provided to the primary tools and libraries used, where applicable.
 
 ------------------------------------------------------------------------
@@ -24,7 +26,7 @@ Each step is explained below. Links are provided to the primary tools and librar
 
 All paired-end raw reads are first aligned to the provided reference ORF using [**bwa-mem**](http://bio-bwa.sourceforge.net/). This is a highly efficient mapping algorithm for reads ≥100 bp, with its multi-threading support automatically handled by nf-core.
 
-In future versions of nf-core/dms, we consider the use of [**bwa-mem2**](https://github.com/bwa-mem2/bwa-mem2), which provides similar alignment rates with a moderate speed increase ([Vasimuddin et al., *IPDPS* 2019](https://ieeexplore.ieee.org/document/8820962). With the increasing diversity of sequencing platforms for DMS, new throughput, read length, and error profiles may require further alignment options to be implemented.
+In future versions of nf-core/dms, we consider the use of [**bwa-mem2**](https://github.com/bwa-mem2/bwa-mem2), which provides similar alignment rates with a moderate speed increase ([Vasimuddin et al., *IPDPS* 2019](https://ieeexplore.ieee.org/document/8820962)). With the increasing diversity of sequencing platforms for DMS, new throughput, read length, and error profiles may require further alignment options to be implemented.
 
 ------------------------------------------------------------------------
 
