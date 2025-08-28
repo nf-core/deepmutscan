@@ -1,22 +1,22 @@
-# `nf-core/dmscore`: Contributing Guidelines
+# `nf-core/deepmutscan`: Contributing Guidelines
 
 Hi there!
-Many thanks for taking an interest in improving nf-core/dmscore.
+Many thanks for taking an interest in improving nf-core/deepmutscan.
 
-We try to manage the required tasks for nf-core/dmscore using GitHub issues, you probably came to this page when creating one.
+We try to manage the required tasks for nf-core/deepmutscan using GitHub issues, you probably came to this page when creating one.
 Please use the pre-filled template to save time.
 
 However, don't be put off by this template - other more general issues and suggestions are welcome!
 Contributions to the code are even more welcome ;)
 
 > [!NOTE]
-> If you need help using or modifying nf-core/dmscore then the best place to ask is on the nf-core Slack [#dmscore](https://nfcore.slack.com/channels/dmscore) channel ([join our Slack here](https://nf-co.re/join/slack)).
+> If you need help using or modifying nf-core/deepmutscan then the best place to ask is on the nf-core Slack [#deepmutscan](https://nfcore.slack.com/channels/dmscore) channel ([join our Slack here](https://nf-co.re/join/slack)).
 
 ## Contribution workflow
 
-If you'd like to write some code for nf-core/dmscore, the standard workflow is as follows:
+If you'd like to write some code for nf-core/deepmutscan, the standard workflow is as follows:
 
-1. Check that there isn't already an issue about your idea in the [nf-core/dmscore issues](https://github.com/nf-core/dmscore/issues) to avoid duplicating work. If there isn't one already, please create one so that others know you're working on this
+1. Check that there isn't already an issue about your idea in the [nf-core/deepmutscan issues](https://github.com/nf-core/dmscore/issues) to avoid duplicating work. If there isn't one already, please create one so that others know you're working on this
 2. [Fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) the [nf-core/dmscore repository](https://github.com/nf-core/dmscore) to your GitHub account
 3. Make the necessary changes / additions within your forked repository following [Pipeline conventions](#pipeline-contribution-conventions)
 4. Use `nf-core pipelines schema build` and add any new parameters to the pipeline JSON schema (requires [nf-core tools](https://github.com/nf-core/tools) >= 1.10).
