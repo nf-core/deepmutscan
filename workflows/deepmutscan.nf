@@ -43,7 +43,7 @@ params.run_seqdepth = params.run_seqdepth ?: false                              
 // Define fasta file as channel (e.g. for BWA index)
 Channel
     .fromPath(params.fasta, checkIfExists: true)
-    .map { fasta -> tuple( { id: "ref" }, fasta ) }
+    .map { fasta -> tuple( [id: 'ref'], fasta ) }
     .set { ch_fasta }
 
 // Define reading_frame as channel (e.g. for gatk function)
