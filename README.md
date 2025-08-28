@@ -20,7 +20,7 @@
 ## 1. Overview
 **nf-core/dms** is a reproducible, scalable, and community-curated pipeline for analyzing deep mutational scanning (DMS) data using shotgun DNA sequencing. DMS enables researchers to measure the fitness effects of thousands of gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn fundamental rules of virus evolution, protein architecture, splicing or small-molecule interactions.
 
-While DNA synthesis and sequencing technologies have advanced substantially, long open reading frame (ORF) targets still present major challenges for DMS studies. Shotgun DNA sequencing can be used to greatly speed up the inference of long ORF mutant fitness landscapes, theoretically at no expense in accuracy. We have designed the **nf-core/dms** pipeline to unlock the power of shotgun sequencing based DMS studies, to simplify and standardise the complex bioinformatics steps involved in data processing of such experiments – from read alignment to QC reporting and fitness landscape inferences.
+While DNA synthesis and sequencing technologies have advanced substantially, long open reading frame (ORF) targets still present major challenges for DMS studies. Shotgun DNA sequencing can be used to greatly speed up the inference of long ORF mutant fitness landscapes, theoretically at no expense in accuracy. We have designed the **nf-core/dms** pipeline to unlock the power of shotgun sequencing based DMS studies on long ORFs, to simplify and standardise the complex bioinformatics steps involved in data processing of such experiments – from read alignment to QC reporting and fitness landscape inferences.
 
 > 📄 Reference: Wehnert et al., _bioRxiv_ preprint (coming soon)
 
@@ -34,6 +34,8 @@ While DNA synthesis and sequencing technologies have advanced substantially, lon
 - Containerized via Docker, Singularity and Apptainer
 - Scalable across HPC and Cloud systems
 - Monitors CPU, memory, and CO₂ usage
+
+For details of the pipeline and potential future expansions, please consider reading our [detailed description](docs/pipeline_steps.md).
 
 ---
 
@@ -57,7 +59,7 @@ nextflow run nf-core/dms -profile docker
 
 ## 4. Usage
 Prepare:
-- A **sample sheet** CSV to specify input/output labels, replicates, etc. (see [example](link))
+- A **sample sheet** CSV to specify input/output labels, replicates, etc. (see [example](assets/samplesheet.csv))
 - A **reference FASTA** file for the gene or region of interest
 
 To execute **nf-core/dms**, run the basic command:
@@ -105,7 +107,7 @@ The primary pipeline input is a sample sheet `.csv` file listing:
 - Replicate IDs
 - Associated experimental metadata
 
-See [sample CSV](link) for formatting.
+See [sample CSV](assets/samplesheet.csv) for formatting.
 
 ---
 
@@ -147,12 +149,12 @@ Please also cite the nf-core framework:
 
 We welcome contributions from the community!
 
-Please open an [issue](link) or [pull request](link) via this GitHub page, to:
+Please open an [issue](../../issues/new) or [pull request](../../compare) via this GitHub page, to:
 - Suggest or help implementing new modules for custom workflows
 - Report bugs and other challenges in running **nf-core/dms**
 - Help improve this documentation
 
-You can also reach out to us via the **nf-core Slack**, by use of the `#dms` channel ([join here](link)).
+You can also reach out to us via the **nf-core Slack**, by use of the `#dms` channel ([join here](https://join.slack.com/share/enQtOTMyMDc3MTA0Mzg0Mi04YmRiNDEwZTBlOTRiN2M2ZGU5ZGVmOWQ3YzA0YjA4NzhiNjFhNTVlNDA4ZTZjOTE2MjE5MmIzYWZjZTljMTE3)).
 
 ---
 
@@ -161,9 +163,6 @@ You can also reach out to us via the **nf-core Slack**, by use of the `#dms` cha
 For detailled scientific or technical questions, feedback and experimental discussions, feel free to contact us directly:
 
 - Benjamin Wehnert — wehnertbenjamin@gmail.com  
-- Taylor Mighell — taylor.mighell@crg.eu  
-- Fei Sang — fs18@sanger.ac.uk  
-- Ben Lehner — bl11@sanger.ac.uk  
 - Maximilian Stammnitz — maximilian.stammnitz@crg.eu
 
 ---
