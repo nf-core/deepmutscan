@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the nf-core/dmscore pipeline
+// Subworkflow with functionality specific to the nf-core/deepmutscan pipeline
 //
 
 /*

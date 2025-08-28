@@ -1,11 +1,11 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/dmscore
+    nf-core/deepmutscan
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/dmscore
-    Website: https://nf-co.re/dmscore
-    Slack  : https://nfcore.slack.com/channels/dmscore
+    Github : https://github.com/nf-core/deepmutscan
+    Website: https://nf-co.re/deepmutscan
+    Slack  : https://nfcore.slack.com/channels/deepmutscan
 ----------------------------------------------------------------------------------------
 */
 
@@ -15,10 +15,10 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { DMSCORE  } from './workflows/dmscore'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_dmscore_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_dmscore_pipeline'
-include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_dmscore_pipeline'
+include { DEEPMUTSCAN  } from './workflows/deepmutscan'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_deepmutscan_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_deepmutscan_pipeline'
+include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_deepmutscan_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -40,7 +40,7 @@ params.fasta = getGenomeAttribute('fasta')
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow NFCORE_DMSCORE {
+workflow NFCORE_DEEPMUTSCAN {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -50,11 +50,11 @@ workflow NFCORE_DMSCORE {
     //
     // WORKFLOW: Run pipeline
     //
-    DMSCORE (
+    DEEPMUTSCAN (
         samplesheet
     )
     emit:
-    multiqc_report = DMSCORE.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = DEEPMUTSCAN.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,7 +80,7 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    NFCORE_DMSCORE (
+    NFCORE_DEEPMUTSCAN (
         PIPELINE_INITIALISATION.out.samplesheet
     )
     //
@@ -93,7 +93,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        NFCORE_DMSCORE.out.multiqc_report
+        NFCORE_DEEPMUTSCAN.out.multiqc_report
     )
 }
 

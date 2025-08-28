@@ -17,7 +17,7 @@
                         "size": "Large",
                         "weight": "Bolder",
                         "color": "<% if (success) { %>Good<% } else { %>Attention<%} %>",
-                        "text": "nf-core/dmscore v${version} - ${runName}",
+                        "text": "nf-core/deepmutscan v${version} - ${runName}",
                         "wrap": true
                     },
                     {
