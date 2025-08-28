@@ -16,20 +16,7 @@
 [![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/deepmutscan)
 [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23deepmutscan-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/deepmutscan)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
-# Table Of Contents
-
-1. **[Overview](#overview)**
-1. **[Features](#features)**
-1. **[Installation](#installation)**
-1. **[Usage](#usage)**
-1. **[Input](#input)**
-1. **[Output](#output)**
-1. **[Citation](#citation)**
-1. **[License](#license)**
-1. **[Contributing](#contributing)**
-1. **[Contact](#contact)**
-
-# Overview
+# 1. Overview
 **nf-core/deepmutscan** is a reproducible, scalable, and community-curated pipeline for analyzing deep mutational scanning (DMS) data using shotgun DNA sequencing. DMS enables researchers to measure the fitness effects of thousands of gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn fundamental rules of virus evolution, protein architecture, splicing or small-molecule interactions.
 
 While DNA synthesis and sequencing technologies have advanced substantially, long open reading frame (ORF) targets still present major challenges for DMS studies. Shotgun DNA sequencing can be used to greatly speed up the inference of long ORF mutant fitness landscapes, theoretically at no expense in accuracy. We have designed the **nf-core/deepmutscan** pipeline to unlock the power of shotgun sequencing based DMS studies on long ORFs, to simplify and standardise the complex bioinformatics steps involved in data processing of such experiments – from read alignment to QC reporting and fitness landscape inferences.
@@ -38,7 +25,7 @@ While DNA synthesis and sequencing technologies have advanced substantially, lon
 
 ---
 
-# Features
+# 2. Features of nf-core/deepmutscan
 - End-to-end analyses of DMS shotgun sequencing data
 - Modular, three-stage workflow: alignment → QC → error-aware fitness estimation
 - Integrates with popular statistical tools like [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
@@ -51,7 +38,7 @@ For details of the pipeline and potential future expansions, please consider rea
 
 ---
 
-# Installation
+# 3. Installation
 **nf-core/deepmutscan** uses [Nextflow](https://nf-co.re/docs/usage/getting_started/installation), which must be installed on your system:
 
 ```bash
@@ -70,7 +57,7 @@ For more details and further functionality, please refer to the [usage documenta
 
 ---
 
-# Usage
+# 4. Usage
 Prepare:
 - A **sample sheet** CSV to specify input/output labels, replicates, etc. (see [example](assets/samplesheet.csv))
 - A **reference FASTA** file for the gene or region of interest
@@ -111,7 +98,7 @@ More options and advanced configuration: [see vignette](link). For further infor
 
 ---
 
-# Input
+# 5. Input Data
 
 The primary pipeline input is a sample sheet `.csv` file listing:
 
@@ -124,7 +111,7 @@ See [sample CSV](assets/samplesheet.csv) for formatting.
 
 ---
 
-# Output
+# 6. Outputs
 
 After execution, the pipeline creates the following directory structure:
 
@@ -139,7 +126,7 @@ results/
 
 ---
 
-# Citation
+# 7. Citation
 
 If you use this pipeline in your research, please cite:
 > 📄 Wehnert et al., _bioRxiv_ preprint (coming soon)
@@ -150,7 +137,7 @@ Please also cite the nf-core framework:
 
 ---
 
-# License
+# 8. License
 
 [MIT License](link)
 
@@ -158,7 +145,7 @@ Please also cite the nf-core framework:
 
 ---
 
-# Contributing
+# 9. Contributing
 
 We welcome contributions from the community!
 
@@ -171,7 +158,7 @@ You can also reach out to us via the **nf-core Slack**, by use of the `#dms` cha
 
 ---
 
-# Contact
+# 10. Contact
 
 For detailled scientific or technical questions, feedback and experimental discussions, feel free to contact us directly:
 
