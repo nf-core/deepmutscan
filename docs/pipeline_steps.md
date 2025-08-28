@@ -1,6 +1,6 @@
-# nf-core/dms: Detailed Pipeline Steps
+# nf-core/deepmutscan: Detailed Pipeline Steps
 
-This page provides in-depth descriptions of the data processing modules implemented in **nf-core/dms**. It is mainly intended for advanced users and developers who want to understand the rationale behind design choices, explore implementation details, and consider potential future extensions.
+This page provides in-depth descriptions of the data processing modules implemented in **nf-core/deepmutscan**. It is mainly intended for advanced users and developers who want to understand the rationale behind design choices, explore implementation details, and consider potential future extensions.
 
 ------------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ Each step is explained below. Links are provided to the primary tools and librar
 
 All paired-end raw reads are first aligned to the provided reference ORF using [**bwa-mem**](http://bio-bwa.sourceforge.net/). This is a highly efficient mapping algorithm for reads ≥100 bp, with its multi-threading support automatically handled by nf-core.
 
-In future versions of nf-core/dms, we consider the use of [**bwa-mem2**](https://github.com/bwa-mem2/bwa-mem2), which provides similar alignment rates with a moderate speed increase ([Vasimuddin et al., *IPDPS* 2019](https://ieeexplore.ieee.org/document/8820962)). With the increasing diversity of sequencing platforms for DMS, new throughput, read length, and error profiles may require further alignment options to be implemented.
+In future versions of nf-core/deepmutscan, we consider the use of [**bwa-mem2**](https://github.com/bwa-mem2/bwa-mem2), which provides similar alignment rates with a moderate speed increase ([Vasimuddin et al., *IPDPS* 2019](https://ieeexplore.ieee.org/document/8820962)). With the increasing diversity of sequencing platforms for DMS, new throughput, read length, and error profiles may require further alignment options to be implemented.
 
 ------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ To this end, we use [**samtools view**](https://www.htslib.org/doc/samtools.html
 
 ## 3. Read Merging
 
-Even the highest-accuracy next-generation sequencing platforms do not have perfect base accuracy. To minimise the effect of base errors (which would otherwise be counted as "false mutations"), nf-core/dms uses the overlap of each aligned read pair. With base errors on the forward and reverse read being independent, the pipeline applies the [**vsearch fastq_mergepairs**](https://github.com/torognes/vsearch) function to convert each read pair into a single consensus molecule with adjusted base error scores.
+Even the highest-accuracy next-generation sequencing platforms do not have perfect base accuracy. To minimise the effect of base errors (which would otherwise be counted as "false mutations"), nf-core/deepmutscan uses the overlap of each aligned read pair. With base errors on the forward and reverse read being independent, the pipeline applies the [**vsearch fastq_mergepairs**](https://github.com/torognes/vsearch) function to convert each read pair into a single consensus molecule with adjusted base error scores.
 
 > [!TIP]
 > Optimal merging performance is usually obtained if the average DNA fragment size matches the read size. For example, libraries sequenced with 150 bp paired-end reads should ideally also be sheared/tagmented to a mean size of 150 bp.
@@ -51,15 +51,15 @@ Future versions may offer additional options depending on sequencing type and er
 
 ## 4. Mutation Counting
 
-Aligned, non-wildtype consensus reads are screened for exact, base-level mismatches. nf-core/dms uses a custom Python implementation to count the occurrences of all high-quality single, double, triple, and higher-order nucleotide changes between each read and the reference ORF.
+Aligned, non-wildtype consensus reads are screened for exact, base-level mismatches. nf-core/deepmutscan uses a custom Python implementation to count the occurrences of all high-quality single, double, triple, and higher-order nucleotide changes between each read and the reference ORF.
 
-Unlike the popular [**GATK AnalyzeSaturationMutagenesis**](https://gatk.broadinstitute.org/hc/en-us/articles/360037594771-AnalyzeSaturationMutagenesis-BETA) function, nf-core/dms allows users to specify a minimum base quality cutoff for mutations to be included in the final count table (default: Q30).
+Unlike the popular [**GATK AnalyzeSaturationMutagenesis**](https://gatk.broadinstitute.org/hc/en-us/articles/360037594771-AnalyzeSaturationMutagenesis-BETA) function, nf-core/deepmutscan allows users to specify a minimum base quality cutoff for mutations to be included in the final count table (default: Q30).
 
 ------------------------------------------------------------------------
 
 ## 5. DMS Library Quality Control
 
-By integrating the reference ORF coordinates and the chosen DMS library type (default: NNK/NNs degenerate codon-based nicking), nf-core/dms calculates a number of mutation count summary statistics.
+By integrating the reference ORF coordinates and the chosen DMS library type (default: NNK/NNs degenerate codon-based nicking), nf-core/deepmutscan calculates a number of mutation count summary statistics.
 
 Custom visualisations allow for inspection of (1) mutation efficiency along the ORF, (2) position-specific recovery of amino acid diversity, and (3) overall sequencing coverage evenness and saturation.
 

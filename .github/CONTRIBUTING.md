@@ -10,7 +10,7 @@ However, don't be put off by this template - other more general issues and sugge
 Contributions to the code are even more welcome ;)
 
 > [!NOTE]
-> If you need help using or modifying nf-core/deepmutscan then the best place to ask is on the nf-core Slack [#deepmutscan](https://nfcore.slack.com/channels/deepmutscan) channel ([join our Slack here](https://nf-co.re/join/slack)).
+> If you need help using or modifying nf-core/deepmutscan then the best place to ask is on the nf-core Slack [#deepmutscan](https://nfcore.slack.com/channels/deepmutscan) channel ([join our Slack here](https://nf-co.re/join/slack))
 
 ## Contribution workflow
 

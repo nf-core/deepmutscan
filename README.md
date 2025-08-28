@@ -19,13 +19,13 @@
 ## 1. Overview
 **nf-core/deepmutscan** is a reproducible, scalable, and community-curated pipeline for analyzing deep mutational scanning (DMS) data using shotgun DNA sequencing. DMS enables researchers to measure the fitness effects of thousands of gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn fundamental rules of virus evolution, protein architecture, splicing or small-molecule interactions.
 
-While DNA synthesis and sequencing technologies have advanced substantially, long open reading frame (ORF) targets still present major challenges for DMS studies. Shotgun DNA sequencing can be used to greatly speed up the inference of long ORF mutant fitness landscapes, theoretically at no expense in accuracy. We have designed the **nf-core/dms** pipeline to unlock the power of shotgun sequencing based DMS studies on long ORFs, to simplify and standardise the complex bioinformatics steps involved in data processing of such experiments – from read alignment to QC reporting and fitness landscape inferences.
+While DNA synthesis and sequencing technologies have advanced substantially, long open reading frame (ORF) targets still present major challenges for DMS studies. Shotgun DNA sequencing can be used to greatly speed up the inference of long ORF mutant fitness landscapes, theoretically at no expense in accuracy. We have designed the **nf-core/deepmutscan** pipeline to unlock the power of shotgun sequencing based DMS studies on long ORFs, to simplify and standardise the complex bioinformatics steps involved in data processing of such experiments – from read alignment to QC reporting and fitness landscape inferences.
 
 > 📄 Reference: Wehnert et al., _bioRxiv_ preprint (coming soon)
 
 ---
 
-## 2. Features of nf-core/dms
+## 2. Features of nf-core/deepmutscan
 - End-to-end analyses of DMS shotgun sequencing data
 - Modular, three-stage workflow: alignment → QC → error-aware fitness estimation
 - Integrates with popular statistical tools like [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
@@ -39,7 +39,7 @@ For details of the pipeline and potential future expansions, please consider rea
 ---
 
 ## 3. Installation
-**nf-core/dms** uses [Nextflow](https://nf-co.re/docs/usage/getting_started/installation), which must be installed on your system:
+**nf-core/deepmutscan** uses [Nextflow](https://nf-co.re/docs/usage/getting_started/installation), which must be installed on your system:
 
 ```bash
 java -version                           # Check that Java v11+ is installed
@@ -65,7 +65,7 @@ Prepare:
 To execute **nf-core/deepmutscan**, run the basic command:
 
 ```bash
-nextflow run nf-core/dms \
+nextflow run nf-core/deepmutscan \
   -profile singularity,local \
   --input ./input.csv \
   --outdir ./results \
@@ -151,7 +151,7 @@ We welcome contributions from the community!
 
 Please open an [issue](../../issues/new) or [pull request](../../compare) via this GitHub page, to:
 - Suggest or help implementing new modules for custom workflows
-- Report bugs and other challenges in running **nf-core/dms**
+- Report bugs and other challenges in running **nf-core/deepmutscan**
 - Help improve this documentation
 
 You can also reach out to us via the **nf-core Slack**, by use of the `#dms` channel ([join here](https://join.slack.com/share/enQtOTMyMDc3MTA0Mzg0Mi04YmRiNDEwZTBlOTRiN2M2ZGU5ZGVmOWQ3YzA0YjA4NzhiNjFhNTVlNDA4ZTZjOTE2MjE5MmIzYWZjZTljMTE3)).
