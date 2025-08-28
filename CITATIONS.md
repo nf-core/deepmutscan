@@ -1,4 +1,4 @@
-# nf-core/dmscore: Citations
+# nf-core/deepmutscan: Citations
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 

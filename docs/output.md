@@ -1,4 +1,4 @@
-# nf-core/dmscore: Output
+# nf-core/deepmutscan: Output
 
 ## Introduction
 

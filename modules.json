@@ -1,6 +1,6 @@
 {
-    "name": "nf-core/dmscore",
-    "homePage": "https://github.com/nf-core/dmscore",
+    "name": "nf-core/deepmutscan",
+    "homePage": "https://github.com/nf-core/deepmutscan",
     "repos": {
         "https://github.com/nf-core/modules.git": {
             "modules": {
