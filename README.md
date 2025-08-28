@@ -16,6 +16,19 @@
 [![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/deepmutscan)
 [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23deepmutscan-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/deepmutscan)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
+# Table Of Contents
+
+1. **[Overview](#overview)**
+1. **[Features of nf-core/deepmutscan](#features of nf-core/deepmutscan)**
+1. **[Installation](#installation)**
+1. **[Usage](#usage)**
+1. **[Input Data](#input)**
+1. **[Output Data](#output)**
+1. **[Citation](#citation)**
+1. **[License](#license)**
+1. **[Contributing](#contributing)**
+1. **[Contact](#contact)**
+
 ## 1. Overview
 **nf-core/deepmutscan** is a reproducible, scalable, and community-curated pipeline for analyzing deep mutational scanning (DMS) data using shotgun DNA sequencing. DMS enables researchers to measure the fitness effects of thousands of gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn fundamental rules of virus evolution, protein architecture, splicing or small-molecule interactions.
 
@@ -98,7 +111,7 @@ More options and advanced configuration: [see vignette](link). For further infor
 
 ---
 
-## 5. Input Data
+## 5. Input
 
 The primary pipeline input is a sample sheet `.csv` file listing:
 
@@ -111,7 +124,7 @@ See [sample CSV](assets/samplesheet.csv) for formatting.
 
 ---
 
-## 6. Output Data
+## 6. Output
 
 After execution, the pipeline creates the following directory structure:
 
