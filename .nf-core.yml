@@ -6,7 +6,7 @@ lint: {}
 
 template:
   org: nf-core
-  name: dmscore
+  name: deepmutscan
   description: "Until now, most Deep Mutational Scanning (DMS) experiments relied\
     \ on variant-specific barcoded libraries for sequencing. This method enabled DMS\
     \ on large proteins and led to many great publications. Recently, efforts have\
