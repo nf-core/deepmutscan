@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/dmscore/master/assets/schema_input.json",
-    "title": "nf-core/dmscore pipeline - params.input schema",
+    "$id": "https://raw.githubusercontent.com/nf-core/deepmutscan/master/assets/schema_input.json",
+    "title": "nf-core/deepmutscan pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
     "type": "array",
     "items": {
