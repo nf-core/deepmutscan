@@ -21,6 +21,7 @@ include { VISUALIZATION_LOGDIFF      } from '../modules/local/visualization/visu
 include { VISUALIZATION_SEQDEPTH      } from '../modules/local/visualization/visualization'
 include { GATK_GATKTODIMSUM          } from '../modules/local/gatk/gatktodimsum'
 include { MERGE_COUNTS               } from '../modules/local/dimsum/merge_counts'
+include { EXPDESIGN_DIMSUM               } from '../modules/local/dimsum/dimsum_experimental_design'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -83,6 +84,11 @@ Channel
     .value(params.run_seqdepth)
     .set { run_seqdepth_ch }
 
+// The deepmutscan samplesheet file provided via --input
+Channel
+  .fromPath(params.input, checkIfExists: true)
+  .set { ch_samplesheet_csv }
+
 
 // Define R scripts as channels
 // Helper to anchor to the repo root
@@ -108,6 +114,7 @@ R("modules/local/dmsanalysis/bin/prepare_gatk_data_for_count_heatmaps.R").set { 
 R("modules/local/dmsanalysis/bin/prepare_gatk_data_for_fitness_heatmap.R").set { prepare_fitness_heatmap_script_ch }
 R("modules/local/dmsanalysis/bin/process_raw_gatk.R").set { process_raw_gatk_script_ch }
 R("modules/local/dmsanalysis/bin/merge_counts.R").set { merge_counts_script_ch }
+R("modules/local/dmsanalysis/bin/dimsum_experimentalDesign.R").set { exp_design_ch }
 
 
 
@@ -400,6 +407,14 @@ if (params.dimsum) {
   MERGE_COUNTS(
     ch_dimsum_bundled,         // tuple val(sample), val(metas), path(input_counts), path(output_counts)
     ch_merge_script_for_each   // path merge_script (broadcast)
+  )
+}
+
+
+if (params.dimsum) {
+  EXPDESIGN_DIMSUM(
+    ch_samplesheet_csv,   // path to CSV
+    exp_design_ch         // path to R script
   )
 }
 
