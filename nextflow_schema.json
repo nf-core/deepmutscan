@@ -63,6 +63,11 @@
                 "format": "file-path",
                 "description": "Path to a comma-separated .txt file listing custom codons (e.g., 'AAA,AAC,AAG,...'). Required when mutagenesis_type is 'custom'."
               },
+	      "dimsum": {
+  		"type": "boolean",
+  		"default": false,
+  		"description": "Enable DiMSum preparation (group and merge counts per sample into counts_merged.tsv)."
+		},
               "run_seqdepth": {
                 "type": "boolean",
                 "default": false,

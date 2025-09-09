@@ -56,6 +56,7 @@ workflow NFCORE_DEEPMUTSCAN {
     emit:
     multiqc_report = DEEPMUTSCAN.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW

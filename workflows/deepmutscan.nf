@@ -20,6 +20,7 @@ include { VISUALIZATION_GLOBAL_POS_BIASES_COV      } from '../modules/local/visu
 include { VISUALIZATION_LOGDIFF      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_SEQDEPTH      } from '../modules/local/visualization/visualization'
 include { GATK_GATKTODIMSUM          } from '../modules/local/gatk/gatktodimsum'
+include { MERGE_COUNTS               } from '../modules/local/dimsum/merge_counts'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -38,6 +39,7 @@ params.custom_codon_library = params.custom_codon_library ?: '/NULL'            
 params.sliding_window_size = params.sliding_window_size ?: 10                   // sliding window size to flatten graphs in plots (e.g. GLOBAL_POS_BIASES_COUNTS function)
 params.aimed_cov = params.aimed_cov ?: 100                                      // aimed coverage (assuming equal spread) to visualize threshold in plots
 params.run_seqdepth = params.run_seqdepth ?: false                              // creating seqdepth simulation plot, is computationally quite heavy. per default disabled.
+params.dimsum       = params.dimsum       ?: false				// run DiMSum for fitness/functionality scores from selection input & output samples
 
 
 // Define fasta file as channel (e.g. for BWA index)
@@ -105,6 +107,7 @@ R("modules/local/dmsanalysis/bin/possible_mutations.R").set { possible_mutations
 R("modules/local/dmsanalysis/bin/prepare_gatk_data_for_count_heatmaps.R").set { prepare_counts_heatmap_script_ch }
 R("modules/local/dmsanalysis/bin/prepare_gatk_data_for_fitness_heatmap.R").set { prepare_fitness_heatmap_script_ch }
 R("modules/local/dmsanalysis/bin/process_raw_gatk.R").set { process_raw_gatk_script_ch }
+R("modules/local/dmsanalysis/bin/merge_counts.R").set { merge_counts_script_ch }
 
 
 
@@ -364,6 +367,44 @@ logdiff_scriptN                = fanoutTo(library_completed_variantCounts_ch, lo
       ch_rf_for_dimsum,                      // val(reading_frame)
       ch_script_for_dimsum                   // path(R script)
     )
+
+
+
+// ----- DiMSum: group per biological sample (from samplesheet) and merge counts to use for DiMSum input -----
+
+GATK_GATKTODIMSUM.out.dimsum_input
+  .map { meta, tsv ->
+      def s  = meta.sample as String
+      def id = meta.id     as String
+      def base = s ? (s.replaceFirst(/_(input|output|quality)\d+$/, ''))
+                   : (id?.tokenize('_')?.first())
+      tuple(base as String, tuple(meta, tsv))
+  }
+  .groupTuple()
+  .map { base, pairs ->
+      def metas   = pairs.collect { it[0] }
+      def inputs  = pairs.findAll { it[0].type == 'input'  }.sort { it[0].replicate }.collect { it[1] }
+      def outputs = pairs.findAll { it[0].type == 'output' }.sort { it[0].replicate }.collect { it[1] }
+      tuple([sample: base], metas, inputs, outputs)
+  }
+  .filter { smeta, metas, ins, outs -> ins && outs }
+  .set { ch_dimsum_bundled }
+
+// Broadcast the singleton script path to match each bundle
+def ch_merge_script_for_each = merge_counts_script_ch
+  .combine(ch_dimsum_bundled)
+  .map { it[0] }   // keep the script path, one per bundle
+
+// Launch the merge
+if (params.dimsum) {
+  MERGE_COUNTS(
+    ch_dimsum_bundled,         // tuple val(sample), val(metas), path(input_counts), path(output_counts)
+    ch_merge_script_for_each   // path merge_script (broadcast)
+  )
+}
+
+
+
 
     emit:
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
