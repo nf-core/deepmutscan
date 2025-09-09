@@ -81,10 +81,13 @@ This module will implement strategies to distinguish true single nucleotide vari
 
 ## 8. Fitness Estimation *(in development)*
 
-The final step of the pipeline will perform fitness estimation based on mutation counts. Planned features include:
-- Integration of multiple fitness inference tools beyond DiMSum, including [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
+Using DiMSum, the final step of the pipeline will perform fitness estimation based on mutation counts. Planned features include:
+- Integration of multiple other fitness inference tools, including [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
 - Options for replicates and condition-specific comparisons
 - Standardised output formats for downstream analysis and comparison
+
+> [!IMPORTANT]
+> We note that exact wildtype sequence reads are filtered out in stage 2. Including synonymous wildtype codons in the original mutagenesis design is therefore essential when it comes to calibrating the fitness calculations.
 
 ------------------------------------------------------------------------
 
