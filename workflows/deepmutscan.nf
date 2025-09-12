@@ -22,6 +22,7 @@ include { VISUALIZATION_SEQDEPTH      } from '../modules/local/visualization/vis
 include { GATK_GATKTODIMSUM          } from '../modules/local/gatk/gatktodimsum'
 include { MERGE_COUNTS               } from '../modules/local/dimsum/merge_counts'
 include { EXPDESIGN_DIMSUM               } from '../modules/local/dimsum/dimsum_experimental_design'
+include { FIND_SYNONYMOUS_MUTATION } from '../modules/local/dimsum/find_synonymous_mutation'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -115,6 +116,7 @@ R("modules/local/dmsanalysis/bin/prepare_gatk_data_for_fitness_heatmap.R").set {
 R("modules/local/dmsanalysis/bin/process_raw_gatk.R").set { process_raw_gatk_script_ch }
 R("modules/local/dmsanalysis/bin/merge_counts.R").set { merge_counts_script_ch }
 R("modules/local/dmsanalysis/bin/dimsum_experimentalDesign.R").set { exp_design_ch }
+R("modules/local/dmsanalysis/bin/find_syn_mutation.R").set { syn_mut_ch }
 
 
 
@@ -377,46 +379,63 @@ logdiff_scriptN                = fanoutTo(library_completed_variantCounts_ch, lo
 
 
 
-// ----- DiMSum: group per biological sample (from samplesheet) and merge counts to use for DiMSum input -----
+    // ----- DiMSum: group per biological sample (from samplesheet) and merge counts to use for DiMSum input -----
 
-GATK_GATKTODIMSUM.out.dimsum_input
-  .map { meta, tsv ->
-      def s  = meta.sample as String
-      def id = meta.id     as String
-      def base = s ? (s.replaceFirst(/_(input|output|quality)\d+$/, ''))
+    GATK_GATKTODIMSUM.out.dimsum_input
+      .map { meta, tsv ->
+          def s  = meta.sample as String
+          def id = meta.id     as String
+          def base = s ? (s.replaceFirst(/_(input|output|quality)\d+$/, ''))
                    : (id?.tokenize('_')?.first())
-      tuple(base as String, tuple(meta, tsv))
-  }
-  .groupTuple()
-  .map { base, pairs ->
-      def metas   = pairs.collect { it[0] }
-      def inputs  = pairs.findAll { it[0].type == 'input'  }.sort { it[0].replicate }.collect { it[1] }
-      def outputs = pairs.findAll { it[0].type == 'output' }.sort { it[0].replicate }.collect { it[1] }
-      tuple([sample: base], metas, inputs, outputs)
-  }
-  .filter { smeta, metas, ins, outs -> ins && outs }
-  .set { ch_dimsum_bundled }
+          tuple(base as String, tuple(meta, tsv))
+      }
+      .groupTuple()
+      .map { base, pairs ->
+          def metas   = pairs.collect { it[0] }
+          def inputs  = pairs.findAll { it[0].type == 'input'  }.sort { it[0].replicate }.collect { it[1] }
+          def outputs = pairs.findAll { it[0].type == 'output' }.sort { it[0].replicate }.collect { it[1] }
+          tuple([sample: base], metas, inputs, outputs)
+      }
+      .filter { smeta, metas, ins, outs -> ins && outs }
+      .set { ch_dimsum_bundled }
 
-// Broadcast the singleton script path to match each bundle
-def ch_merge_script_for_each = merge_counts_script_ch
-  .combine(ch_dimsum_bundled)
-  .map { it[0] }   // keep the script path, one per bundle
+    // Broadcast the singleton script path to match each bundle
+    def ch_merge_script_for_each = merge_counts_script_ch
+      .combine(ch_dimsum_bundled)
+      .map { it[0] }   // keep the script path, one per bundle
 
-// Launch the merge
+    // Launch the merge of counts in DiMSum input format
+    if (params.dimsum) {
+      MERGE_COUNTS(
+        ch_dimsum_bundled,         // tuple val(sample), val(metas), path(input_counts), path(output_counts)
+        ch_merge_script_for_each   // path merge_script (broadcast)
+      )
+    }
+    
+    // Create experimental design file to use for DiMSum
+    if (params.dimsum) {
+      EXPDESIGN_DIMSUM(
+        ch_samplesheet_csv,   // path to CSV
+        exp_design_ch         // path to R script
+      )
+    }
+
+
+// --- Synonymous WT selection (runs only when --dimsum) ---
+// Strip meta once: keep only the fasta path
+ch_fasta.map { it[1] }.set { ch_fasta_path }   // path(/…/GID1A.fasta)
+
 if (params.dimsum) {
-  MERGE_COUNTS(
-    ch_dimsum_bundled,         // tuple val(sample), val(metas), path(input_counts), path(output_counts)
-    ch_merge_script_for_each   // path merge_script (broadcast)
+  // MERGE_COUNTS.out.merged_counts shape: tuple( val([sample:'GID1A']), path("counts_merged.tsv") )
+  FIND_SYNONYMOUS_MUTATION(
+    MERGE_COUNTS.out.merged_counts,                                      // tuple(val(sample), path counts_merged.tsv)
+    ch_fasta_path.combine(MERGE_COUNTS.out.merged_counts).map { it[0] }, // path wt_fasta (broadcast to N)
+    reading_frame_ch.combine(MERGE_COUNTS.out.merged_counts).map { it[0] }, // val pos_range (broadcast)
+    syn_mut_ch.combine(MERGE_COUNTS.out.merged_counts).map { it[0] }     // path R script (broadcast)
   )
 }
 
 
-if (params.dimsum) {
-  EXPDESIGN_DIMSUM(
-    ch_samplesheet_csv,   // path to CSV
-    exp_design_ch         // path to R script
-  )
-}
 
 
 

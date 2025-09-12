@@ -1,7 +1,6 @@
 process MERGE_COUNTS {
   tag "${sample.sample}"
   label 'process_single'
-  publishDir "${params.outdir}/dimsum/${sample.sample}", mode: 'copy'
 
   conda "${moduleDir}/environment.yml"
   container "${ workflow.containerEngine == 'singularity' 
@@ -13,7 +12,7 @@ process MERGE_COUNTS {
     path merge_script
 
   output:
-    path "counts_merged.tsv", emit: merged_counts
+    tuple val(sample), path("counts_merged.tsv"), emit: merged_counts
     path "versions.yml", emit: versions
 
   script:
