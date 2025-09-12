@@ -23,6 +23,7 @@ include { GATK_GATKTODIMSUM          } from '../modules/local/gatk/gatktodimsum'
 include { MERGE_COUNTS               } from '../modules/local/dimsum/merge_counts'
 include { EXPDESIGN_DIMSUM               } from '../modules/local/dimsum/dimsum_experimental_design'
 include { FIND_SYNONYMOUS_MUTATION } from '../modules/local/dimsum/find_synonymous_mutation'
+include { RUN_DIMSUM } from '../modules/local/dimsum/run_dimsum'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -434,6 +435,44 @@ if (params.dimsum) {
     syn_mut_ch.combine(MERGE_COUNTS.out.merged_counts).map { it[0] }     // path R script (broadcast)
   )
 }
+
+
+// --- DiMSum execution (only when --dimsum) ---
+if (params.dimsum) {
+  // Shapes:
+  // MERGE_COUNTS.out.merged_counts              -> tuple(val([sample:'GID1A']), path('counts_merged.tsv'))
+  // FIND_SYNONYMOUS_MUTATION.out.synonymous_wt -> tuple(val([sample:'GID1A']), path('synonymous_wt.txt'))
+  // EXPDESIGN_DIMSUM.out.experimental_design   -> path('experimentalDesign.tsv')   (singleton)
+
+  // 1) Key counts and WT by biological sample name to align them robustly
+  def ch_counts_keyed_d = MERGE_COUNTS.out.merged_counts
+      .map { smp, counts -> tuple(smp.sample as String, smp, counts) }
+
+  def ch_wt_keyed_d = FIND_SYNONYMOUS_MUTATION.out.synonymous_wt
+      .map { smp, wt -> tuple(smp.sample as String, wt) }
+
+  // 2) Join by key -> (val(sample), path(counts), path(wt))
+  def ch_counts_wt_d = ch_counts_keyed_d.join(ch_wt_keyed_d)
+      .map { key, smp, counts, wt -> tuple(smp, counts, wt) }
+
+  // 3) Broadcast experimental design (singleton) to each sample triple
+  def ch_exp_for_each_d = EXPDESIGN_DIMSUM.out.experimental_design
+      .combine(ch_counts_wt_d)
+      .map { it[0] }
+
+  // 4) Final aligned channels for RUN_DIMSUM
+  def ch_run_counts_d = ch_counts_wt_d.map { smp, counts, wt -> tuple(smp, counts) }  // matches: tuple val(sample), path(counts_merged)
+  def ch_run_wt_d     = ch_counts_wt_d.map { smp, counts, wt -> wt }                  // matches: path(wt_txt)
+  def ch_run_exp_d    = ch_exp_for_each_d                                             // matches: path(exp_design)
+
+  // 5) Launch
+  RUN_DIMSUM(
+    ch_run_counts_d,   // tuple val(sample), path(counts_merged)
+    ch_run_wt_d,       // path wt_txt
+    ch_run_exp_d       // path experimentalDesign.tsv
+  )
+}
+
 
 
 
