@@ -23,7 +23,7 @@ make_dimsum_experimental_design <- function(samplesheet_csv, out_path = "experim
   # "GID1A_input1", "GID1B_output2", ...
   multi_base <- length(unique(ss$sample)) > 1
   if (multi_base) {
-    sample_name <- paste(ss$sample, ss$type, ss$replicate, sep = "_")
+    sample_name <- paste(ss$sample, ss$type, ss$replicate, sep = "")
   } else {
     sample_name <- paste0(ss$type, ss$replicate)
   }
