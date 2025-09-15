@@ -35,7 +35,7 @@ process RUN_DIMSUM {
       --fitnessErrorModel F \
       --retainIntermediateFiles T \
       --projectName "dimsum_results" \
-      --fastqFileDir .
+      --fastqFileDir . \
 
   R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
   cat <<-END_VERSIONS > versions.yml
