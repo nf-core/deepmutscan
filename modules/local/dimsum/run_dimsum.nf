@@ -32,6 +32,7 @@ process RUN_DIMSUM {
       --countPath "$counts_merged" \
       --startStage 4 \
       --stopStage 5 \
+      --fitnessErrorModel F \
       --retainIntermediateFiles T \
       --projectName "dimsum_results" \
       --fastqFileDir .
