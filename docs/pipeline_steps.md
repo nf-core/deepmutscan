@@ -67,24 +67,23 @@ Custom visualisations allow for inspection of (1) mutation efficiency along the 
 
 ## 6. Data Summarisation for Fitness Estimation
 
-Steps 1-5 are iteratively run across all samples defined in the `.csv` spreadsheet. Once read alignment, merging, mutation counting, and library QC have been completed for the full list of samples, users can opt to proceed with fitness estimation using a number of tools (default: [**DiMSum**](https://github.com/lehner-lab/DiMSum)). The pipeline generates the tool-specific input files by merging mutation counts across samples, using custom R scripts.
+Steps 1-5 are iteratively run across all samples defined in the `.csv` spreadsheet. Once read alignment, merging, mutation counting, and library QC have been completed for the full list of samples, users can opt to proceed with fitness estimation. To this end, the pipeline generates all the necessary input files by merging mutation counts across samples.
 
 ------------------------------------------------------------------------
 
 ## 7. Single Nucleotide Variant Error Correction *(in development)*
 
-This module will implement strategies to distinguish true single nucleotide variants from sequencing artefacts. Methods under consideration include:
-- Empirical error rate modelling based on false double mutants
+This module will implement strategies to distinguish true single nucleotide variants from sequencing artefacts. There are two options to perform this:
 - Empirical error rate modelling based on wildtype sequencing
+- Empirical error rate modelling based on false double mutants *(in development)*
 
 ------------------------------------------------------------------------
 
 ## 8. Fitness Estimation *(in development)*
 
-Using DiMSum, the final step of the pipeline will perform fitness estimation based on mutation counts. Planned features include:
-- Integration of multiple other fitness inference tools, including [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
-- Options for replicates and condition-specific comparisons
-- Standardised output formats for downstream analysis and comparison
+The final step of the pipeline will perform fitness estimation based on mutation counts. By default, we calculate fitness scores as the logarithm of variants' output to input ratio, normalised to that of the provided wildtype sequence. Future expansions may include:
+- Integration of other popular fitness inference tools, including [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
+- Standardised output formats for downstream analyses and comparison
 
 > [!IMPORTANT]
 > We note that exact wildtype sequence reads are filtered out in stage 2. Including synonymous wildtype codons in the original mutagenesis design is therefore essential when it comes to calibrating the fitness calculations.
