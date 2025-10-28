@@ -13,10 +13,7 @@ process RUN_DIMSUM {
     path(exp_design)
 
   output:
-    path "reports/**", emit: reports_folder
     path "dimsum_results**", emit: results_dir
-    path "report.html", emit: report
-    path "tmp/**", emit: tmp_folder
     path "versions.yml", emit: versions
 
   script:
@@ -32,6 +29,7 @@ process RUN_DIMSUM {
       --countPath "$counts_merged" \
       --startStage 4 \
       --stopStage 5 \
+      --fitnessErrorModel F \
       --retainIntermediateFiles T \
       --projectName "dimsum_results" \
       --fastqFileDir . \

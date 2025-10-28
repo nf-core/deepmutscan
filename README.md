@@ -28,7 +28,7 @@ While DNA synthesis and sequencing technologies have advanced substantially, lon
 # 2. Features of nf-core/deepmutscan
 - End-to-end analyses of DMS shotgun sequencing data
 - Modular, three-stage workflow: alignment → QC → error-aware fitness estimation
-- Integrates with popular statistical tools like [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [Rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
+- Integrates with popular statistical tools like [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
 - Supports multiple mutagenesis strategies, e.g. nicking by NNK and NNS codons
 - Containerized via Docker, Singularity and Apptainer
 - Scalable across HPC and Cloud systems
