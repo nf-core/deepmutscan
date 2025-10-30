@@ -66,7 +66,12 @@
 	      "dimsum": {
   		"type": "boolean",
   		"default": false,
-  		"description": "Enable DiMSum preparation (group and merge counts per sample into counts_merged.tsv)."
+  		"description": "Enable DiMSum execution."
+		},
+	      "fitness": {
+  		"type": "boolean",
+  		"default": false,
+  		"description": "Enable basic fitness calculation and preceded data preparation (group and merge counts per sample into counts_merged.tsv, create a specific experimental design file and find a high-count 2nt synonymous mutation). All data prepared serves also as input for the dimsum fitness calculator."
 		},
               "run_seqdepth": {
                 "type": "boolean",

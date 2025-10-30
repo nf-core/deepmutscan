@@ -97,7 +97,7 @@
 
 suppressMessages(library(Biostrings))
 
-generate_dimsum_input <- function(wt_seq_path, gatk_file, pos_range, output_file_path) {
+generate_fitness_input <- function(wt_seq_path, gatk_file, pos_range, output_file_path) {
   # Parse the position range
   positions <- unlist(strsplit(pos_range, "-"))
   start_pos <- as.numeric(positions[1])
@@ -162,7 +162,7 @@ generate_dimsum_input <- function(wt_seq_path, gatk_file, pos_range, output_file
   write.table(processed_data, file = output_file_path, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 }
 
-# generate_dimsum_input(
+# generate_fitness_input(
 #   "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/MORtn5_reference.fa",
 #   "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/gatk_filtered_by_codon_library.csv",
 #   "23-1225",

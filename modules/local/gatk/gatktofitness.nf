@@ -1,4 +1,4 @@
-process GATK_GATKTODIMSUM {
+process GATK_GATKTOFITNESS {
     tag "$meta.id"
     label 'process_single'
 
@@ -14,7 +14,7 @@ process GATK_GATKTODIMSUM {
     path script // R script
 
     output:
-    tuple val(meta), path("${meta.id}_dimsum_input.tsv"), emit: dimsum_input
+    tuple val(meta), path("${meta.id}_fitness_input.tsv"), emit: fitness_input
     path "versions.yml", emit: versions
 
     when:
@@ -24,19 +24,19 @@ process GATK_GATKTODIMSUM {
     """
     start_stop_codon="$pos_range"
 
-    Rscript -e "source('$script'); generate_dimsum_input('$wt_seq', '$variantCounts_filtered_by_library', '\$start_stop_codon', '${meta.id}_dimsum_input.tsv')"
+    Rscript -e "source('$script'); generate_fitness_input('$wt_seq', '$variantCounts_filtered_by_library', '\$start_stop_codon', '${meta.id}_fitness_input.tsv')"
 
     R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
     cat <<-END_VERSIONS > versions.yml
-    GATK_GATKTODIMSUM:
+    GATK_GATKTOFITNESS:
       r-base: \$R_VERSION
     END_VERSIONS
     """
 
     stub:
     """
-    touch ${meta.id}_dimsum_input.tsv
-    echo "GATK_GATKTODIMSUM:" > versions.yml
+    touch ${meta.id}_fitness_input.tsv
+    echo "GATK_GATKTOFITNESS:" > versions.yml
     echo "  stub-version: 0.0.0" >> versions.yml
     """
 }

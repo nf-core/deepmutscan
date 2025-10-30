@@ -19,10 +19,10 @@ include { VISUALIZATION_GLOBAL_POS_BIASES_COUNTS      } from '../modules/local/v
 include { VISUALIZATION_GLOBAL_POS_BIASES_COV      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_LOGDIFF      } from '../modules/local/visualization/visualization'
 include { VISUALIZATION_SEQDEPTH      } from '../modules/local/visualization/visualization'
-include { GATK_GATKTODIMSUM          } from '../modules/local/gatk/gatktodimsum'
-include { MERGE_COUNTS               } from '../modules/local/dimsum/merge_counts'
-include { EXPDESIGN_DIMSUM               } from '../modules/local/dimsum/dimsum_experimental_design'
-include { FIND_SYNONYMOUS_MUTATION } from '../modules/local/dimsum/find_synonymous_mutation'
+include { GATK_GATKTOFITNESS          } from '../modules/local/gatk/gatktofitness'
+include { MERGE_COUNTS               } from '../modules/local/fitness/merge_counts'
+include { EXPDESIGN_FITNESS               } from '../modules/local/fitness/fitness_experimental_design'
+include { FIND_SYNONYMOUS_MUTATION } from '../modules/local/fitness/find_synonymous_mutation'
 include { RUN_DIMSUM } from '../modules/local/dimsum/run_dimsum'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -42,6 +42,7 @@ params.custom_codon_library = params.custom_codon_library ?: '/NULL'            
 params.sliding_window_size = params.sliding_window_size ?: 10                   // sliding window size to flatten graphs in plots (e.g. GLOBAL_POS_BIASES_COUNTS function)
 params.aimed_cov = params.aimed_cov ?: 100                                      // aimed coverage (assuming equal spread) to visualize threshold in plots
 params.run_seqdepth = params.run_seqdepth ?: false                              // creating seqdepth simulation plot, is computationally quite heavy. per default disabled.
+params.fitness       = params.fitness       ?: false				// run basic fitness calculation from selection input & output samples
 params.dimsum       = params.dimsum       ?: false				// run DiMSum for fitness/functionality scores from selection input & output samples
 
 
@@ -105,7 +106,7 @@ R("modules/local/dmsanalysis/bin/counts_per_cov_heatmap.R").set { counts_per_cov
 R("modules/local/dmsanalysis/bin/detect_codons.R").set { detect_codons_script_ch }
 R("modules/local/dmsanalysis/bin/filter_gatk_by_codon_library.R").set { filter_by_library_script_ch }
 R("modules/local/dmsanalysis/bin/fitness_heatmap.R").set { fitness_heatmap_script_ch }
-R("modules/local/dmsanalysis/bin/gatk_to_dimsum.R").set { gatk_to_dimsum_script_ch }
+R("modules/local/dmsanalysis/bin/gatk_to_fitness.R").set { gatk_to_fitness_script_ch }
 R("modules/local/dmsanalysis/bin/global_position_biases_counts_and_counts_per_cov.R").set { global_bias_counts_cov_script_ch }
 R("modules/local/dmsanalysis/bin/global_position_biases_cov.R").set { global_bias_cov_script_ch }
 R("modules/local/dmsanalysis/bin/install_packages.R").set { install_packages_script_ch }
@@ -366,23 +367,23 @@ logdiff_scriptN                = fanoutTo(library_completed_variantCounts_ch, lo
     }
 
     // Broadcast singletons to N (one per sample), anchored on variantCounts_filtered_by_library_ch
-    ch_fasta_for_dimsum    = ch_fasta.combine(variantCounts_filtered_by_library_ch).map { it[1] }   // path(fasta) -- N
-    ch_rf_for_dimsum       = reading_frame_ch.combine(variantCounts_filtered_by_library_ch).map { it[0] }  // val(range) -- N
-    ch_script_for_dimsum   = gatk_to_dimsum_script_ch.combine(variantCounts_filtered_by_library_ch).map { it[0] } // path(script) -- N
+    ch_fasta_for_fitness    = ch_fasta.combine(variantCounts_filtered_by_library_ch).map { it[1] }   // path(fasta) -- N
+    ch_rf_for_fitness       = reading_frame_ch.combine(variantCounts_filtered_by_library_ch).map { it[0] }  // val(range) -- N
+    ch_script_for_fitness   = gatk_to_fitness_script_ch.combine(variantCounts_filtered_by_library_ch).map { it[0] } // path(script) -- N
 
     // Call with aligned inputs
-    GATK_GATKTODIMSUM(
+    GATK_GATKTOFITNESS(
       variantCounts_filtered_by_library_ch,  // tuple(val(meta), path)
-      ch_fasta_for_dimsum,                   // path(fasta)
-      ch_rf_for_dimsum,                      // val(reading_frame)
-      ch_script_for_dimsum                   // path(R script)
+      ch_fasta_for_fitness,                  // path(fasta)
+      ch_rf_for_fitness,                     // val(reading_frame)
+      ch_script_for_fitness                  // path(R script)
     )
 
 
 
     // ----- DiMSum: group per biological sample (from samplesheet) and merge counts to use for DiMSum input -----
 
-    GATK_GATKTODIMSUM.out.dimsum_input
+    GATK_GATKTOFITNESS.out.fitness_input
       .map { meta, tsv ->
           def s  = meta.sample as String
           def id = meta.id     as String
@@ -398,24 +399,24 @@ logdiff_scriptN                = fanoutTo(library_completed_variantCounts_ch, lo
           tuple([sample: base], metas, inputs, outputs)
       }
       .filter { smeta, metas, ins, outs -> ins && outs }
-      .set { ch_dimsum_bundled }
+      .set { ch_fitness_bundled }
 
     // Broadcast the singleton script path to match each bundle
     def ch_merge_script_for_each = merge_counts_script_ch
-      .combine(ch_dimsum_bundled)
+      .combine(ch_fitness_bundled)
       .map { it[0] }   // keep the script path, one per bundle
 
     // Launch the merge of counts in DiMSum input format
-    if (params.dimsum) {
+    if (params.fitness) {
       MERGE_COUNTS(
-        ch_dimsum_bundled,         // tuple val(sample), val(metas), path(input_counts), path(output_counts)
+        ch_fitness_bundled,         // tuple val(sample), val(metas), path(input_counts), path(output_counts)
         ch_merge_script_for_each   // path merge_script (broadcast)
       )
     }
     
     // Create experimental design file to use for DiMSum
-    if (params.dimsum) {
-      EXPDESIGN_DIMSUM(
+    if (params.fitness) {
+      EXPDESIGN_FITNESS(
         ch_samplesheet_csv,   // path to CSV
         exp_design_ch         // path to R script
       )
@@ -426,7 +427,7 @@ logdiff_scriptN                = fanoutTo(library_completed_variantCounts_ch, lo
 // Strip meta once: keep only the fasta path
 ch_fasta.map { it[1] }.set { ch_fasta_path }   // path(/…/GID1A.fasta)
 
-if (params.dimsum) {
+if (params.fitness) {
   // MERGE_COUNTS.out.merged_counts shape: tuple( val([sample:'GID1A']), path("counts_merged.tsv") )
   FIND_SYNONYMOUS_MUTATION(
     MERGE_COUNTS.out.merged_counts,                                      // tuple(val(sample), path counts_merged.tsv)
@@ -437,12 +438,12 @@ if (params.dimsum) {
 }
 
 
-// --- DiMSum execution (only when --dimsum) ---
-if (params.dimsum) {
+// --- DiMSum execution (only when --fitness) ---
+if (params.fitness) {
   // Shapes:
   // MERGE_COUNTS.out.merged_counts              -> tuple(val([sample:'GID1A']), path('counts_merged.tsv'))
   // FIND_SYNONYMOUS_MUTATION.out.synonymous_wt -> tuple(val([sample:'GID1A']), path('synonymous_wt.txt'))
-  // EXPDESIGN_DIMSUM.out.experimental_design   -> path('experimentalDesign.tsv')   (singleton)
+  // EXPDESIGN_FITNESS.out.experimental_design   -> path('experimentalDesign.tsv')   (singleton)
 
   // 1) Key counts and WT by biological sample name to align them robustly
   def ch_counts_keyed_d = MERGE_COUNTS.out.merged_counts
@@ -456,16 +457,19 @@ if (params.dimsum) {
       .map { key, smp, counts, wt -> tuple(smp, counts, wt) }
 
   // 3) Broadcast experimental design (singleton) to each sample triple
-  def ch_exp_for_each_d = EXPDESIGN_DIMSUM.out.experimental_design
+  def ch_exp_for_each_d = EXPDESIGN_FITNESS.out.experimental_design
       .combine(ch_counts_wt_d)
       .map { it[0] }
 
-  // 4) Final aligned channels for RUN_DIMSUM
+  // 4) Final aligned channels for FITNESS and RUN_DIMSUM
   def ch_run_counts_d = ch_counts_wt_d.map { smp, counts, wt -> tuple(smp, counts) }  // matches: tuple val(sample), path(counts_merged)
   def ch_run_wt_d     = ch_counts_wt_d.map { smp, counts, wt -> wt }                  // matches: path(wt_txt)
   def ch_run_exp_d    = ch_exp_for_each_d                                             // matches: path(exp_design)
+}
 
-  // 5) Launch
+// --- DiMSum execution (only when --dimsum) ---
+if (params.dimsum) {
+
   RUN_DIMSUM(
     ch_run_counts_d,   // tuple val(sample), path(counts_merged)
     ch_run_wt_d,       // path wt_txt

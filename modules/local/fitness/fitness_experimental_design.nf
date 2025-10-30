@@ -1,4 +1,4 @@
-process EXPDESIGN_DIMSUM {
+process EXPDESIGN_FITNESS {
   tag "experimentalDesign"
   label 'process_single'
 
