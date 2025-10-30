@@ -23,6 +23,7 @@ include { GATK_GATKTOFITNESS          } from '../modules/local/gatk/gatktofitnes
 include { MERGE_COUNTS               } from '../modules/local/fitness/merge_counts'
 include { EXPDESIGN_FITNESS               } from '../modules/local/fitness/fitness_experimental_design'
 include { FIND_SYNONYMOUS_MUTATION } from '../modules/local/fitness/find_synonymous_mutation'
+include { FITNESS_CALCULATION } from '../modules/local/fitness/fitness_calculation'
 include { RUN_DIMSUM } from '../modules/local/dimsum/run_dimsum'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -36,14 +37,14 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_deep
 */
 
 // Params defaults
-params.min_counts = params.min_counts ?: 3                                      // minimum counts for variant to be recognized. All variants<min_counts will be set to 0
-params.mutagenesis_type = params.mutagenesis_type ?: 'nnk'                      // default library is set to nnk
-params.custom_codon_library = params.custom_codon_library ?: '/NULL'            // when mutagenesis_type is set to >>custom<< this variable has to be path to .txt with custom library
-params.sliding_window_size = params.sliding_window_size ?: 10                   // sliding window size to flatten graphs in plots (e.g. GLOBAL_POS_BIASES_COUNTS function)
-params.aimed_cov = params.aimed_cov ?: 100                                      // aimed coverage (assuming equal spread) to visualize threshold in plots
-params.run_seqdepth = params.run_seqdepth ?: false                              // creating seqdepth simulation plot, is computationally quite heavy. per default disabled.
-params.fitness       = params.fitness       ?: false				// run basic fitness calculation from selection input & output samples
-params.dimsum       = params.dimsum       ?: false				// run DiMSum for fitness/functionality scores from selection input & output samples
+params.min_counts 	= 3                                     // minimum counts for variant to be recognized. All variants<min_counts will be set to 0
+params.mutagenesis_type = 'nnk'                      		// default library is set to nnk
+params.custom_codon_library = '/NULL'            		// when mutagenesis_type is set to >>custom<< this variable has to be path to .txt with custom library
+params.sliding_window_size = 10 				// sliding window size to flatten graphs in plots (e.g. GLOBAL_POS_BIASES_COUNTS function)
+params.aimed_cov 	= 100                                  	// aimed coverage (assuming equal spread) to visualize threshold in plots
+params.run_seqdepth 	= false         			// creating seqdepth simulation plot, is computationally quite heavy. per default disabled.
+params.fitness      	= false 				// run basic fitness calculation from selection input & output samples
+params.dimsum       	= false					// run DiMSum for fitness/functionality scores from selection input & output samples
 
 
 // Define fasta file as channel (e.g. for BWA index)
@@ -118,6 +119,7 @@ R("modules/local/dmsanalysis/bin/prepare_gatk_data_for_fitness_heatmap.R").set {
 R("modules/local/dmsanalysis/bin/process_raw_gatk.R").set { process_raw_gatk_script_ch }
 R("modules/local/dmsanalysis/bin/merge_counts.R").set { merge_counts_script_ch }
 R("modules/local/dmsanalysis/bin/dimsum_experimentalDesign.R").set { exp_design_ch }
+R("modules/local/dmsanalysis/bin/fitness_calculation.R").set { fitness_calculation_script_ch }
 R("modules/local/dmsanalysis/bin/find_syn_mutation.R").set { syn_mut_ch }
 
 
@@ -423,7 +425,7 @@ logdiff_scriptN                = fanoutTo(library_completed_variantCounts_ch, lo
     }
 
 
-// --- Synonymous WT selection (runs only when --dimsum) ---
+// --- Synonymous WT selection (runs only when --fitness) ---
 // Strip meta once: keep only the fasta path
 ch_fasta.map { it[1] }.set { ch_fasta_path }   // path(/…/GID1A.fasta)
 
@@ -438,7 +440,7 @@ if (params.fitness) {
 }
 
 
-// --- DiMSum execution (only when --fitness) ---
+// --- Fitness execution (only when --fitness) ---
 if (params.fitness) {
   // Shapes:
   // MERGE_COUNTS.out.merged_counts              -> tuple(val([sample:'GID1A']), path('counts_merged.tsv'))
@@ -461,10 +463,17 @@ if (params.fitness) {
       .combine(ch_counts_wt_d)
       .map { it[0] }
 
-  // 4) Final aligned channels for FITNESS and RUN_DIMSUM
+  // 4) Final aligned channels for FITNESS_CALCULATION and RUN_DIMSUM
   def ch_run_counts_d = ch_counts_wt_d.map { smp, counts, wt -> tuple(smp, counts) }  // matches: tuple val(sample), path(counts_merged)
   def ch_run_wt_d     = ch_counts_wt_d.map { smp, counts, wt -> wt }                  // matches: path(wt_txt)
   def ch_run_exp_d    = ch_exp_for_each_d                                             // matches: path(exp_design)
+
+  FITNESS_CALCULATION(
+    ch_run_counts_d,   // tuple val(sample), path(counts_merged)
+    ch_run_exp_d,      // path experimentalDesign.tsv
+    ch_run_wt_d,       // path syn_wt_txt
+    fitness_calculation_script_ch
+  )
 }
 
 // --- DiMSum execution (only when --dimsum) ---
@@ -472,7 +481,7 @@ if (params.dimsum) {
 
   RUN_DIMSUM(
     ch_run_counts_d,   // tuple val(sample), path(counts_merged)
-    ch_run_wt_d,       // path wt_txt
+    ch_run_wt_d,       // path syn_wt_txt
     ch_run_exp_d       // path experimentalDesign.tsv
   )
 }

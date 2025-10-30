@@ -2,10 +2,6 @@
 # Merges DiMSum-ready count tables into a single matrix with columns:
 # nt_seq, input1..inputN, output1..outputM
 
-suppressMessages({
-  # keep base R; if you prefer data.table, we can swap in later
-})
-
 # ---- Core function ----
 merge_dimsum_counts <- function(input_paths, output_paths, out_path = "counts.tsv") {
   # input_paths, output_paths: character vectors of file paths
