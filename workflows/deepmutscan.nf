@@ -439,6 +439,14 @@ if (params.fitness) {
   )
 }
 
+// Warning on compatibilities of DiMSum if --dimsum true.
+if (params.dimsum) {
+    log.warn("""
+  '--dimsum true' only works together with '--fitness true'
+  and is currently (30 Oct 2025) NOT supported on ARM processors.
+  Use AMD/x86_64 systems for DiMSum execution.
+  """)
+}
 
 // --- fitness calculation (only when --fitness true) ---
 if (params.fitness) {
