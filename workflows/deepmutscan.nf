@@ -474,20 +474,16 @@ if (params.fitness) {
     ch_run_wt_d,       // path syn_wt_txt
     fitness_calculation_script_ch
   )
+
+// --- DiMSum execution (only when --fitness true & --dimsum true) ---
+  if (params.dimsum) {
+    RUN_DIMSUM(
+      ch_run_counts_d,   // tuple val(sample), path(counts_merged)
+      ch_run_wt_d,       // path syn_wt_txt
+      ch_run_exp_d       // path experimentalDesign.tsv
+    )
+  }
 }
-
-// --- DiMSum execution (only when --dimsum) ---
-if (params.dimsum) {
-
-  RUN_DIMSUM(
-    ch_run_counts_d,   // tuple val(sample), path(counts_merged)
-    ch_run_wt_d,       // path syn_wt_txt
-    ch_run_exp_d       // path experimentalDesign.tsv
-  )
-}
-
-
-
 
 
 
