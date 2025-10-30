@@ -438,7 +438,7 @@ if (params.fitness) {
 }
 
 
-// --- DiMSum execution (only when --fitness) ---
+// --- fitness calculation (only when --fitness true) ---
 if (params.fitness) {
   // Shapes:
   // MERGE_COUNTS.out.merged_counts              -> tuple(val([sample:'GID1A']), path('counts_merged.tsv'))
