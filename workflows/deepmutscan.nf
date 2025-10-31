@@ -23,8 +23,9 @@ include { GATK_GATKTOFITNESS          } from '../modules/local/gatk/gatktofitnes
 include { MERGE_COUNTS               } from '../modules/local/fitness/merge_counts'
 include { EXPDESIGN_FITNESS               } from '../modules/local/fitness/fitness_experimental_design'
 include { FIND_SYNONYMOUS_MUTATION } from '../modules/local/fitness/find_synonymous_mutation'
-include { FITNESS_CALCULATION } from '../modules/local/fitness/fitness_calculation'
-include { RUN_DIMSUM } from '../modules/local/dimsum/run_dimsum'
+include { FITNESS_CALCULATION } from '../modules/local/fitness/fitness_standard'
+include { FITNESS_QC } from '../modules/local/fitness/fitness_standard'
+include { RUN_DIMSUM } from '../modules/local/fitness/run_dimsum'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -120,6 +121,7 @@ R("modules/local/dmsanalysis/bin/process_raw_gatk.R").set { process_raw_gatk_scr
 R("modules/local/dmsanalysis/bin/merge_counts.R").set { merge_counts_script_ch }
 R("modules/local/dmsanalysis/bin/dimsum_experimentalDesign.R").set { exp_design_ch }
 R("modules/local/dmsanalysis/bin/fitness_calculation.R").set { fitness_calculation_script_ch }
+R("modules/local/dmsanalysis/bin/fitness_QC.R").set { fitness_QC_script_ch }
 R("modules/local/dmsanalysis/bin/find_syn_mutation.R").set { syn_mut_ch }
 
 
@@ -481,6 +483,11 @@ if (params.fitness) {
     ch_run_exp_d,      // path experimentalDesign.tsv
     ch_run_wt_d,       // path syn_wt_txt
     fitness_calculation_script_ch
+  )
+
+  FITNESS_QC(
+    FITNESS_CALCULATION.out.fitness_estimation,  					// tuple val(sample), path(fitness_estimation.tsv)
+    fitness_QC_script_ch
   )
 
 // --- DiMSum execution (only when --fitness true & --dimsum true) ---
