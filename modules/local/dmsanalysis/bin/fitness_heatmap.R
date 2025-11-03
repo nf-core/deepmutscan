@@ -123,9 +123,9 @@ build_heatmap_long <- function(df,
 }
 
 syn_segments <- function(d, positions_per_row = 75) {
-  amino_order <- c("G", "A", "V", "L", "M", "I", "F", 
+  amino_order <- rev(c("G", "A", "V", "L", "M", "I", "F", 
                          "Y", "W", "K", "R", "H", "D", "E", 
-                         "S", "T", "C", "N", "Q", "P", "*")
+                         "S", "T", "C", "N", "Q", "P", "*"))
   d %>%
     mutate(
       mut_aa = factor(mut_aa, levels = amino_order),
@@ -158,9 +158,9 @@ white_tail_rects <- function(d, positions_per_row = 75) {
 }
 
 plot_heatmap <- function(d, title_text, positions_per_row = 75) {
-  amino_order <- c("G", "A", "V", "L", "M", "I", "F", 
+  amino_order <- rev(c("G", "A", "V", "L", "M", "I", "F", 
                          "Y", "W", "K", "R", "H", "D", "E", 
-                         "S", "T", "C", "N", "Q", "P", "*")
+                         "S", "T", "C", "N", "Q", "P", "*"))
   d <- d %>% mutate(mut_aa = factor(mut_aa, levels = amino_order))
 
   min_f <- suppressWarnings(min(d$fitness, na.rm = TRUE)); if (!is.finite(min_f)) min_f <- 0
