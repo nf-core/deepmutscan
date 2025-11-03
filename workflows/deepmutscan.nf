@@ -25,6 +25,7 @@ include { EXPDESIGN_FITNESS               } from '../modules/local/fitness/fitne
 include { FIND_SYNONYMOUS_MUTATION } from '../modules/local/fitness/find_synonymous_mutation'
 include { FITNESS_CALCULATION } from '../modules/local/fitness/fitness_standard'
 include { FITNESS_QC } from '../modules/local/fitness/fitness_standard'
+include { FITNESS_HEATMAP } from '../modules/local/fitness/fitness_standard'
 include { RUN_DIMSUM } from '../modules/local/fitness/run_dimsum'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -122,6 +123,7 @@ R("modules/local/dmsanalysis/bin/merge_counts.R").set { merge_counts_script_ch }
 R("modules/local/dmsanalysis/bin/dimsum_experimentalDesign.R").set { exp_design_ch }
 R("modules/local/dmsanalysis/bin/fitness_calculation.R").set { fitness_calculation_script_ch }
 R("modules/local/dmsanalysis/bin/fitness_QC.R").set { fitness_QC_script_ch }
+R("modules/local/dmsanalysis/bin/fitness_heatmap.R").set { fitness_heatmap_script_ch }
 R("modules/local/dmsanalysis/bin/find_syn_mutation.R").set { syn_mut_ch }
 
 
@@ -488,6 +490,12 @@ if (params.fitness) {
   FITNESS_QC(
     FITNESS_CALCULATION.out.fitness_estimation,  					// tuple val(sample), path(fitness_estimation.tsv)
     fitness_QC_script_ch
+  )
+
+  FITNESS_HEATMAP(
+    FITNESS_CALCULATION.out.fitness_estimation,  					// tuple val(sample), path(fitness_estimation.tsv)
+    DMSANALYSIS_AASEQ.out.aa_seq,									// WT amino acid sequence
+    fitness_heatmap_script_ch
   )
 
 // --- DiMSum execution (only when --fitness true & --dimsum true) ---

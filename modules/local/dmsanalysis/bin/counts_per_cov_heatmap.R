@@ -8,8 +8,9 @@ counts_per_cov_heatmap <- function(input_csv_path, threshold = 3, output_pdf_pat
 
   # Inner function to add padding to the last row, adding 21 amino acids per position
   pad_heatmap_data_long <- function(heatmap_data_long, min_non_na_value, num_positions_per_row = 75) {
-    all_amino_acids <- c("A", "C", "D", "E", "F", "G", "H", "I", "K", "L",
-                         "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y", "*")
+    all_amino_acids <- c("G", "A", "V", "L", "M", "I", "F", 
+                         "Y", "W", "K", "R", "H", "D", "E", 
+                         "S", "T", "C", "N", "Q", "P", "*")
 
     max_position <- max(heatmap_data_long$position)
     num_missing_positions <- num_positions_per_row - (max_position %% num_positions_per_row)
@@ -69,8 +70,12 @@ counts_per_cov_heatmap <- function(input_csv_path, threshold = 3, output_pdf_pat
     mutate(synonymous = mut_aa == wt_aa)
 
   # Definiere die korrekte Reihenfolge der Aminosäuren
-  amino_acid_order <- c("*", "A", "C", "D", "E", "F", "G", "H", "I", "K",
-                        "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y")
+  amino_acid_order <- c("G", "A", "V", "L", "M", "I", "F", 
+                         "Y", "W", "K", "R", "H", "D", "E", 
+                         "S", "T", "C", "N", "Q", "P", "*")
+
+  heatmap_data_long <- heatmap_data_long %>%
+  mutate(mut_aa = factor(mut_aa, levels = amino_acid_order))
 
   # Bearbeite heatmap_data_long und erstelle syn_positions gleichzeitig
   syn_positions <- heatmap_data_long %>%
