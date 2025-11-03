@@ -70,9 +70,9 @@ counts_per_cov_heatmap <- function(input_csv_path, threshold = 3, output_pdf_pat
     mutate(synonymous = mut_aa == wt_aa)
 
   # Definiere die korrekte Reihenfolge der Aminosäuren
-  amino_acid_order <- c("G", "A", "V", "L", "M", "I", "F", 
+  amino_acid_order <- rev(c("G", "A", "V", "L", "M", "I", "F", 
                          "Y", "W", "K", "R", "H", "D", "E", 
-                         "S", "T", "C", "N", "Q", "P", "*")
+                         "S", "T", "C", "N", "Q", "P", "*"))
 
   heatmap_data_long <- heatmap_data_long %>%
   mutate(mut_aa = factor(mut_aa, levels = amino_acid_order))
