@@ -1,5 +1,5 @@
 sample,type,replicate,file1,file2
-a_1,input,1,/reads/forward1.fastq.gz,/reads/reverse1.fastq.gz
-a_1,input,2,/reads/forward2.fastq.gz,/reads/reverse2.fastq.gz
-a_1,output,1,/reads/forward3.fastq.gz,/reads/reverse3.fastq.gz
-a_1,output,2,/reads/forward4.fastq.gz,/reads/reverse4.fastq.gz
+ORF1,input,1,/reads/forward1.fastq.gz,/reads/reverse1.fastq.gz
+ORF1,input,2,/reads/forward2.fastq.gz,/reads/reverse2.fastq.gz
+ORF1,output,1,/reads/forward3.fastq.gz,/reads/reverse3.fastq.gz
+ORF1,output,2,/reads/forward4.fastq.gz,/reads/reverse4.fastq.gz
