@@ -1,5 +1,5 @@
 sample,type,replicate,file1,file2
-a_1,input,1,/path1/forward1.fastq.gz,/path1/reverse1.fastq.gz
-a_1,input,2,/path2/forward2.fastq.gz,/path2/reverse2.fastq.gz
-a_3,output,1,/path4/forward3.fastq.gz,/path4/reverse3.fastq.gz
-a_3,output,2,/path5/forward4.fastq.gz,/path5/reverse4.fastq.gz
+a_1,input,1,/reads/forward1.fastq.gz,/reads/reverse1.fastq.gz
+a_1,input,2,/reads/forward2.fastq.gz,/reads/reverse2.fastq.gz
+a_1,output,1,/reads/forward3.fastq.gz,/reads/reverse3.fastq.gz
+a_1,output,2,/reads/forward4.fastq.gz,/reads/reverse4.fastq.gz
