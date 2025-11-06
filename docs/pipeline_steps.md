@@ -49,11 +49,11 @@ Future versions may offer additional options depending on sequencing type and er
 
 ------------------------------------------------------------------------
 
-## 4. Mutation Counting
+## 4. Variant Counting
 
-Aligned, non-wildtype consensus reads are screened for exact, base-level mismatches. nf-core/deepmutscan uses a custom Python implementation to count the occurrences of all high-quality single, double, triple, and higher-order nucleotide changes between each read and the reference ORF.
+Aligned, non-wildtype consensus reads are screened for exact, base-level mismatches. nf-core/deepmutscan currently uses the popular [**GATK AnalyzeSaturationMutagenesis**](https://gatk.broadinstitute.org/hc/en-us/articles/360037594771-AnalyzeSaturationMutagenesis-BETA) function to count occurrences of all single, double, triple, and higher-order nucleotide changes between each read and the reference ORF.
 
-Unlike the popular [**GATK AnalyzeSaturationMutagenesis**](https://gatk.broadinstitute.org/hc/en-us/articles/360037594771-AnalyzeSaturationMutagenesis-BETA) function, nf-core/deepmutscan allows users to specify a minimum base quality cutoff for mutations to be included in the final count table (default: Q30).
+We are currently working on the nf-core/deepmutscan implementation of a much lighter, alternative Python implementation for mutation counting. In this script, users will be allowed to specify a minimum base quality cutoff for mutations to be included in the final count table (default: Q30) – an option not available in GATK.
 
 ------------------------------------------------------------------------
 
