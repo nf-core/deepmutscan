@@ -68,7 +68,7 @@ To execute **nf-core/deepmutscan**, run the basic command:
 nextflow run nf-core/deepmutscan \
   -profile singularity,local \
   --input ./input.csv \
-  --reading-frame 1-300 \
+  --reading_frame 1-300 \
   --fasta ./ref.fa \
   --mutagenesis NNK-NNS \
   --run_seqdepth false \
