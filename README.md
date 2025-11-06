@@ -68,11 +68,12 @@ To execute **nf-core/deepmutscan**, run the basic command:
 nextflow run nf-core/deepmutscan \
   -profile singularity,local \
   --input ./input.csv \
-  --outdir ./results \
-  --fasta ./ref.fa \
   --reading-frame 1-300 \
+  --fasta ./ref.fa \
   --mutagenesis NNK-NNS \
-  --seq-rarefaction false
+  --run_seqdepth false \
+  --fitness true \
+  --outdir ./results
 ```
 
 ### Required parameters
@@ -84,15 +85,16 @@ nextflow run nf-core/deepmutscan \
 | `--fasta`          | Reference FASTA file                                |
 | `--reading_frame`  | Start and end nucleotide (e.g. `1-300`)             |
 
-### Optional parameters
+### Optional parameters *(in development)*
 
 | Parameter              | Default     | Description                                     |
 |------------------------|-------------|-------------------------------------------------|
-| `--read-align`         | `bwa-mem`   | Read aligner                                    |
-| `--mutagenesis`        | `NNK-NNS`   | Deep mutational scanning strategy used          |
-| `--seq-rarefaction`    | `false`     | Estimate sequencing saturation by rarefaction   |
-| `--error-estimation`   | `input`     | Error model used to correct 1nt counts          |
-| `--fitness-estimation` | `dimsum`    | Downstream fitness inference module             |
+| `--run_seqdepth`       | `false`     | Estimate sequencing saturation by rarefaction   |
+| `--fitness`            | `false`      | Default fitness inference module                |
+| `--dimsum`             | `false`     | Optional fitness inference module *(AMD/x86_64 systems only)* |
+| `--mutagenesis`        | `NNK-NNS`   | Deep mutational scanning strategy used *(in development)*         |
+| `--error-estimation`   | `input`     | Error model used to correct 1nt counts *(in development)*         |
+| `--read-align`         | `bwa-mem`   | Read aligner *(in development)*                 |
 
 More options and advanced configuration: [see vignette](link). For further information or help, don't hesitate to get in touch on the [Slack `#deepmutscan` channel](https://nfcore.slack.com/channels/deepmutscan) (you can join with [this invite](https://nf-co.re/join/slack)).
 
@@ -117,11 +119,14 @@ After execution, the pipeline creates the following directory structure:
 
 ```
 results/
-├── plots/               # PDF visualizations: coverage, variant heatmaps, etc.
-├── intermediate_files/  # Raw alignments, filtered variant tables, QC reports
-├── final_files/         # Fitness and error tables from downstream tools
-├── timeline.html        # Runtime timeline
-└── report.html          # Summary report incl. resource and CO₂ usage
+├── fastqc/              # Individual HTML reports for specified fastq files, raw sequencing QC
+├── fitness/             # Merged variant count tables, fitness and error estimates, replicate correlations and heatmaps
+├── intermediate_files/  # Raw alignments, raw and pre-filtered variant count tables, QC reports
+├── library_QC/          # Sample-specific PDF visualizations: position-wise sequencing coverage, count heatmaps, etc.
+├── multiqc/             # Shared HTML reports for all fastq files, raw sequencing QC
+├── pipelineinfo/        # Nextflow helper files for timeline and summary report generation
+├── timeline.html        # Nextflow timeline for all tasks
+└── report.html          # Nextflow summary report incl. detailed CPU and memory usage per for all tasks
 ```
 
 ---
