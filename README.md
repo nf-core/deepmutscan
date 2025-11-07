@@ -70,7 +70,7 @@ nextflow run nf-core/deepmutscan \
   --input ./input.csv \
   --reading_frame 1-300 \
   --fasta ./ref.fa \
-  --mutagenesis NNK-NNS \
+  --mutagenesis max_diff_to_wt \
   --run_seqdepth false \
   --fitness true \
   --outdir ./results
@@ -92,7 +92,7 @@ nextflow run nf-core/deepmutscan \
 | `--run_seqdepth`       | `false`     | Estimate sequencing saturation by rarefaction   |
 | `--fitness`            | `false`      | Default fitness inference module                |
 | `--dimsum`             | `false`     | Optional fitness inference module *(AMD/x86_64 systems only)* |
-| `--mutagenesis`        | `NNK-NNS`   | Deep mutational scanning strategy used *(in development)*         |
+| `--mutagenesis`        | `max_diff_to_wt`   | Deep mutational scanning strategy used *(in development)*         |
 | `--error-estimation`   | `input`     | Error model used to correct 1nt counts *(in development)*         |
 | `--read-align`         | `bwa-mem`   | Read aligner *(in development)*                 |
 
