@@ -93,7 +93,7 @@ nextflow run nf-core/deepmutscan \
 | `--fitness`            | `false`      | Default fitness inference module                |
 | `--dimsum`             | `false`     | Optional fitness inference module *(AMD/x86_64 systems only)* |
 | `--mutagenesis`        | `max_diff_to_wt`   | Deep mutational scanning strategy used *(in development)*         |
-| `--error-estimation`   | `input`     | Error model used to correct 1nt counts *(in development)*         |
+| `--error-estimation`   | `wt_sequencing`     | Error model used to correct 1nt counts *(in development)*         |
 | `--read-align`         | `bwa-mem`   | Read aligner *(in development)*                 |
 
 More options and advanced configuration: [see vignette](link). For further information or help, don't hesitate to get in touch on the [Slack `#deepmutscan` channel](https://nfcore.slack.com/channels/deepmutscan) (you can join with [this invite](https://nf-co.re/join/slack)).
