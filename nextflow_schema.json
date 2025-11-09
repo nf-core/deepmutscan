@@ -44,8 +44,7 @@
                 "reading_frame": {
                 "type": "string",
                 "description": "Start and stop codon positions in the format 'start-stop', e.g., '352-1383'.",
-                "pattern": "^\\d+-\\d+$",
-                "default": "352-1383"
+                "pattern": "^\\d+-\\d+$"
               },
               "min_counts": {
                 "type": "integer",
