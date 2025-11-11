@@ -89,14 +89,14 @@ nextflow run nf-core/deepmutscan \
    --outdir ./results
 ```
 
-There are several optional parameters, some of which are still *(in development)*.
+There are several optional parameters, some of which are currently *(in development)*.
 
 | Parameter              | Default     | Description                                     |
 |------------------------|-------------|-------------------------------------------------|
 | `--run_seqdepth`       | `false`     | Estimate sequencing saturation by rarefaction   |
 | `--fitness`            | `false`     | Default fitness inference module                |
 | `--dimsum`             | `false`     | Optional fitness inference module *(AMD/x86_64 systems only)* |
-| `--mutagenesis`        | `max_diff_to_wt` | Deep mutational scanning strategy used *(in development)* |
+| `--mutagenesis`        | `nnk` | Deep mutational scanning strategy used *(in development)* |
 | `--error-estimation`   | `wt_sequencing` | Error model used to correct 1nt counts *(in development)*  |
 | `--read-align`         | `bwa-mem` | Customised read aligner *(in development)* |
 
