@@ -141,8 +141,6 @@ Please also cite the `nf-core` framework:
 > 📄 Ewels et al., _Nature Biotechnology_, 2020  
 > [https://doi.org/10.1038/s41587-020-0439-x](https://doi.org/10.1038/s41587-020-0439-x)
 
-&copy; 2025 Benjamin Wehnert, Taylor L. Mighell, Fei Sang, Ben Lehner, Maximilian R. Stammnitz
-
 ## Contact
 
 For detailled scientific or technical questions, feedback and experimental discussions, feel free to contact us directly:
