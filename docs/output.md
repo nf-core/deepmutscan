@@ -53,13 +53,13 @@ This directory is created during the first series of steps of the pipeline, feat
 <summary>Output files</summary>
 
 - `intermediate_files/`
-  - `aa_seq.txt`: 
-  - `bam_files/bwa`: 
-  - `bam_files/filtered`: 
-  - `bam_files/premerged`: 
-  - `gatk`: 
-  - `possible_mutations.csv`: 
-  - `processed_gatk_files`: 
+  - `aa_seq.txt`:
+  - `bam_files/bwa`:
+  - `bam_files/filtered`:
+  - `bam_files/premerged`:
+  - `gatk`:
+  - `possible_mutations.csv`:
+  - `processed_gatk_files`:
 
 </details>
 
@@ -71,13 +71,13 @@ This directory is created during the second series of steps of the pipeline, fea
 <summary>Output files</summary>
 
 - `library_QC/`
-  - `counts_heatmap.pdf`: 
-  - `counts_per_cov_heatmap.pdf`: 
-  - `logdiff_plot.pdf`: 
-  - `logdiff_varying_bases.pdf`: 
-  - `rolling_counts_per_cov.pdf`: 
-  - `rolling_counts.pdf`: 
-  - `rolling_coverage.pdf`: 
+  - `counts_heatmap.pdf`:
+  - `counts_per_cov_heatmap.pdf`:
+  - `logdiff_plot.pdf`:
+  - `logdiff_varying_bases.pdf`:
+  - `rolling_counts_per_cov.pdf`:
+  - `rolling_counts.pdf`:
+  - `rolling_coverage.pdf`:
   - `SeqDepth.pdf` (optional):
 
 </details>
@@ -91,11 +91,11 @@ This directory is created during the final series of steps of the pipeline, feat
 
 - `fitness/`
   - `counts_merged.tsv`: summarised gene variant counts across all input and output samples.
-  - `default_results/fitness_estimation_count_correlation.pdf`: 
-  - `default_results/fitness_estimation_fitness_correlation.pdf`: 
-  - `default_results/fitness_heatmap.pdf`: 
-  - `default_results/fitness_estimation.tsv`: 
-  - `DiMSum_results/dimsum_results` (optional): 
+  - `default_results/fitness_estimation_count_correlation.pdf`:
+  - `default_results/fitness_estimation_fitness_correlation.pdf`:
+  - `default_results/fitness_heatmap.pdf`:
+  - `default_results/fitness_estimation.tsv`:
+  - `DiMSum_results/dimsum_results` (optional):
 
 </details>
 

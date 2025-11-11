@@ -50,14 +50,15 @@ For details of the pipeline and potential future expansions, please consider rea
 ## Step-by-step pipeline summary
 
 The pipeline processes deep mutational scanning (DMS) sequencing data in several stages:
+
 1. Alignment of reads to the reference open reading frame (ORF) (`BWA-mem`)
 2. Filtering of wildtype and erroneous reads (`samtools`)
 3. Read merging for base error reduction (`vsearch merge`, `BWA-mem`)
 4. Mutation counting (`GATK AnalyzeSaturationMutagenesis`)
 5. DMS library quality control
 6. Data summarisation across samples
-7. Single nucleotide variant error correction *(in development)*
-8. Fitness estimation *(in development)*
+7. Single nucleotide variant error correction _(in development)_
+8. Fitness estimation _(in development)_
 
 ## Usage
 
@@ -89,16 +90,16 @@ nextflow run nf-core/deepmutscan \
    --outdir ./results
 ```
 
-There are several optional parameters, some of which are currently *(in development)*.
+There are several optional parameters, some of which are currently _(in development)_.
 
-| Parameter              | Default     | Description                                     |
-|------------------------|-------------|-------------------------------------------------|
-| `--run_seqdepth`       | `false`     | Estimate sequencing saturation by rarefaction   |
-| `--fitness`            | `false`     | Default fitness inference module                |
-| `--dimsum`             | `false`     | Optional fitness inference module *(AMD/x86_64 systems only)* |
-| `--mutagenesis`        | `nnk` | Deep mutational scanning strategy used *(in development)* |
-| `--error-estimation`   | `wt_sequencing` | Error model used to correct 1nt counts *(in development)*  |
-| `--read-align`         | `bwa-mem` | Customised read aligner *(in development)* |
+| Parameter            | Default         | Description                                                   |
+| -------------------- | --------------- | ------------------------------------------------------------- |
+| `--run_seqdepth`     | `false`         | Estimate sequencing saturation by rarefaction                 |
+| `--fitness`          | `false`         | Default fitness inference module                              |
+| `--dimsum`           | `false`         | Optional fitness inference module _(AMD/x86_64 systems only)_ |
+| `--mutagenesis`      | `nnk`           | Deep mutational scanning strategy used _(in development)_     |
+| `--error-estimation` | `wt_sequencing` | Error model used to correct 1nt counts _(in development)_     |
+| `--read-align`       | `bwa-mem`       | Customised read aligner _(in development)_                    |
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
@@ -126,6 +127,7 @@ results/
 We welcome contributions from the community!
 
 Please open an [issue](../../issues/new) or [pull request](../../compare) via this GitHub page, to:
+
 - Suggest or help implementing new modules for custom workflows
 - Report bugs and other challenges in running **nf-core/deepmutscan**
 - Help improve this documentation
@@ -135,9 +137,11 @@ Please open an [issue](../../issues/new) or [pull request](../../compare) via th
 **nf-core/deepmutscan** was originally written by [Benjamin Wehnert](https://github.com/BenjaminWehnert1008) and [Max Stammnitz](https://github.com/MaximilianStammnitz) at the [Centre for Genomic Regulation, Barcelona](https://www.crg.eu/), with the generous support of an EMBO Long-term Postdoctoral Fellowship and a Marie Skłodowska-Curie grant by the European Union.
 
 If you use `nf-core/deepmutscan` in your analyses, please cite:
+
 > 📄 Wehnert et al., _bioRxiv_ preprint (coming soon)
 
 Please also cite the `nf-core` framework:
+
 > 📄 Ewels et al., _Nature Biotechnology_, 2020  
 > [https://doi.org/10.1038/s41587-020-0439-x](https://doi.org/10.1038/s41587-020-0439-x)
 
@@ -145,7 +149,7 @@ Please also cite the `nf-core` framework:
 
 For detailled scientific or technical questions, feedback and experimental discussions, feel free to contact us directly:
 
-- Benjamin Wehnert — wehnertbenjamin@gmail.com  
+- Benjamin Wehnert — wehnertbenjamin@gmail.com
 - Maximilian Stammnitz — maximilian.stammnitz@crg.eu
 
 ## CHANGELOG

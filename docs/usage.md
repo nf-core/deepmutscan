@@ -77,16 +77,16 @@ Secondly, users need to specify the gene or gene region of interest using a refe
 
 ## Optional parameters
 
-Several optional parameters are available for `nf-core/deepmutscan`, some of which are currently *(in development)*.
+Several optional parameters are available for `nf-core/deepmutscan`, some of which are currently _(in development)_.
 
-| Parameter              | Default     | Description                                     |
-|------------------------|-------------|-------------------------------------------------|
-| `--run_seqdepth`       | `false`     | Estimate sequencing saturation by rarefaction   |
-| `--fitness`            | `false`     | Default fitness inference module                |
-| `--dimsum`             | `false`     | Optional fitness inference module *(AMD/x86_64 systems only)* |
-| `--mutagenesis`        | `nnk` | Deep mutational scanning strategy used *(in development)* |
-| `--error-estimation`   | `wt_sequencing` | Error model used to correct 1nt counts *(in development)*  |
-| `--read-align`         | `bwa-mem` | Customised read aligner *(in development)* |
+| Parameter            | Default         | Description                                                   |
+| -------------------- | --------------- | ------------------------------------------------------------- |
+| `--run_seqdepth`     | `false`         | Estimate sequencing saturation by rarefaction                 |
+| `--fitness`          | `false`         | Default fitness inference module                              |
+| `--dimsum`           | `false`         | Optional fitness inference module _(AMD/x86_64 systems only)_ |
+| `--mutagenesis`      | `nnk`           | Deep mutational scanning strategy used _(in development)_     |
+| `--error-estimation` | `wt_sequencing` | Error model used to correct 1nt counts _(in development)_     |
+| `--read-align`       | `bwa-mem`       | Customised read aligner _(in development)_                    |
 
 ## Pipeline output
 
@@ -110,7 +110,7 @@ results/
 
 All paired-end raw reads are first aligned to the provided reference ORF using [**bwa-mem**](http://bio-bwa.sourceforge.net/). This is a highly efficient mapping algorithm for reads ≥100 bp, with its multi-threading support automatically handled by nf-core.
 
-In future versions of `nf-core/deepmutscan`, we consider the use of [**bwa-mem2**](https://github.com/bwa-mem2/bwa-mem2), which provides similar alignment rates with a moderate speed increase ([Vasimuddin et al., *IPDPS* 2019](https://ieeexplore.ieee.org/document/8820962)). With the increasing diversity of sequencing platforms for DMS, new throughput, read length, and error profiles may require further alignment options to be implemented.
+In future versions of `nf-core/deepmutscan`, we consider the use of [**bwa-mem2**](https://github.com/bwa-mem2/bwa-mem2), which provides similar alignment rates with a moderate speed increase ([Vasimuddin et al., _IPDPS_ 2019](https://ieeexplore.ieee.org/document/8820962)). With the increasing diversity of sequencing platforms for DMS, new throughput, read length, and error profiles may require further alignment options to be implemented.
 
 ### 2. Filtering
 
@@ -143,15 +143,17 @@ Custom visualisations allow for inspection of (1) mutation efficiency along the 
 
 Steps 1-5 are iteratively run across all samples defined in the `.csv` spreadsheet. Once read alignment, merging, mutation counting, and library QC have been completed for the full list of samples, users can opt to proceed with fitness estimation. To this end, the pipeline generates all the necessary input files by merging mutation counts across samples.
 
-### 7. Single Nucleotide Variant Error Correction *(in development)*
+### 7. Single Nucleotide Variant Error Correction _(in development)_
 
 This module will implement strategies to distinguish true single nucleotide variants from sequencing artefacts. There are two options to perform this:
-- Empirical error rate modelling based on wildtype sequencing
-- Empirical error rate modelling based on false double mutants *(in development)*
 
-### 8. Fitness Estimation *(in development)*
+- Empirical error rate modelling based on wildtype sequencing
+- Empirical error rate modelling based on false double mutants _(in development)_
+
+### 8. Fitness Estimation _(in development)_
 
 The final step of the pipeline will perform fitness estimation based on mutation counts. By default, we calculate fitness scores as the logarithm of variants' output to input ratio, normalised to that of the provided wildtype sequence. Future expansions may include:
+
 - Integration of other popular fitness inference tools, including [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
 - Standardised output formats for downstream analyses and comparison
 
@@ -160,11 +162,11 @@ The final step of the pipeline will perform fitness estimation based on mutation
 
 ## Notes for Developers
 
--   Custom scripts used in filtering and mutation counting are available in the `bin/` directory of the repository.
--   Modules are implemented in Nextflow DSL2 and follow the nf-core community guidelines.
--   Contributions, optimisations, and additional analysis modules are welcome - please open a pull request or GitHub issue to discuss ideas.
+- Custom scripts used in filtering and mutation counting are available in the `bin/` directory of the repository.
+- Modules are implemented in Nextflow DSL2 and follow the nf-core community guidelines.
+- Contributions, optimisations, and additional analysis modules are welcome - please open a pull request or GitHub issue to discuss ideas.
 
-*This document is meant as a living reference. As the pipeline evolves, the descriptions of steps 7 and 8 will be expanded with concrete implementation details.*
+_This document is meant as a living reference. As the pipeline evolves, the descriptions of steps 7 and 8 will be expanded with concrete implementation details._
 
 ## Updating the pipeline
 
