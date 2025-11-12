@@ -45,14 +45,14 @@ On release, automated continuous integration tests run the pipeline on a full-si
 - Scalability across HPC and Cloud systems
 - Monitoring of CPU, memory, and CO₂ usage
 
-For details of the pipeline and potential future expansions, please consider reading our [detailed description](docs/pipeline_steps.md).
+For more details on the pipeline and on potential future expansions, please consider reading our [usage description](https://nf-co.re/deepmutscan/usage).
 
 ## Step-by-step pipeline summary
 
 The pipeline processes deep mutational scanning (DMS) sequencing data in several stages:
 
 1. Alignment of reads to the reference open reading frame (ORF) (`BWA-mem`)
-2. Filtering of wildtype and erroneous reads (`samtools`)
+2. Filtering of wildtype and erroneous reads (`samtools view`)
 3. Read merging for base error reduction (`vsearch merge`, `BWA-mem`)
 4. Mutation counting (`GATK AnalyzeSaturationMutagenesis`)
 5. DMS library quality control
@@ -67,9 +67,7 @@ The pipeline processes deep mutational scanning (DMS) sequencing data in several
 
 First, prepare a samplesheet with your input/output data in which each row represents a pair of fastq files (paired end). This should look as follows:
 
-`samplesheet.csv`:
-
-```csv
+```csv title="samplesheet.csv"
 sample,type,replicate,file1,file2
 ORF1,input,1,/reads/forward1.fastq.gz,/reads/reverse1.fastq.gz
 ORF1,input,2,/reads/forward2.fastq.gz,/reads/reverse2.fastq.gz
@@ -81,7 +79,7 @@ Secondly, specify the gene or gene region of interest using a reference FASTA fi
 
 Now, you can run the pipeline using:
 
-```bash
+```bash title="example pipeline run"
 nextflow run nf-core/deepmutscan \
    -profile <docker/singularity/.../institute> \
    --input ./samplesheet.csv \
@@ -90,27 +88,13 @@ nextflow run nf-core/deepmutscan \
    --outdir ./results
 ```
 
-There are several optional parameters, some of which are currently _(in development)_.
-
-| Parameter            | Default         | Description                                                   |
-| -------------------- | --------------- | ------------------------------------------------------------- |
-| `--run_seqdepth`     | `false`         | Estimate sequencing saturation by rarefaction                 |
-| `--fitness`          | `false`         | Default fitness inference module                              |
-| `--dimsum`           | `false`         | Optional fitness inference module _(AMD/x86_64 systems only)_ |
-| `--mutagenesis`      | `nnk`           | Deep mutational scanning strategy used _(in development)_     |
-| `--error-estimation` | `wt_sequencing` | Error model used to correct 1nt counts _(in development)_     |
-| `--read-align`       | `bwa-mem`       | Customised read aligner _(in development)_                    |
-
-> [!WARNING]
-> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
-
-For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/deepmutscan/usage) and the [parameter documentation](https://nf-co.re/deepmutscan/parameters). Don't hesitate to get in touch on the [Slack `#deepmutscan` channel](https://nfcore.slack.com/channels/deepmutscan) (you can join with [this invite](https://nf-co.re/join/slack)).
+There are several optional [parameters](https://nf-co.re/deepmutscan/parameters), some of which are currently in development. For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/deepmutscan/usage).
 
 ## Pipeline output
 
 After execution, the pipeline creates the following directory structure:
 
-```
+```folder title="output folder structure"
 results/
 ├── fastqc/              # Individual HTML reports for specified fastq files, raw sequencing QC
 ├── fitness/             # Merged variant count tables, fitness and error estimates, replicate correlations and heatmaps
@@ -122,19 +106,23 @@ results/
 └── report.html          # Nextflow summary report incl. detailed CPU and memory usage per for all tasks
 ```
 
+For a full overview of the output file types, please refer to the specific [documentation](https://nf-co.re/deepmutscan/output).
+
 ## Contributing
 
 We welcome contributions from the community!
 
-Please open an [issue](../../issues/new) or [pull request](../../compare) via this GitHub page, to:
+For technical challenges and feedback on the pipeline, please use our [Github repository](https://github.com/nf-core/deepmutscan). Please open an [issue](https://github.com/nf-core/deepmutscan/issues/new) or [pull request](https://github.com/nf-core/deepmutscan/compare) to:
 
-- Suggest or help implementing new modules for custom workflows
-- Report bugs and other challenges in running **nf-core/deepmutscan**
+- Report bugs or solve data incompatibilities when running `nf-core/deepmutscan`
+- Suggest the implementation of new modules for custom DMS workflows
 - Help improve this documentation
+
+If you are interested in getting involved as a developer, please consider joining our interactive [`#deepmutscan` Slack channel](https://nfcore.slack.com/channels/deepmutscan) (via [this invite](https://nf-co.re/join/slack)).
 
 ## Credits
 
-**nf-core/deepmutscan** was originally written by [Benjamin Wehnert](https://github.com/BenjaminWehnert1008) and [Max Stammnitz](https://github.com/MaximilianStammnitz) at the [Centre for Genomic Regulation, Barcelona](https://www.crg.eu/), with the generous support of an EMBO Long-term Postdoctoral Fellowship and a Marie Skłodowska-Curie grant by the European Union.
+`nf-core/deepmutscan` was originally written by [Benjamin Wehnert](https://github.com/BenjaminWehnert1008) and [Max Stammnitz](https://github.com/MaximilianStammnitz) at the [Centre for Genomic Regulation, Barcelona](https://www.crg.eu/), with the generous support of an EMBO Long-term Postdoctoral Fellowship and a Marie Skłodowska-Curie grant by the European Union.
 
 If you use `nf-core/deepmutscan` in your analyses, please cite:
 
@@ -145,9 +133,9 @@ Please also cite the `nf-core` framework:
 > 📄 Ewels et al., _Nature Biotechnology_, 2020  
 > [https://doi.org/10.1038/s41587-020-0439-x](https://doi.org/10.1038/s41587-020-0439-x)
 
-## Contact
+## Scientific contact
 
-For detailled scientific or technical questions, feedback and experimental discussions, feel free to contact us directly:
+For scientific discussions around the use of this pipeline (e.g. on experimental design or sequencing data requirements), please feel free to get in touch with us directly:
 
 - Benjamin Wehnert — wehnertbenjamin@gmail.com
 - Maximilian Stammnitz — maximilian.stammnitz@crg.eu
