@@ -130,7 +130,7 @@ If you use `nf-core/deepmutscan` in your analyses, please cite:
 
 Please also cite the `nf-core` framework:
 
-> 📄 Ewels et al., _Nature Biotechnology_, 2020  
+> 📄 Ewels et al., _Nature Biotechnology_, 2020
 > [https://doi.org/10.1038/s41587-020-0439-x](https://doi.org/10.1038/s41587-020-0439-x)
 
 ## Scientific contact
