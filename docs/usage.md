@@ -63,9 +63,7 @@ You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-c
 
 Users need to first prepare a samplesheet with your input/output data in which each row represents a pair of fastq files (paired end). This should look as follows:
 
-`samplesheet.csv`:
-
-```csv
+```csv title="samplesheet.csv"
 sample,type,replicate,file1,file2
 ORF1,input,1,/reads/forward1.fastq.gz,/reads/reverse1.fastq.gz
 ORF1,input,2,/reads/forward2.fastq.gz,/reads/reverse2.fastq.gz
