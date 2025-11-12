@@ -5,7 +5,7 @@
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory:
 
-```
+```tree
 results/
 ├── fastqc/              # Individual HTML reports for specified fastq files, raw sequencing QC
 ├── fitness/             # Merged variant count tables, fitness and error estimates, replicate correlations and heatmaps
