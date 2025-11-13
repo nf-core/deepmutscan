@@ -26,9 +26,6 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_deep
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// TODO nf-core: Remove this line if you don't need a FASTA file
-//   This is an example of how to use getGenomeAttribute() to fetch parameters
-//   from igenomes.config using `--genome`
 params.fasta = getGenomeAttribute('fasta')
 
 /*
@@ -56,6 +53,7 @@ workflow NFCORE_DEEPMUTSCAN {
     emit:
     multiqc_report = DEEPMUTSCAN.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
