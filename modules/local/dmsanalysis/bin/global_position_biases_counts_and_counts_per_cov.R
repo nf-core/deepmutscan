@@ -147,17 +147,3 @@ position_biases <- function(prefiltered_gatk_path, aa_seq_path, window_size = 10
 
 # Example call to the function
 #position_biases("/Users/benjaminwehnert/CRG/DMS_QC/testing_data/gatk_filtered_by_codon_library.csv", "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/aa_seq.txt", window_size = 18, output_path_folder = "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/testing_outputs")
-
-
-
-
-
-
-
-
-
-
-
-
-
-

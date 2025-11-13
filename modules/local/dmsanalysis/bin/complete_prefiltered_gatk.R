@@ -76,4 +76,3 @@ complete_prefiltered_gatk <- function(possible_nnk_path, prefiltered_gatk_path, 
 
 # Example call
 #complete_prefiltered_gatk("/Users/benjaminwehnert/CRG/DMS_QC/testing_data/possible_NNK_mutations.csv", "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/gatk_filtered_by_codon_library.csv", "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/testing_outputs")
-

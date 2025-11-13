@@ -144,6 +144,3 @@ library(scales)
  # # Example call
  # logdiff_plot_codon_mut("/Users/benjaminwehnert/CRG/DMS_QC/testing_data/testing_outputs/completed_prefiltered_gatk.csv", "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/testing_outputs")
  #
-
-
-

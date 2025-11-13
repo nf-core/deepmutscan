@@ -26,7 +26,7 @@ May-07 23:01:52.045 [main] DEBUG nextflow.Session - Run name: modest_coulomb
 May-07 23:01:52.046 [main] DEBUG nextflow.Session - Executor pool size: 8
 May-07 23:01:52.053 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
 May-07 23:01:52.057 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
-May-07 23:01:52.077 [main] DEBUG nextflow.cli.CmdRun - 
+May-07 23:01:52.077 [main] DEBUG nextflow.cli.CmdRun -
   Version: 24.04.4 build 5917
   Created: 01-08-2024 07:05 UTC (09:05 CEST)
   System: Mac OS X 15.0
@@ -55,7 +55,7 @@ May-07 23:01:54.356 [main] DEBUG nextflow.script.IncludeDef - Loading included p
 May-07 23:01:54.357 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [validateParameters:validateParameters]; plugin Id: nf-schema
 May-07 23:01:54.359 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [paramsSummaryMap:paramsSummaryMap]; plugin Id: nf-schema
 May-07 23:01:54.360 [main] DEBUG nextflow.script.IncludeDef - Loading included plugin extensions with names: [samplesheetToList:samplesheetToList]; plugin Id: nf-schema
-May-07 23:01:54.574 [main] INFO  nextflow.Nextflow - 
+May-07 23:01:54.574 [main] INFO  nextflow.Nextflow -
 -[2m----------------------------------------------------[0m-
                                         [0;32m,--.[0;30m/[0;32m,-.[0m
 [0;34m        ___     __   __   __   ___     [0;32m/,-._.--~'[0m
@@ -176,7 +176,7 @@ May-07 23:01:56.514 [main] DEBUG nextflow.script.ScriptRunner - Parsed script fi
   Script_a1878766b1a6b241: /Users/benjaminwehnert/dmscore/./workflows/../modules/local/dmsanalysis/processgatk.nf
   Script_37dcd664b2773148: /Users/benjaminwehnert/dmscore/./workflows/../modules/local/gatk/saturationmutagenesis.nf
   Script_25aa31c18d513c61: /Users/benjaminwehnert/dmscore/./workflows/../modules/nf-core/bwa/index/main.nf
-May-07 23:01:56.514 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+May-07 23:01:56.514 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination
 May-07 23:01:56.514 [main] DEBUG nextflow.Session - Session await
 May-07 23:01:56.605 [Actor Thread 1] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.001 s; external sort time: 0.011 s; total time: 0.012 s
 May-07 23:01:56.605 [Actor Thread 2] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.001 s; external sort time: 0.011 s; total time: 0.012 s
@@ -198,8 +198,8 @@ May-07 23:02:00.613 [Task submitter] INFO  nextflow.Session - [49/349fd9] Submit
 May-07 23:02:00.663 [TaskFinalizer-1] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'PublishDir' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[10000]; allowCoreThreadTimeout=false
 May-07 23:02:00.756 [Actor Thread 15] INFO  nextflow.file.FilePorter - Staging foreign file: https://raw.githubusercontent.com/BenjaminWehnert1008/test-datasets/dmsqc/dmsqc/pMS190_GID1A_SUNi_S2_1_R2_50k.fastq
 May-07 23:02:00.757 [Actor Thread 4] WARN  nextflow.processor.TaskContext - Cannot serialize context map. Cause: java.lang.IllegalArgumentException: Unable to create serializer "com.esotericsoftware.kryo.serializers.FieldSerializer" for class: java.lang.ref.ReferenceQueue -- Resume will not work on this process
-May-07 23:02:00.763 [Actor Thread 4] DEBUG nextflow.processor.TaskContext - Failed to serialize delegate map items: [ 
-  'meta':[Script_09ccfa79b2802f41$_runScript_closure1$_closure26] = 
+May-07 23:02:00.763 [Actor Thread 4] DEBUG nextflow.processor.TaskContext - Failed to serialize delegate map items: [
+  'meta':[Script_09ccfa79b2802f41$_runScript_closure1$_closure26] =
   'pos_range':[java.lang.String] = 352-1383
   '$':[java.lang.Boolean] = true
   'wt_seq':[nextflow.processor.TaskPath] = GID1A_SUNi_ref_small.fasta
@@ -380,8 +380,8 @@ May-07 23:02:13.067 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task c
 May-07 23:02:13.085 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
 May-07 23:02:13.085 [Task submitter] INFO  nextflow.Session - [67/c2a06b] Submitted process > NFCORE_DMSCORE:DMSCORE:BWA_MEM (gid1a_1_quality_1_pe)
 May-07 23:02:13.133 [Actor Thread 6] WARN  nextflow.processor.TaskContext - Cannot serialize context map. Cause: java.lang.IllegalArgumentException: Unable to create serializer "com.esotericsoftware.kryo.serializers.FieldSerializer" for class: java.lang.ref.ReferenceQueue -- Resume will not work on this process
-May-07 23:02:13.136 [Actor Thread 6] DEBUG nextflow.processor.TaskContext - Failed to serialize delegate map items: [ 
-  'meta':[Script_09ccfa79b2802f41$_runScript_closure1$_closure26] = 
+May-07 23:02:13.136 [Actor Thread 6] DEBUG nextflow.processor.TaskContext - Failed to serialize delegate map items: [
+  'meta':[Script_09ccfa79b2802f41$_runScript_closure1$_closure26] =
   'pos_range':[java.lang.String] = 352-1383
   'mutagenesis_type':[java.lang.String] = max_diff_to_wt
   '$':[java.lang.Boolean] = true

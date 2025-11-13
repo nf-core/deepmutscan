@@ -4,8 +4,8 @@ process DMSANALYSIS_POSSIBLE_MUTATIONS {
 
     conda "${moduleDir}/environment.yml"
 
-    container "${ workflow.containerEngine == 'singularity' 
-        ? 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:ce2ba7ad7f6e7f2c' 
+    container "${ workflow.containerEngine == 'singularity'
+        ? 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:ce2ba7ad7f6e7f2c'
         : 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa' }"
 
     input:
@@ -39,7 +39,7 @@ process DMSANALYSIS_POSSIBLE_MUTATIONS {
     DMSANALYSIS_POSSIBLE_MUTATIONS:
       r-base: \$R_VERSION
       biostrings: \$BIOSTRINGS_VERSION
-    END_VERSIONS   
+    END_VERSIONS
     """
 
     stub:

@@ -42,5 +42,3 @@ process_raw_gatk <- function(gatk_file_path, output_csv_path) {
 # Example usage (can be used for testing):
 # process_raw_gatk("/path/to/gatk_file.txt", "/path/to/output_file.csv")
 #process_raw_gatk("/Users/benjaminwehnert/CRG/DMS_QC/testing_data/output_premerged_vsearch.variantCounts", "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/raw_gatk.csv")
-
-

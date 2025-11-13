@@ -57,8 +57,8 @@ compute_aa_hamming <- function(merged.counts, wt.seq.aa) {
 
 # name the mutations
 name_mutations <- function(merged.counts, wt.seq.aa) {
-  merged.counts <- cbind("wt aa" = rep(NA, nrow(merged.counts)), 
-                         "pos" = rep(NA, nrow(merged.counts)), 
+  merged.counts <- cbind("wt aa" = rep(NA, nrow(merged.counts)),
+                         "pos" = rep(NA, nrow(merged.counts)),
                          "mut aa" = rep(NA, nrow(merged.counts)), merged.counts)
   for (i in 1:nrow(merged.counts)){
     if(merged.counts$aa_ham[i] == 0){
@@ -79,11 +79,11 @@ name_mutations <- function(merged.counts, wt.seq.aa) {
 aggregate_by_aa <- function(merged.counts) {
   ## find stops, WT and WT
   merged.counts <- cbind(merged.counts,
-                         "wt" = rep(NA, nrow(merged.counts)), 
+                         "wt" = rep(NA, nrow(merged.counts)),
                          "stop" = rep(NA, nrow(merged.counts)))
   merged.counts$wt[which(merged.counts$nt_ham == 0)] <- TRUE
   merged.counts$stop[which(merged.counts$`mut aa` == "*")] <- TRUE
-  
+
   ## aggregate counts of variants which are identical on the aa (but not nt) level
   ## exception: wildtype ones
   ## thereby shrinking the matrix
@@ -116,34 +116,34 @@ calc_raw_fitness <- function(merged.counts, exp.design) {
     merged.counts <- cbind(merged.counts, rep(NA, nrow(merged.counts)))
     colnames(merged.counts)[ncol(merged.counts)] <- paste0("raw_fitness_rep", i)
   }
-  
+
   ## calculate raw fitness of all variants vs. WT variant
   for (i in 1:reps){
-    
+
     ### collect counts
     tmp.input.counts <- merged.counts[,paste0("input", i)]
     tmp.output.counts <- merged.counts[,paste0("output", i)]
-    
+
     ### add pseudo-count to zero-outputs (if the corresponding input count is non-zero)
     tmp.output.counts[which(tmp.output.counts == 0 & tmp.input.counts != 0)] <- 1
-    
+
     ### take logs
-    tmp.wt.log.ratio <- log(tmp.output.counts[which(merged.counts$wt == TRUE)] / 
+    tmp.wt.log.ratio <- log(tmp.output.counts[which(merged.counts$wt == TRUE)] /
                               tmp.input.counts[which(merged.counts$wt == TRUE)])
-    tmp.fitness <- log(tmp.output.counts / 
+    tmp.fitness <- log(tmp.output.counts /
                          tmp.input.counts) - tmp.wt.log.ratio
-    
+
     ### uncertain values to NA
     tmp.fitness[which(is.na(tmp.fitness) == TRUE)] <- NA
     tmp.fitness[which(tmp.fitness == "Inf")] <- NA
-    
+
     ### add to table
     merged.counts[,c(ncol(merged.counts) - reps + i)] <- tmp.fitness
-    
+
     ### clean up
     rm(tmp.fitness, tmp.wt.log.ratio, tmp.output.counts, tmp.input.counts)
   }
-  
+
   list(merged.counts = merged.counts, reps = reps)
 }
 
@@ -151,50 +151,50 @@ calc_raw_fitness <- function(merged.counts, exp.design) {
 rescale_and_summarize <- function(merged.counts, reps) {
   ## center the raw fitness distributions on 0 (median of wildtype synonymous) and -1 (median of stops)
   for (i in 1:reps){
-    
+
     merged.counts <- cbind(merged.counts, rep(NA, nrow(merged.counts)))
     colnames(merged.counts)[ncol(merged.counts)] <- paste0("rescaled_fitness_rep", i)
-    
+
     ### fetch the key counts
     tmp.wt.fitness <- merged.counts[which(merged.counts$aa_ham == 0),ncol(merged.counts) - reps]
     tmp.stop.fitness <- merged.counts[which(merged.counts$stop == TRUE),ncol(merged.counts) - reps]
-    
+
     ### rescale
     tmp.wt.fitness.med <- median(tmp.wt.fitness, na.rm = TRUE)
     tmp.stop.fitness.med <- median(tmp.stop.fitness, na.rm = TRUE)
     if(tmp.stop.fitness.med >= tmp.wt.fitness.med){
-      
+
       tmp.wt.fitness.mean <- mean(tmp.wt.fitness, na.rm = TRUE)
       tmp.stop.fitness.mean <- mean(tmp.stop.fitness, na.rm = TRUE)
       lm.rescale <- lm(c(0, -1) ~ c(tmp.wt.fitness.mean, tmp.stop.fitness.mean))
       merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale$coefficients[[2]] + lm.rescale$coefficients[[1]]
-      rm(tmp.wt.fitness, tmp.stop.fitness, 
-         tmp.wt.fitness.mean, tmp.stop.fitness.mean, 
+      rm(tmp.wt.fitness, tmp.stop.fitness,
+         tmp.wt.fitness.mean, tmp.stop.fitness.mean,
          tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale)
       next
-      
+
     }else{
-      
+
       lm.rescale <- lm(c(0, -1) ~ c(tmp.wt.fitness.med, tmp.stop.fitness.med))
       merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale$coefficients[[2]] + lm.rescale$coefficients[[1]]
-      rm(tmp.wt.fitness, tmp.stop.fitness, 
+      rm(tmp.wt.fitness, tmp.stop.fitness,
          tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale)
       next
-      
+
     }
   }
-  
+
   ## calculate fitness mean and standard deviation across replicates
   merged.counts <- cbind(merged.counts,
                          "mean fitness" = rep(NA, nrow(merged.counts)),
                          "fitness sd" = rep(NA, nrow(merged.counts)))
-  
+
   if(reps == 1){
-    
+
     merged.counts$`mean fitness` <- merged.counts[,ncol(merged.counts) - 2]
-    
+
   }else if(reps > 1){
-    
+
     merged.counts$`mean fitness` <- apply(merged.counts[,c(ncol(merged.counts) - 2*reps + 1, ncol(merged.counts) - reps)],
                                           1,
                                           mean,
@@ -203,9 +203,9 @@ rescale_and_summarize <- function(merged.counts, reps) {
                                         1,
                                         sd,
                                         na.rm = TRUE)
-    
+
   }
-  
+
   merged.counts
 }
 
@@ -225,47 +225,47 @@ run_fitness_estimation <- function(counts_path,
                                    output_path) {
   ## 1. Import key files ##
   #########################
-  
+
   merged.counts <- read.table(counts_path, sep = "\t", header = TRUE, check.names = FALSE)
   exp.design   <- read.table(design_path, sep = "\t", header = TRUE, check.names = FALSE)
   wt.seq       <- DNAString(as.character(read.table(wt_seq_path)))
   wt.seq.aa    <- translate(wt.seq)
-  
+
   ## 2. Pre-processing the count table ##
   #######################################
-  
+
   ## calculate nt hamming distances from the specified WT
   merged.counts <- compute_nt_hamming(merged.counts, wt.seq)
-  
+
   ## translate sequences
   merged.counts <- add_aa_seq(merged.counts)
-  
+
   ## calculate AA hamming distances from the WT
   merged.counts <- compute_aa_hamming(merged.counts, wt.seq.aa)
-  
+
   ## name the mutations
   merged.counts <- name_mutations(merged.counts, wt.seq.aa)
-  
+
   ## find stops, WT and WT; aggregate AA-identical variants (except WT)
   merged.counts <- aggregate_by_aa(merged.counts)
-  
+
   ## 3. Raw fitness calculations ##
   #################################
   fitness_res <- calc_raw_fitness(merged.counts, exp.design)
   merged.counts <- fitness_res$merged.counts
   reps <- fitness_res$reps
-  
+
   ## 4. Fitness and error refinements ##
   ######################################
   merged.counts <- rescale_and_summarize(merged.counts, reps)
-  
+
   ## clean up
   rm(reps)
-  
+
   ## export
   write.table(merged.counts, output_path,
               col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t", na = "")
-  
+
   invisible(merged.counts)
 }
 
@@ -277,25 +277,25 @@ run_fitness_estimation <- function(counts_path,
 # R version 4.5.1 (2025-06-13)
 # Platform: aarch64-apple-darwin20
 # Running under: macOS Sonoma 14.6.1
-# 
+#
 # Matrix products: default
-# BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib 
+# BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib
 # LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
-# 
+#
 # locale:
 # [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
-# 
+#
 # time zone: Europe/Madrid
 # tzcode source: internal
-# 
+#
 # attached base packages:
-# [1] stats4    stats     graphics  grDevices utils     datasets  methods   base     
-# 
+# [1] stats4    stats     graphics  grDevices utils     datasets  methods   base
+#
 # other attached packages:
-# [1] Biostrings_2.76.0   GenomeInfoDb_1.44.2 XVector_0.48.0      IRanges_2.42.0      S4Vectors_0.46.0   
-# [6] BiocGenerics_0.54.0 generics_0.1.4     
-# 
+# [1] Biostrings_2.76.0   GenomeInfoDb_1.44.2 XVector_0.48.0      IRanges_2.42.0      S4Vectors_0.46.0
+# [6] BiocGenerics_0.54.0 generics_0.1.4
+#
 # loaded via a namespace (and not attached):
-# [1] httr_1.4.7              compiler_4.5.1          R6_2.6.1                tools_4.5.1            
-# [5] GenomeInfoDbData_1.2.14 rstudioapi_0.17.1       crayon_1.5.3            UCSC.utils_1.4.0       
-# [9] jsonlite_2.0.0   
+# [1] httr_1.4.7              compiler_4.5.1          R6_2.6.1                tools_4.5.1
+# [5] GenomeInfoDbData_1.2.14 rstudioapi_0.17.1       crayon_1.5.3            UCSC.utils_1.4.0
+# [9] jsonlite_2.0.0

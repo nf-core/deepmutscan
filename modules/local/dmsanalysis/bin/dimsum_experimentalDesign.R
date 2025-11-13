@@ -6,17 +6,17 @@ make_dimsum_experimental_design <- function(samplesheet_csv, out_path = "experim
   # ---- read & normalize ----
   ss <- read.csv(samplesheet_csv, stringsAsFactors = FALSE, check.names = FALSE)
   names(ss) <- tolower(names(ss))
-  
+
   # tolerate missing file2 column (single-end)
   if (!"file2" %in% names(ss)) ss$file2 <- ""
-  
+
   required <- c("sample", "type", "replicate", "file1", "file2")
   missing  <- setdiff(required, names(ss))
   if (length(missing) > 0) stop("Samplesheet missing columns: ", paste(missing, collapse = ", "))
-  
+
   # coerce types
   ss$replicate <- as.integer(ss$replicate)
-  
+
   # ---- derive sample_name strategy ----
   # If only one biological sample present (e.g. one protein), use "input1", "output2", ...
   # If multiple biological samples present, prefix with 'sample' to avoid collisions:
@@ -27,7 +27,7 @@ make_dimsum_experimental_design <- function(samplesheet_csv, out_path = "experim
   } else {
     sample_name <- paste0(ss$type, ss$replicate)
   }
-  
+
   # ---- build DiMSum columns ----
   experiment_replicate <- ss$replicate
   selection_id <- ifelse(ss$type == "input", 0L,
@@ -36,11 +36,11 @@ make_dimsum_experimental_design <- function(samplesheet_csv, out_path = "experim
   selection_replicate <- ifelse(ss$type == "output", 1L, NA_integer_)
   # assume one technical batch
   technical_replicate <- rep(1L, nrow(ss))
-  
+
   pair1 <- basename(ss$file1)
   # keep empty string for single-end / missing file2
   pair2 <- ifelse(is.na(ss$file2) | ss$file2 == "", "", basename(ss$file2))
-  
+
   ed <- data.frame(
     sample_name          = sample_name,
     experiment_replicate = experiment_replicate,
@@ -51,7 +51,7 @@ make_dimsum_experimental_design <- function(samplesheet_csv, out_path = "experim
     pair2                = pair2,
     stringsAsFactors     = FALSE
   )
-  
+
   # ---- order rows: by sample (if multiple), type (input, output, quality), then replicate ----
   type_rank <- match(ss$type, c("input", "output", "quality"))
   ord <- if (multi_base) {
@@ -61,9 +61,8 @@ make_dimsum_experimental_design <- function(samplesheet_csv, out_path = "experim
   }
   ed <- ed[ord, , drop = FALSE]
   rownames(ed) <- NULL
-  
+
   # ---- write & return ----
   write.table(ed, file = out_path, sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE, na = "")
   return(ed)
 }
-
