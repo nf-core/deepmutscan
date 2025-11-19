@@ -11,25 +11,13 @@ process FITNESS_CALCULATION {
     tuple val(sample), path(counts_merged)
     path(exp_design)
     path(syn_wt_txt)
-    path script  // fitness_calculation.R
 
   output:
     tuple val(sample), path("fitness_estimation.tsv"), emit: fitness_estimation
     path "versions.yml", emit: versions
 
   script:
-  """
-    set -euo pipefail
-
-    R_version=\$(R --version | head -n 1 | sed 's/^R version //')
-    
-    Rscript -e "source('$script'); run_fitness_estimation('$counts_merged', '$exp_design', '$syn_wt_txt', 'fitness_estimation.tsv')"
-
-    cat > versions.yml <<EOF
-    FITNESS_CALCULATION:
-      r: "\$R_version"
-    EOF
-  """
+  template 'fitness_calculation.R'
 
   stub:
   """
@@ -52,7 +40,6 @@ process FITNESS_QC {
 
   input:
     tuple val(sample), path(fitness_estimation_tsv)   // from FITNESS_CALCULATION
-    path script                                       // fitness_plots.R
 
   output:
     tuple val(sample), path("fitness_estimation_count_correlation.pdf"), emit: counts_corr_pdf
@@ -60,21 +47,7 @@ process FITNESS_QC {
     path "versions.yml", emit: versions
 
   script:
-  """
-    set -euo pipefail
-
-    R_version=\$(R --version | head -n 1 | sed 's/^R version //')
-    
-    Rscript -e "source('$script'); run_fitness_plots(
-    '$fitness_estimation_tsv',
-    'fitness_estimation_count_correlation.pdf',
-    'fitness_estimation_fitness_correlation.pdf')"
-
-    cat > versions.yml <<EOF
-    FITNESS_CALCULATION:
-      r: "\$R_version"
-    EOF
-  """
+  template 'fitness_QC.R'
 
   stub:
   """
@@ -101,32 +74,19 @@ process FITNESS_HEATMAP {
   input:
     tuple val(sample), path(fitness_estimation_tsv)   // from FITNESS_CALCULATION
     tuple val(sample), path(wt_seq)   		      // WT sequence
-    path script                                       // fitness_plots.R
 
   output:
     tuple val(sample), path("fitness_heatmap.pdf"), emit: fitness_heatmap
     path "versions.yml", emit: versions
 
   script:
-  """
-    set -euo pipefail
-
-    R_version=\$(R --version | head -n 1 | sed 's/^R version //')
-    
-    Rscript -e "source('$script'); run_fitness_rescaled_heatmaps(
-    '$fitness_estimation_tsv', '$wt_seq')"
-
-    cat > versions.yml <<EOF
-    FITNESS_CALCULATION:
-      r: "\$R_version"
-    EOF
-  """
+    template 'fitness_heatmap.R'
 
   stub:
   """
     touch fitness_heatmap.pdf
     cat > versions.yml <<'EOF'
-    FITNESS_PLOTS:
+    FITNESS_HEATMAP:
       stub-version: "0.0.0"
     EOF
   """

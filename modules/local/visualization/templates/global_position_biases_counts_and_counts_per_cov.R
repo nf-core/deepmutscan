@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # input: prefiltered gatk path, aa seq path, window_size (sliding window), output_path_folder
 # output: two lineplots showing counts & counts per coverage divided in types of variants (single-/double-/triple-base exchange)
 
@@ -10,8 +12,8 @@ position_biases <- function(prefiltered_gatk_path, aa_seq_path, window_size = 10
 
   # Load and process the data
   prefiltered_gatk <- read.table(prefiltered_gatk_path, sep = ",", fill = NA, header = TRUE)
-  prefiltered_gatk$pos <- as.numeric(sub("(\\D)(\\d+)(\\D)", "\\2", prefiltered_gatk$pos_mut))
-  unique_pos <- unique(as.numeric(prefiltered_gatk$pos))
+  prefiltered_gatk\$pos <- as.numeric(sub("(\\\\D)(\\\\d+)(\\\\D)", "\\\\2", prefiltered_gatk\$pos_mut))
+  unique_pos <- unique(as.numeric(prefiltered_gatk\$pos))
   aa_seq <- readLines(aa_seq_path, warn = FALSE)
   aa_seq_length <- nchar(aa_seq)
   aa_positions <- seq(nchar(aa_seq))
@@ -28,49 +30,49 @@ position_biases <- function(prefiltered_gatk_path, aa_seq_path, window_size = 10
   for (i in 1:(nchar(aa_seq))) {
 
     # Filter the data for the current position in aa_positions
-    window_data <- prefiltered_gatk %>% filter(prefiltered_gatk$pos %in% aa_positions[i])
+    window_data <- prefiltered_gatk %>% filter(prefiltered_gatk\$pos %in% aa_positions[i])
 
     # Calculate mean for Single mutations (where varying_bases == 1)
     window_data_single <- window_data %>% filter(varying_bases == 1)
-    means_counts_single[i] <- mean(window_data_single$counts, na.rm = FALSE)
-    means_counts_per_cov_single[i] <- mean(window_data_single$counts_per_cov, na.rm = FALSE)
+    means_counts_single[i] <- mean(window_data_single\$counts, na.rm = FALSE)
+    means_counts_per_cov_single[i] <- mean(window_data_single\$counts_per_cov, na.rm = FALSE)
 
     # Calculate mean for Double mutations (where varying_bases == 2)
     window_data_double <- window_data %>% filter(varying_bases == 2)
-    means_counts_double[i] <- mean(window_data_double$counts, na.rm = FALSE)
-    means_counts_per_cov_double[i] <- mean(window_data_double$counts_per_cov, na.rm = FALSE)
+    means_counts_double[i] <- mean(window_data_double\$counts, na.rm = FALSE)
+    means_counts_per_cov_double[i] <- mean(window_data_double\$counts_per_cov, na.rm = FALSE)
 
     # Calculate mean for Triple mutations (where varying_bases == 3)
     window_data_triple <- window_data %>% filter(varying_bases == 3)
-    means_counts_triple[i] <- mean(window_data_triple$counts, na.rm = FALSE)
-    means_counts_per_cov_triple[i] <- mean(window_data_triple$counts_per_cov, na.rm = FALSE)
+    means_counts_triple[i] <- mean(window_data_triple\$counts, na.rm = FALSE)
+    means_counts_per_cov_triple[i] <- mean(window_data_triple\$counts_per_cov, na.rm = FALSE)
   }
 
   pos_bias_df <- data.frame(pos = seq(nchar(aa_seq)))
 
 
-  pos_bias_df$rolling_mean_counts_single <- rollapply(means_counts_single, width = window_size,
+  pos_bias_df\$rolling_mean_counts_single <- rollapply(means_counts_single, width = window_size,
                                                FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001), fill = "extend")
-  pos_bias_df$rolling_mean_counts_double <- rollapply(means_counts_double, width = window_size,
+  pos_bias_df\$rolling_mean_counts_double <- rollapply(means_counts_double, width = window_size,
                                                       FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001), fill = "extend")
-  pos_bias_df$rolling_mean_counts_triple <- rollapply(means_counts_triple, width = window_size,
+  pos_bias_df\$rolling_mean_counts_triple <- rollapply(means_counts_triple, width = window_size,
                                                       FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001), fill = "extend")
 
-  pos_bias_df$rolling_mean_counts_per_cov_single <- rollapply(means_counts_per_cov_single, width = window_size,
+  pos_bias_df\$rolling_mean_counts_per_cov_single <- rollapply(means_counts_per_cov_single, width = window_size,
                                                        FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001), fill = "extend")
-  pos_bias_df$rolling_mean_counts_per_cov_double <- rollapply(means_counts_per_cov_double, width = window_size,
+  pos_bias_df\$rolling_mean_counts_per_cov_double <- rollapply(means_counts_per_cov_double, width = window_size,
                                                               FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001), fill = "extend")
-  pos_bias_df$rolling_mean_counts_per_cov_triple <- rollapply(means_counts_per_cov_triple, width = window_size,
+  pos_bias_df\$rolling_mean_counts_per_cov_triple <- rollapply(means_counts_per_cov_triple, width = window_size,
                                                               FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001), fill = "extend")
 
 
   # Replace NAs with 0 for rolling means and SE
-  pos_bias_df$rolling_mean_counts_single[is.na(pos_bias_df$rolling_mean_counts_single)] <- 0.00001
-  pos_bias_df$rolling_mean_counts_double[is.na(pos_bias_df$rolling_mean_counts_double)] <- 0.00001
-  pos_bias_df$rolling_mean_counts_triple[is.na(pos_bias_df$rolling_mean_counts_triple)] <- 0.00001
-  pos_bias_df$rolling_mean_counts_per_cov_single[is.na(pos_bias_df$rolling_mean_counts_per_cov_single)] <- 0.000001
-  pos_bias_df$rolling_mean_counts_per_cov_double[is.na(pos_bias_df$rolling_mean_counts_per_cov_double)] <- 0.000001
-  pos_bias_df$rolling_mean_counts_per_cov_triple[is.na(pos_bias_df$rolling_mean_counts_per_cov_triple)] <- 0.000001
+  pos_bias_df\$rolling_mean_counts_single[is.na(pos_bias_df\$rolling_mean_counts_single)] <- 0.00001
+  pos_bias_df\$rolling_mean_counts_double[is.na(pos_bias_df\$rolling_mean_counts_double)] <- 0.00001
+  pos_bias_df\$rolling_mean_counts_triple[is.na(pos_bias_df\$rolling_mean_counts_triple)] <- 0.00001
+  pos_bias_df\$rolling_mean_counts_per_cov_single[is.na(pos_bias_df\$rolling_mean_counts_per_cov_single)] <- 0.000001
+  pos_bias_df\$rolling_mean_counts_per_cov_double[is.na(pos_bias_df\$rolling_mean_counts_per_cov_double)] <- 0.000001
+  pos_bias_df\$rolling_mean_counts_per_cov_triple[is.na(pos_bias_df\$rolling_mean_counts_per_cov_triple)] <- 0.000001
 
 
 
@@ -145,19 +147,40 @@ position_biases <- function(prefiltered_gatk_path, aa_seq_path, window_size = 10
   ggsave(filename = "rolling_counts_per_cov.pdf", plot = rolling_counts_per_cov_plot, device = "pdf", width = 10, height = 6)
 }
 
-# Example call to the function
-#position_biases("/Users/benjaminwehnert/CRG/DMS_QC/testing_data/gatk_filtered_by_codon_library.csv", "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/aa_seq.txt", window_size = 18, output_path_folder = "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/testing_outputs")
+#####
+# run pipeline
+#####
+position_biases(
+  prefiltered_gatk_path = "$variantCounts_filtered_by_library",
+  aa_seq_path = "$aa_seq",
+  window_size = $sliding_window_size
+)
 
+####
+# create versions.yml
+####
+r_version <- strsplit(version[['version.string']], ' ')[[1]][3]
+dplyr_version <- as.character(packageVersion("dplyr"))
+ggplot2_version <- as.character(packageVersion("ggplot2"))
+scales_version <- as.character(packageVersion("scales"))
+zoo_version <- as.character(packageVersion("zoo"))
 
+if (is.null(r_version)) r_version <- "unknown"
+if (length(dplyr_version) == 0) dplyr_version <- "unknown"
+if (length(ggplot2_version) == 0) ggplot2_version <- "unknown"
+if (length(scales_version) == 0) scales_version <- "unknown"
+if (length(zoo_version) == 0) zoo_version <- "unknown"
 
-
-
-
-
-
-
-
-
-
-
-
+f <- file("versions.yml", "w")
+writeLines(
+  c(
+    '"${task.process}":',
+    paste('    r-base:', r_version),
+    paste('    r-dplyr:', dplyr_version),
+    paste('    r-ggplot2:', ggplot2_version),
+    paste('    r-scales:', scales_version),
+    paste('    r-zoo:', zoo_version)
+  ),
+  f
+)
+close(f)

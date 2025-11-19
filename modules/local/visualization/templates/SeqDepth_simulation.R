@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # input: prefiltered (by codon library) gatk path, possible mutations path, output_folder, reduction_fraction (steps in % to reduce counts), threshold to count variant as present in dataset
 # output: pdf showing the plot
 # limitation: takes quite a lot time: depends on number of counts in prefiltered gatk (4 min on M1 MacBook for 340,000 counts in total) -> reduction_fraction only has a low impact -> need to find more efficient random-sampling algorithm
@@ -10,21 +12,21 @@ SeqDepth_simulation_plot <- function(prefiltered_gatk_path, possible_mutations_p
   # Read data from the specified CSV file
   data <- read.csv(prefiltered_gatk_path)
   data <- data %>% mutate(counts = as.numeric(counts)) # Ensure counts are numeric
-  original_counts <- data$counts # Store the original counts for weight calculations
+  original_counts <- data\$counts # Store the original counts for weight calculations
   possible_mutations <- read.csv(possible_mutations_path)
 
   # Initialize variables
-  total_counts <- sum(data$counts)
+  total_counts <- sum(data\$counts)
   reduction_per_step <- floor(total_counts * reduction_fraction) # Round down to the nearest integer
   results <- data.frame(remaining_counts = numeric(), remaining_variants = numeric())
 
   # Track the initial state
-  remaining_variants <- sum(data$counts >= threshold)
+  remaining_variants <- sum(data\$counts >= threshold)
   remaining_counts <- total_counts
   results <- rbind(results, data.frame(remaining_counts = remaining_counts, remaining_variants = remaining_variants))
 
   # Get a list of indices for non-zero variants
-  non_zero_indices <- which(data$counts > 0)
+  non_zero_indices <- which(data\$counts > 0)
 
   # Calculate initial weights based on the original counts for non-zero variants
   weights <- as.numeric(original_counts[non_zero_indices])
@@ -44,18 +46,18 @@ SeqDepth_simulation_plot <- function(prefiltered_gatk_path, possible_mutations_p
       index <- non_zero_indices[selected_idx]
 
       # Reduce the count by 1
-      data$counts[index] <- data$counts[index] - 1
+      data\$counts[index] <- data\$counts[index] - 1
 
       # If the count reaches zero, remove the index from the list of non-zero variants
-      if (data$counts[index] == 0) {
+      if (data\$counts[index] == 0) {
         non_zero_indices <- non_zero_indices[-selected_idx]
         weights <- weights[-selected_idx] # Remove the corresponding weight
       }
     }
 
     # Update remaining counts and remaining variants after the reduction
-    remaining_counts <- sum(data$counts)
-    remaining_variants <- sum(data$counts >= threshold & data$counts > 0)
+    remaining_counts <- sum(data\$counts)
+    remaining_variants <- sum(data\$counts >= threshold & data\$counts > 0)
 
     # Store the results for this step
     results <- rbind(results, data.frame(remaining_counts = remaining_counts, remaining_variants = remaining_variants))
@@ -73,7 +75,7 @@ SeqDepth_simulation_plot <- function(prefiltered_gatk_path, possible_mutations_p
   }
 
   # Transform results for plotting
-  baseline_count <- max(results$remaining_counts)
+  baseline_count <- max(results\$remaining_counts)
   plot_data <- results %>%
     mutate(
       remaining_counts_fold = round(remaining_counts / baseline_count, 2),  # X-axis in fold-change from max, rounded to 2 decimals
@@ -116,16 +118,37 @@ SeqDepth_simulation_plot <- function(prefiltered_gatk_path, possible_mutations_p
   ggsave(output_file_path, plot = plot, device = "pdf", width = 8, height = 6)
 }
 
-#Example usage with input and output paths
-# results_weighted <- coverage_simulation_plot(
-#   prefiltered_gatk_path = "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/gatk_filtered_by_codon_library.csv",
-#   possible_mutations_path = "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/possible_mutations.csv",
-#   output_folder = "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/testing_outputs",
-#   reduction_fraction = 0.01,
-#   threshold = 3
-# )
 
+#####
+# run function
+#####
+SeqDepth_simulation_plot(
+  prefiltered_gatk_path = "$variantCounts_filtered_by_library",
+  possible_mutations_path = "$possible_mutations",
+  output_file_path = "SeqDepth.pdf",
+  reduction_fraction = 0.01,
+  threshold = $min_counts
+  )
 
-#SeqDepth
+#####
+# create versions.yml
+#####
+r_version <- strsplit(version[['version.string']], ' ')[[1]][3]
+dplyr_version <- as.character(packageVersion("dplyr"))
+ggplot2_version <- as.character(packageVersion("ggplot2"))
 
+if (is.null(r_version)) r_version <- "unknown"
+if (length(dplyr_version) == 0) dplyr_version <- "unknown"
+if (length(ggplot2_version) == 0) ggplot2_version <- "unknown"
 
+f <- file("versions.yml", "w")
+writeLines(
+  c(
+    '"${task.process}":',
+    paste('    r-base:', r_version),
+    paste('    r-dplyr:', dplyr_version),
+    paste('    r-ggplot2:', ggplot2_version)
+  ),
+  f
+)
+close(f)

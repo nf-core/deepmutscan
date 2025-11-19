@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # Input: prepared GATK data path, output_path, threshold (same as used for prepare_gatk_data_for_counts_per_cov_heatmap function)
 # Output: counts_per_cov_heatmap.pdf
 
@@ -12,7 +14,7 @@ counts_heatmap <- function(input_csv_path, threshold = 3, output_pdf_path, img_f
                          "Y", "W", "K", "R", "H", "D", "E", 
                          "S", "T", "C", "N", "Q", "P", "*")
 
-    max_position <- max(heatmap_data_long$position)
+    max_position <- max(heatmap_data_long\$position)
     num_missing_positions <- num_positions_per_row - (max_position %% num_positions_per_row)
 
     if (num_missing_positions < num_positions_per_row) {
@@ -25,10 +27,10 @@ counts_heatmap <- function(input_csv_path, threshold = 3, output_pdf_path, img_f
       )
 
       # Set placeholder values for the added positions to the exact smallest non-NA value
-      padding_data$total_counts <- min_non_na_value  # Set to the smallest non-NA value
-      padding_data$wt_aa <- "Y"  # Set wild-type amino acid to 'Y'
-      padding_data$wt_aa_pos <- paste0("Y", padding_data$position)  # Create wt_aa_pos with correct positions
-      padding_data$row_group <- max(heatmap_data_long$row_group)  # Set row group to the current last group
+      padding_data\$total_counts <- min_non_na_value  # Set to the smallest non-NA value
+      padding_data\$wt_aa <- "Y"  # Set wild-type amino acid to 'Y'
+      padding_data\$wt_aa_pos <- paste0("Y", padding_data\$position)  # Create wt_aa_pos with correct positions
+      padding_data\$row_group <- max(heatmap_data_long\$row_group)  # Set row group to the current last group
 
       # Add the new padding rows to heatmap_data_long
       heatmap_data_long <- dplyr::bind_rows(heatmap_data_long, padding_data)
@@ -50,7 +52,7 @@ counts_heatmap <- function(input_csv_path, threshold = 3, output_pdf_path, img_f
     select(mut_aa, position, total_counts, wt_aa)  # Use 'total_counts'
 
   # Find the smallest non-NA value in total_counts
-  min_non_na_value <- min(heatmap_data_long$total_counts, na.rm = TRUE)
+  min_non_na_value <- min(heatmap_data_long\$total_counts, na.rm = TRUE)
 
   # Group positions by rows (75 positions per row) and calculate row_group
   heatmap_data_long <- heatmap_data_long %>%
@@ -86,13 +88,13 @@ counts_heatmap <- function(input_csv_path, threshold = 3, output_pdf_path, img_f
     filter(synonymous == TRUE)
 
   # Calculate the number of row groups and adjust plot height dynamically
-  num_row_groups <- max(heatmap_data_long$row_group)
+  num_row_groups <- max(heatmap_data_long\$row_group)
   plot_height <- num_row_groups * 4
 
   # Set the limits for the color scale, ignoring NA (negative values are now NA)
-  min_count <- min(heatmap_data_long$total_counts, na.rm = TRUE)
-  max_count <- max(heatmap_data_long$total_counts, na.rm = TRUE)
-  max_position <- max(heatmap_data$position)
+  min_count <- min(heatmap_data_long\$total_counts, na.rm = TRUE)
+  max_count <- max(heatmap_data_long\$total_counts, na.rm = TRUE)
+  max_position <- max(heatmap_data\$position)
 
   # Create the heatmap plot with explicit handling for positions > max_position
   heatmap_plot <- ggplot(heatmap_data_long, aes(x = wt_aa_pos, y = mut_aa, fill = total_counts)) +
@@ -107,7 +109,7 @@ counts_heatmap <- function(input_csv_path, threshold = 3, output_pdf_path, img_f
     geom_tile() +
 
     # Add diagonal lines for synonymous mutations using geom_segment
-    geom_segment(data = syn_positions[syn_positions$position <= max_position, ],
+    geom_segment(data = syn_positions[syn_positions\$position <= max_position, ],
                  aes(x = x - 0.485, xend = x + 0.485,
                      y = y - 0.485, yend = y + 0.485, color = synonymous),
                  size = 0.2) +
@@ -151,9 +153,35 @@ counts_heatmap <- function(input_csv_path, threshold = 3, output_pdf_path, img_f
   }
 }
 
-# Test the function
-# counts_heatmap(
-#   "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/prepared_gatk_data.csv",
-#   "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/testing_outputs/counts_heatmap.pdf",
-#   threshold = 3
-#  )
+#####
+# run function
+#####
+counts_heatmap(
+  input_csv_path = "$variantCounts_for_heatmaps",
+  threshold = $min_counts,
+  output_pdf_path = "counts_heatmap.pdf",
+  img_format = "pdf"
+)
+
+####
+# create versions.yml
+####
+r_version <- strsplit(version[['version.string']], ' ')[[1]][3]
+dplyr_version <- as.character(packageVersion("dplyr"))
+ggplot2_version <- as.character(packageVersion("ggplot2"))
+
+if (is.null(r_version)) r_version <- "unknown"
+if (length(dplyr_version) == 0) dplyr_version <- "unknown"
+if (length(ggplot2_version) == 0) ggplot2_version <- "unknown"
+
+f <- file("versions.yml", "w")
+writeLines(
+  c(
+    '"${task.process}":',
+    paste('    r-base:', r_version),
+    paste('    r-dplyr:', dplyr_version),
+    paste('    r-ggplot2:', ggplot2_version)
+  ),
+  f
+)
+close(f)

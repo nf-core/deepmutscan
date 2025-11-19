@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 ## fitness QC plots for nf-core/deepmutscan
 ## 28.10.2025
 ## maximilian.stammnitz@crg.eu
@@ -57,7 +59,7 @@ run_fitness_plots <- function(fitness_table_path,
                               out_counts_corr_pdf,
                               out_fitness_corr_pdf) {
 
-  merged.counts.fitness <- read.table(fitness_table_path, sep = "\t", header = TRUE, check.names = FALSE)
+  merged.counts.fitness <- read.table(fitness_table_path, sep = "\\t", header = TRUE, check.names = FALSE)
 
   ## identify the right samples
   inputs  <- grep("input",  colnames(merged.counts.fitness))
@@ -91,9 +93,36 @@ run_fitness_plots <- function(fitness_table_path,
     ## so Nextflow finds the declared output.
     pdf(out_fitness_corr_pdf, height = 9, width = 14)
     plot.new()
-    title("No replicate fitness columns found (need ≥2 'rescaled_fitness...')\nCreated placeholder PDF.")
+    title("No replicate fitness columns found (need ≥2 'rescaled_fitness...')\\nCreated placeholder PDF.")
     dev.off()
   }
 
   invisible(TRUE)
 }
+
+
+#####
+# run function
+#####
+run_fitness_plots(
+  fitness_table_path = "$fitness_estimation_tsv",
+  out_counts_corr_pdf = "fitness_estimation_count_correlation.pdf",
+  out_fitness_corr_pdf = "fitness_estimation_fitness_correlation.pdf"
+)
+
+####
+# create versions.yml
+####
+r_version <- strsplit(version[['version.string']], ' ')[[1]][3]
+
+if (is.null(r_version)) r_version <- "unknown"
+
+f <- file("versions.yml", "w")
+writeLines(
+  c(
+    '"${task.process}":',
+    paste('    r-base:', r_version)
+  ),
+  f
+)
+close(f)
