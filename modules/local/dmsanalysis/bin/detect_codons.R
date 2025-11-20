@@ -61,5 +61,3 @@ find_start_stop <- function(input_string, start_codon = "ATG", stop_codons = c("
 }
 
 #find_start_stop("/Users/benjaminwehnert/CRG/DMS_QC/testing_data/MORtn5_reference.fa")
-
-

@@ -168,13 +168,3 @@ generate_fitness_input <- function(wt_seq_path, gatk_file, pos_range, output_fil
 #   "23-1225",
 #   "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/testing_outputs/dimsum_input.tsv"
 # )
-
-
-
-
-
-
-
-
-
-

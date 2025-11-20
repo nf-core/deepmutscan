@@ -98,8 +98,3 @@ generate_possible_variants <- function(wt_seq_input, start_stop_pos, mutagenesis
 # Possibly generate a custom codons file: "AAA, AAC, AAG, AAT, ..."
 # generate_possible_variants("/Users/benjaminwehnert/CRG/DMS_QC/testing_data/MORtn5_reference.fa", "23-1225", "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/possible_NNK_mutations.csv", mutagenesis_type = "nnk")    ### this one's correct for the dataset
 # generate_possible_variants("/Users/benjaminwehnert/CRG/DMS_QC/testing_data/MORtn5_reference.fa", "23-1225", "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/testing_outputs/possible_NNK_mutations_taylors_nnk_and_nns.csv", mutagenesis_type = "max_diff_to_wt")
-
-
-
-
-

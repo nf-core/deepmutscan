@@ -120,5 +120,3 @@ filter_gatk_by_codon_library <- function(gatk_file_path, codon_library_path, out
 # example
 #filter_gatk_by_codon_library("/Users/benjaminwehnert/CRG/DMS_QC/testing_data/raw_gatk.csv", codon_library = "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/possible_NNK_mutations.csv", output_file_path = "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/gatk_filtered_by_codon_library.csv")    ### this one's is correct for this data set
 #filter_gatk_by_codon_library("/Users/benjaminwehnert/CRG/DMS_QC/testing_data/raw_gatk.csv", codon_library = "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/testing_outputs/possible_NNK_mutations_taylors_nnk_and_nns.csv", output_file_path = "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/testing_outputs/gatk_filtered_by_complete_codon_library.csv")
-
-

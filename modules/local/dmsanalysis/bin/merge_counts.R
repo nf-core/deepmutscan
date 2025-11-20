@@ -6,7 +6,7 @@
 merge_dimsum_counts <- function(input_paths, output_paths, out_path = "counts.tsv") {
   # input_paths, output_paths: character vectors of file paths
   # out_path: output TSV path
-  
+
   # Helper to read a 2-col TSV without header -> data.frame(nt_seq, count)
   read_counts <- function(fp) {
     df <- utils::read.table(
@@ -17,17 +17,17 @@ merge_dimsum_counts <- function(input_paths, output_paths, out_path = "counts.ts
     )
     df
   }
-  
+
   # Read all inputs / outputs
   input_list  <- lapply(input_paths,  read_counts)
   output_list <- lapply(output_paths, read_counts)
-  
+
   # Collect universe of sequences
   all_seqs <- unique(c(
     unlist(lapply(input_list,  function(x) x$nt_seq)),
     unlist(lapply(output_list, function(x) x$nt_seq))
   ))
-  
+
   # Pre-allocate output frame
   n_in  <- length(input_list)
   n_out <- length(output_list)
@@ -43,7 +43,7 @@ merge_dimsum_counts <- function(input_paths, output_paths, out_path = "counts.ts
     stringsAsFactors = FALSE, check.names = FALSE
   )
   names(out) <- col_names
-  
+
   # Fill inputs
   if (n_in > 0) {
     for (i in seq_len(n_in)) {
@@ -52,7 +52,7 @@ merge_dimsum_counts <- function(input_paths, output_paths, out_path = "counts.ts
       out[idx, paste0("input", i)] <- df$count
     }
   }
-  
+
   # Fill outputs
   if (n_out > 0) {
     for (j in seq_len(n_out)) {
@@ -61,7 +61,7 @@ merge_dimsum_counts <- function(input_paths, output_paths, out_path = "counts.ts
       out[idx, paste0("output", j)] <- df$count
     }
   }
-  
+
   # Write TSV with header, no row names, no quotes
   utils::write.table(out, file = out_path, sep = "\t", row.names = FALSE, col.names = TRUE, quote = FALSE)
   invisible(out)
@@ -72,7 +72,7 @@ merge_dimsum_counts <- function(input_paths, output_paths, out_path = "counts.ts
 # Rscript merge_counts.R --inputs <i1> <i2> ... --outputs <o1> <o2> ... --out counts.tsv
 if (sys.nframe() == 0) {
   args <- commandArgs(trailingOnly = TRUE)
-  
+
   # simple flag parser that supports space-separated lists
   get_vals <- function(flag) {
     if (!(flag %in% args)) return(character(0))
@@ -82,15 +82,15 @@ if (sys.nframe() == 0) {
     if (stop <= start) return(character(0))
     args[(start + 1):stop]
   }
-  
+
   input_paths  <- get_vals("--inputs")
   output_paths <- get_vals("--outputs")
   out_path     <- get_vals("--out")
   out_path     <- if (length(out_path)) out_path[1] else "counts.tsv"
-  
+
   if (!length(input_paths) && !length(output_paths)) {
     stop("No inputs/outputs provided. Use --inputs <files> and/or --outputs <files>.")
   }
-  
+
   merge_dimsum_counts(input_paths, output_paths, out_path)
 }

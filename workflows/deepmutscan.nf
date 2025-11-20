@@ -298,7 +298,7 @@ workflow DEEPMUTSCAN {
       ch_filter_lib_script,         // path(R script)                         -- N
       ch_complete_script,           // path(R script)                         -- N
       ch_prepare_heatmap_script     // path(R script)                         -- N
-    )    
+    )
 
     annotated_variantCounts_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, a) }
     variantCounts_filtered_by_library_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, b) }
@@ -419,7 +419,7 @@ logdiff_scriptN                = fanoutTo(library_completed_variantCounts_ch, lo
         ch_merge_script_for_each   // path merge_script (broadcast)
       )
     }
-    
+
     // Create experimental design file to use for DiMSum
     if (params.fitness) {
       EXPDESIGN_FITNESS(

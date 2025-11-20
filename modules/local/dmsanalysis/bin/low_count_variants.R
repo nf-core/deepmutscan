@@ -125,6 +125,3 @@ ggplot(proportion_data, aes(x = group, y = proportion_with_pur_mutation, fill = 
   labs(x = "Group", y = "Proportion of Variants", title = "Proportion of Variants with at Least One Pur_pyr or Pur_pur Mutation") +
   scale_fill_manual(values = c("Top 90%" = "steelblue", "Bottom 10%" = "tomato")) +
   theme_minimal()
-
-
-

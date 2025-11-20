@@ -3,8 +3,8 @@ process FITNESS_CALCULATION {
   label 'process_single'
 
   conda "${moduleDir}/environment.yml"
-  container "${ workflow.containerEngine == 'singularity' 
-      ? 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:ce2ba7ad7f6e7f2c' 
+  container "${ workflow.containerEngine == 'singularity'
+      ? 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:ce2ba7ad7f6e7f2c'
       : 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa' }"
 
   input:
@@ -22,7 +22,7 @@ process FITNESS_CALCULATION {
     set -euo pipefail
 
     R_version=\$(R --version | head -n 1 | sed 's/^R version //')
-    
+
     Rscript -e "source('$script'); run_fitness_estimation('$counts_merged', '$exp_design', '$syn_wt_txt', 'fitness_estimation.tsv')"
 
     cat > versions.yml <<EOF
@@ -46,8 +46,8 @@ process FITNESS_QC {
   label 'process_single'
 
   conda "${moduleDir}/environment.yml"
-  container "${ workflow.containerEngine == 'singularity' 
-      ? 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:ce2ba7ad7f6e7f2c' 
+  container "${ workflow.containerEngine == 'singularity'
+      ? 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:ce2ba7ad7f6e7f2c'
       : 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa' }"
 
   input:
@@ -64,7 +64,7 @@ process FITNESS_QC {
     set -euo pipefail
 
     R_version=\$(R --version | head -n 1 | sed 's/^R version //')
-    
+
     Rscript -e "source('$script'); run_fitness_plots(
     '$fitness_estimation_tsv',
     'fitness_estimation_count_correlation.pdf',
@@ -94,8 +94,8 @@ process FITNESS_HEATMAP {
   label 'process_single'
 
   conda "${moduleDir}/environment.yml"
-  container "${ workflow.containerEngine == 'singularity' 
-      ? 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:ce2ba7ad7f6e7f2c' 
+  container "${ workflow.containerEngine == 'singularity'
+      ? 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:ce2ba7ad7f6e7f2c'
       : 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa' }"
 
   input:
@@ -112,7 +112,7 @@ process FITNESS_HEATMAP {
     set -euo pipefail
 
     R_version=\$(R --version | head -n 1 | sed 's/^R version //')
-    
+
     Rscript -e "source('$script'); run_fitness_rescaled_heatmaps(
     '$fitness_estimation_tsv', '$wt_seq')"
 

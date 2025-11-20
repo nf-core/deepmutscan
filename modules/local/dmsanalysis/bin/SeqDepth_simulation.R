@@ -127,5 +127,3 @@ SeqDepth_simulation_plot <- function(prefiltered_gatk_path, possible_mutations_p
 
 
 #SeqDepth
-
-
