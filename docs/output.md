@@ -6,11 +6,11 @@ The directories listed below will be created in the results directory after `nf-
 
 ```tree title="nf-core/deepmutscan results"
 results/
-├── fastqc/              # Individual raw sequencing QC reports for each specified fastq file, in HTML
+├── fastqc/              # Individual raw sequencing QC reports for each specified fastq file, in `.html`
 ├── fitness/             # Merged variant count tables, fitness and error estimates, replicate correlations and heatmaps
 ├── intermediate_files/  # Raw alignments, raw and pre-filtered variant count tables, QC reports
 ├── library_QC/          # Sample-specific PDF visualizations: position-wise sequencing coverage, count heatmaps, etc.
-├── multiqc/             # Shared raw sequencing QC report for all fastq files, in HTML
+├── multiqc/             # Shared raw sequencing QC report for all fastq files, in `.html`
 ├── pipelineinfo/        # Nextflow helper files for timeline and summary report generation
 ├── timeline.html        # Nextflow timeline for all tasks
 └── report.html          # Nextflow summary report incl. detailed CPU and memory usage per for all tasks
@@ -24,11 +24,11 @@ results/
 <summary>Output files</summary>
 
 - `fastqc/`
-  - `*_fastqc.html`: FastQC report containing quality metrics.
-  - `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
+  - `*_fastqc.html`: FastQC report containing quality metrics
+  - `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images
 
 <p align="center">
-  <img title="FASTQC report" src="docs/fastqc.png" width=80%>
+  <img title="FASTQC report" src="docs/fastqc.png" width=50%>
 </p>
 
 </details>
@@ -41,25 +41,25 @@ results/
 <summary>Output files</summary>
 
 - `multiqc/`
-  - `multiqc_report.html`: a standalone HTML file that can be viewed in your web browser.
-  - `multiqc_data/`: directory containing parsed statistics from the different tools used in the pipeline.
-  - `multiqc_plots/`: directory containing static images from the report in various formats.
+  - `multiqc_report.html`: a standalone `.html` file that can be viewed in your web browser
+  - `multiqc_data/`: directory containing parsed statistics from the different tools used in the pipeline
+  - `multiqc_plots/`: directory containing static images from the report in various formats
 
 <p align="center">
-  <img title="MULTIQC overview" src="docs/multiqc1.png" width=80%>
+  <img title="MULTIQC overview" src="docs/multiqc1.png" width=50%>
 </p>
 
 <p align="center">
-  <img title="MULTIQC base-quality summary" src="docs/multiqc2.png" width=80%>
+  <img title="MULTIQC base-quality summary" src="docs/multiqc2.png" width=50%>
 </p>
 
 <p align="center">
-  <img title="MULTIQC GC-content summary" src="docs/multiqc3.png" width=80%>
+  <img title="MULTIQC GC-content summary" src="docs/multiqc3.png" width=50%>
 </p>
 
 </details>
 
-### Intermediate files
+### Intermediate files (Core Pipeline Stages 1-4)
 
 This directory is created during the first series of steps of the pipeline, featuring raw read alignments, filtering and variant counting.
 
@@ -67,17 +67,17 @@ This directory is created during the first series of steps of the pipeline, feat
 <summary>Output files</summary>
 
 - `intermediate_files/`
-  - `aa_seq.txt`:
-  - `bam_files/bwa`:
-  - `bam_files/filtered`:
-  - `bam_files/premerged`:
-  - `gatk`:
-  - `possible_mutations.csv`:
-  - `processed_gatk_files`:
+  - `aa_seq.txt`: a string of the reconstructed wildtype amino acid sequence of the specified open reading frame
+  - `possible_mutations.csv`: using the `--mutagenesis` argument, this file lists all the programmed mutations per position; these are used for variant count filtering and visualisation
+  - `bam_files/bwa/`: sets of BWA referenes indices from the original alignment(s), with BAM files for each sample in the `mem/` subfolder
+  - `bam_files/filtered/`: filtered BAM files for each sample, without any wildtype or indel-matching reads
+  - `bam_files/premerged/`: filtered, read-merged and re-aligned BAM files for each sample, representing highest-quality alignments for subsequent variant counting
+  - `gatk/`: subfolders with resulting variant count table outputs from `AnalyzeSaturationMutagenesis`, stratified by sample
+  - `processed_gatk_files/`: subfolders with prefiltered GATK variant count tables, stratified by sample
 
 </details>
 
-### Library QC
+### Library QC (Core Pipeline Stage 5)
 
 This directory is created during the second series of steps of the pipeline, featuring various QC visualisations for each sample.
 
@@ -85,18 +85,42 @@ This directory is created during the second series of steps of the pipeline, fea
 <summary>Output files</summary>
 
 - `library_QC/`
-  - `counts_heatmap.pdf`:
-  - `counts_per_cov_heatmap.pdf`:
-  - `logdiff_plot.pdf`:
-  - `logdiff_varying_bases.pdf`:
-  - `rolling_counts_per_cov.pdf`:
-  - `rolling_counts.pdf`:
-  - `rolling_coverage.pdf`:
-  - `SeqDepth.pdf` (optional):
+  - `counts_heatmap.pdf`: a complete heatmap of absolute mutant counts, stratified by mutant amino acid (Y-axis) per position (X-axis)
+
+<p align="center">
+  <img title="Count heatmap" src="docs/library_QC_counts_heatmap.png" width=50%>
+</p>
+
+  - `counts_per_cov_heatmap.pdf`: as above, but as a fraction of the total sequencing coverage
+  - `logdiff_plot.pdf`: sorted, log-scale coverage distribution of all mutants
+
+<p align="center">
+  <img title="Logarithmic differences" src="docs/library_QC_logdiff_plot.png" width=50%>
+</p>
+
+  - `logdiff_varying_bases.pdf`: as above, but stratified by hamming distance to the wildtype nucleotide sequence (colour shading)
+  - `rolling_coverage.pdf`: sliding-window rolling coverage
+
+<p align="center">
+  <img title="Rolling coverage" src="docs/library_QC_rolling_counts.png" width=50%>
+</p>
+
+  - `rolling_counts.pdf`: sliding-window rolling coverage, stratified by hamming distance to the wildtype nucleotide sequence (colour shading)
+
+<p align="center">
+  <img title="Rolling counts" src="docs/library_QC_rolling_counts.png" width=50%>
+</p>
+
+  - `rolling_counts_per_cov.pdf`: as above, but as a fraction of the total sequencing coverage
+  - `SeqDepth.pdf` (optional via the `--run_seqdepth` argument): rarefaction curve of the sequencing coverage and how it relates to the percentage of programmed variants detected
+
+<p align="center">
+  <img title="Sequencing coverage rarefaction" src="docs/library_QC_SeqDepth.png" width=50%>
+</p>
 
 </details>
 
-### Fitness
+### Fitness (Core Pipeline Stages 6-8)
 
 This directory is created during the final series of steps of the pipeline, featuring fitness and fitness error estimates (when DMS input/output sample groups are specified).
 
@@ -104,16 +128,31 @@ This directory is created during the final series of steps of the pipeline, feat
 <summary>Output files</summary>
 
 - `fitness/`
-  - `counts_merged.tsv`: summarised gene variant counts across all input and output samples.
-  - `default_results/fitness_estimation_count_correlation.pdf`:
-  - `default_results/fitness_estimation_fitness_correlation.pdf`:
-  - `default_results/fitness_heatmap.pdf`:
-  - `default_results/fitness_estimation.tsv`:
-  - `DiMSum_results/dimsum_results` (optional):
+  - `counts_merged.tsv`: summarised gene variant counts across all input and output samples
+  - `default_results/fitness_estimation_count_correlation.pdf`: pair-wise replicate variant count scatterplots and correlations between all specified samples
+ 
+<p align="center">
+  <img title="Variant count correlation(s)" src="docs/fitness_estimation_count_correlation.png" width=50%>
+</p>
+
+  - `default_results/fitness_estimation_fitness_correlation.pdf`: pair-wise fitness replicate scatterplots and correlations between all specified output samples
+ 
+<p align="center">
+  <img title="Fitness correlation(s)" src="docs/fitness_estimation_fitness_correlation.png" width=50%>
+</p>
+
+  - `default_results/fitness_heatmap.pdf`: a complete heatmap of absolute mutant counts, stratified by mutant amino acid (Y-axis) per position (X-axis)
+ 
+<p align="center">
+  <img title="Default fitness heatmap" src="docs/fitness_heatmap.png" width=50%>
+</p>
+
+  - `default_results/fitness_estimation.tsv`: table file with all fitness and fitness error estimates calculated
+  - `DiMSum_results/dimsum_results/` (optional): subfolder with the full set of [DiMSum](https://github.com/lehner-lab/DiMSum) outputs, including the associated `.HTML` report, `.Rdata` and `.tsv` files with fitness and fitness error estimates
 
 </details>
 
-### Pipeline Info
+### Pipeline Info (Nextflow Reports)
 
 - `pipeline_info/`
   - Reports generated by Nextflow: `execution_report.html`, `execution_timeline.html`, `execution_trace.txt` and `pipeline_dag.dot`/`pipeline_dag.svg`.
