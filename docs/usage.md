@@ -6,15 +6,15 @@
 
 ## Introduction
 
-`nf-core/deepmutscan` is a workflow designed for the analysis of deep mutational scanning (DMS) data. DMS enables researchers to experimentally measure the fitness effects of thousands of genes or gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn the fundamental rules of virus evolution, protein architecture, splicing, small-molecule interactions and many other phenotypes.
+**nf-core/deepmutscan** is a workflow designed for the analysis of deep mutational scanning (DMS) data. DMS enables researchers to experimentally measure the fitness effects of thousands of genes or gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn the fundamental rules of virus evolution, protein architecture, splicing, small-molecule interactions and many other phenotypes.
 
-This page provides in-depth descriptions of the data processing modules implemented in `nf-core/deepmutscan`. It is intended for both advanced and developers who want to understand the rationale behind certain design choices, explore implementation details, and consider potential future extensions.
+This page provides in-depth descriptions of the data processing modules implemented in `nf-core/deepmutscan`. It is similarly intended for new deep mutational scanning aficionados, for advanced users and developers who want to understand the rationale behind certain design choices, to explore implementation details and consider potential future extensions.
 
 ## Running the pipeline
 
 The typical command for running the pipeline (on an example protein-coding gene with 100 amino acids) is as follows:
 
-```bash
+```bash title="example_run.sh"
 nextflow run nf-core/deepmutscan \
    -profile <docker/singularity/.../institute> \
    --input ./samplesheet.csv \
@@ -25,11 +25,11 @@ nextflow run nf-core/deepmutscan \
 
 The `-profile <PROFILE>` specification is mandatory and should reflect either your own institutional profile or any pipeline profile specified in the [profile section](##-profile).
 
-This will launch the pipeline by performing sequencing read alignments, various raw data QC analyses, optional fitness and fitness error estimations.
+This will launch the pipeline by performing sequencing read alignments, various raw data QC analyses, optional mutant count error corrections, fitness and fitness error estimations.
 
 Note that the pipeline will create the following files in your working directory:
 
-```bash
+```console title="working directory"
 work               # Directory containing the nextflow working files
 results            # Finished results in specified location (defined with --outdir)
 .nextflow_log      # Log file from Nextflow
@@ -44,7 +44,7 @@ Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <
 
 The above pipeline run specified with a params file in yaml format:
 
-```bash
+```bash title="example_run.sh"
 nextflow run nf-core/deepmutscan -profile docker -params-file params.yaml
 ```
 
@@ -61,7 +61,7 @@ You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-c
 
 ## Inputs
 
-Users need to first prepare a samplesheet with your input/output data in which each row represents a pair of fastq files (paired end). This should look as follows:
+Users need to first prepare a samplesheet with your input/output data in which each row represents a pair of matched fastq files (paired end). This should look as follows:
 
 ```csv title="samplesheet.csv"
 sample,type,replicate,file1,file2
@@ -90,7 +90,7 @@ Several optional parameters are available for `nf-core/deepmutscan`, some of whi
 
 After execution, the pipeline creates the following directory structure:
 
-```
+```tree title="nf-core/deepmutscan results"
 results/
 ├── fastqc/              # Individual HTML reports for specified fastq files, raw sequencing QC
 ├── fitness/             # Merged variant count tables, fitness and error estimates, replicate correlations and heatmaps
@@ -108,20 +108,20 @@ results/
 
 All paired-end raw reads are first aligned to the provided reference ORF using [**bwa-mem**](http://bio-bwa.sourceforge.net/). This is a highly efficient mapping algorithm for reads ≥100 bp, with its multi-threading support automatically handled by nf-core.
 
-In future versions of `nf-core/deepmutscan`, we consider the use of [**bwa-mem2**](https://github.com/bwa-mem2/bwa-mem2), which provides similar alignment rates with a moderate speed increase ([Vasimuddin et al., _IPDPS_ 2019](https://ieeexplore.ieee.org/document/8820962)). With the increasing diversity of sequencing platforms for DMS, new throughput, read length, and error profiles may require further alignment options to be implemented.
+In future versions of `nf-core/deepmutscan`, we consider the use of [**bwa-mem2**](https://github.com/bwa-mem2/bwa-mem2), which provides similar alignment quality at moderate speed increase ([Vasimuddin et al., _IPDPS_ 2019](https://ieeexplore.ieee.org/document/8820962)). With the increasing diversity of sequencing platforms for DMS new read length, throughput and error profiles may require further alignment options to be implemented.
 
 ### 2. Filtering
 
-For long ORF site-saturation mutagenesis libraries, most aligned shotgun sequencing reads contain exact matches against the reference. It is not possible to infer which of these stem from mutant versus wildtype DNA molecules prior to fragmentation, hence they are filtered out. Similarly, erroneous reads with unexpected indels are also removed.
+For long ORF site-saturation mutagenesis libraries, most aligned shotgun sequencing reads contain exact matches against the reference. It is not possible to infer which of these stem from actual wildtype vs (upstream or downstream) mutant DNA molecules prior to fragmentation, hence they are filtered out. Currently, reads with likely artefactual indel-containing alignments are also removed.
 
 To this end, we use [**samtools view**](https://www.htslib.org/doc/samtools.html).
 
 ### 3. Read Merging
 
-Even the highest-accuracy next-generation sequencing platforms do not have perfect base accuracy. To minimise the effect of base errors (which would otherwise be counted as "false mutations"), `nf-core/deepmutscan` uses the overlap of each aligned read pair. With base errors on the forward and reverse read being independent, the pipeline applies the [**vsearch fastq_mergepairs**](https://github.com/torognes/vsearch) function to convert each read pair into a single consensus molecule with adjusted base error scores.
+Even the highest-quality next-generation sequencing platforms do not feature perfect base accuracy. To minimise the effect of base errors (which would otherwise be counted as "false mutations"), `nf-core/deepmutscan` uses the overlap of each aligned read pair. With base errors on the forward and reverse read being independent, the pipeline applies the [**vsearch fastq_mergepairs**](https://github.com/torognes/vsearch) function to convert each read pair into a single consensus molecule with adjusted base error scores.
 
 > [!TIP]
-> Optimal merging performance is usually obtained if the average DNA fragment size matches the read size. For example, libraries sequenced with 150 bp paired-end reads should ideally also be sheared/tagmented to a mean size of 150 bp.
+> Optimal merging benefit is usually obtained if the average DNA fragment size matches the read size. For example, libraries sequenced with 150 bp paired-end reads should ideally also be sheared/tagmented to a mean size of 150 bp.
 
 Future versions may offer additional options depending on sequencing type and error profiles.
 
@@ -129,29 +129,30 @@ Future versions may offer additional options depending on sequencing type and er
 
 Aligned, non-wildtype consensus reads are screened for exact, base-level mismatches. `nf-core/deepmutscan` currently uses the popular [**GATK AnalyzeSaturationMutagenesis**](https://gatk.broadinstitute.org/hc/en-us/articles/360037594771-AnalyzeSaturationMutagenesis-BETA) function to count occurrences of all single, double, triple, and higher-order nucleotide changes between each read and the reference ORF.
 
-We are currently working on the `nf-core/deepmutscan` implementation of a much lighter, alternative Python implementation for mutation counting. In this script, users will be allowed to specify a minimum base quality cutoff for mutations to be included in the final count table (default: Q30) – an option not available in GATK.
+We are currently working on the implementation of an alternative, lightweight Python implementation for mutation counting. Users will thereby also be allowed to specify a minimum base quality cutoff for mutations to be included in the final count table – an option which is unfortunately not available in GATK.
 
 ### 5. DMS Library Quality Control
 
-By integrating the reference ORF coordinates and the chosen DMS library type (default: NNK/NNs degenerate codon-based nicking), `nf-core/deepmutscan` calculates a number of mutation count summary statistics.
+By integrating the reference ORF coordinates and the chosen DMS library type (default: NNK degenerate codons), `nf-core/deepmutscan` calculates a number of mutation count summary statistics.
 
-Custom visualisations allow for inspection of (1) mutation efficiency along the ORF, (2) position-specific recovery of amino acid diversity, and (3) overall sequencing coverage evenness and saturation.
+Custom visualisations allow for inspection of (1) mutation efficiency along the ORF, (2) position-specific recovery of mutant amino acid diversity, and (3) overall sequencing coverage evenness and library saturation.
 
 ### 6. Data Summarisation for Fitness Estimation
 
-Steps 1-5 are iteratively run across all samples defined in the `.csv` spreadsheet. Once read alignment, merging, mutation counting, and library QC have been completed for the full list of samples, users can opt to proceed with fitness estimation. To this end, the pipeline generates all the necessary input files by merging mutation counts across samples.
+Steps 1-5 are run in parallel across all individual samples defined in the `.csv` spreadsheet. Once read alignment, filtering, merging, variant counting, and DMS library QC have been completed for the full list of samples – if input/output sample pairs are available – users can opt to proceed towards fitness estimation. To this end, the pipeline generates all the necessary preparatory files by generating a merged mutation count table across samples.
 
 ### 7. Single Nucleotide Variant Error Correction _(in development)_
 
-This module will implement strategies to distinguish true single nucleotide variants from sequencing artefacts. There are two options to perform this:
+This module will feature strategies to distinguish true single nucleotide variants from sequencing artefacts. There are two options to perform this:
 
-- Empirical error rate modelling based on wildtype sequencing
-- Empirical error rate modelling based on false double mutants _(in development)_
+- Empirical error rate modelling based on additional wildtype sequencing
+- Empirical error rate modelling based on false double mutants in the programmed single mutant library
 
-### 8. Fitness Estimation _(in development)_
+### 8. Fitness Estimation
 
-The final step of the pipeline will perform fitness estimation based on mutation counts. By default, we calculate fitness scores as the logarithm of variants' output to input ratio, normalised to that of the provided wildtype sequence. Future expansions may include:
+The final step of the pipeline will perform fitness estimation based on mutation counts. By default, we calculate fitness scores as the logarithm of variants' output to input ratio, normalised to that of the provided wildtype nucleotide sequence.
 
+Future expansions may include:
 - Integration of other popular fitness inference tools, including [DiMSum](https://github.com/lehner-lab/DiMSum), [Enrich2](https://github.com/FowlerLab/Enrich2), [rosace](https://github.com/pimentellab/rosace/) and [mutscan](https://github.com/fmicompbio/mutscan)
 - Standardised output formats for downstream analyses and comparison
 
@@ -160,15 +161,15 @@ The final step of the pipeline will perform fitness estimation based on mutation
 
 ## Notes for Developers
 
-- Custom scripts used in filtering and mutation counting are available in the `bin/` directory of the repository.
+- Custom R scripts used in filtering and QC visualisation are available in the `modules/local/dmsanalysis/bin/` directory of the repository.
 - Modules are implemented in Nextflow DSL2 and follow the nf-core community guidelines.
-- Contributions, optimisations, and additional analysis modules are welcome - please open a pull request or GitHub issue to discuss ideas.
+- Contributions, optimisations, and additional analysis modules are welcome: please open a Github [issue](https://github.com/nf-core/deepmutscan/issues/new) or [pull request](https://github.com/nf-core/deepmutscan/compare) to discuss or suggest ideas.
 
-_This document is meant as a living reference. As the pipeline evolves, the descriptions of steps 7 and 8 will be expanded with concrete implementation details._
+_This document is meant as a living reference. As the pipeline evolves, the descriptions of steps 7 and 8 will be further expanded with concrete implementation details._
 
 ## Updating the pipeline
 
-When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
+When you run the original command above, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use this cached version if available - even if the pipeline has been updated since. To make sure that you are running the latest version of the pipeline, make sure that you regularly update the cached version:
 
 ```bash
 nextflow pull nf-core/deepmutscan
@@ -178,14 +179,14 @@ nextflow pull nf-core/deepmutscan
 
 It is a good idea to specify the pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
-First, go to the [nf-core/deepmutscan releases page](https://github.com/nf-core/deepmutscan/releases) and find the latest pipeline version - numeric only (eg. `1.0.0`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.0.0`. Of course, you can switch to another version by changing the number after the `-r` flag.
+First, go to the [nf-core/deepmutscan releases page](https://github.com/nf-core/deepmutscan/releases) and find the latest pipeline version - numeric only (eg. `1.0.0`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.0.0`.
 
 This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future. For example, at the bottom of the MultiQC reports.
 
 To further assist in reproducibility, you can use share and reuse [parameter files](#running-the-pipeline) to repeat pipeline runs with the same settings without having to write out a command with every single parameter.
 
 > [!TIP]
-> If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
+> If you wish to share such a profile (e.g. providing it as supplementary material for academic publications), make sure to _not_ include your cluster specific file paths or institutional specific profiles.
 
 ## Core Nextflow arguments
 
@@ -206,7 +207,7 @@ The pipeline also dynamically loads configurations from [https://github.com/nf-c
 Note that multiple profiles can be loaded, for example: `-profile test,docker` - the order of arguments is important!
 They are loaded in sequence, so later profiles can overwrite earlier profiles.
 
-If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it can lead to different results on different machines dependent on the computer environment.
+If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it may lead to varying or even irreproducible results across users' different computer environments.
 
 - `test`
   - A profile with a complete configuration for automated testing
@@ -230,7 +231,7 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
 
 ### `-resume`
 
-Specify this when restarting a pipeline. Nextflow will use cached results from any pipeline steps where the inputs are the same, continuing from where it got to previously. For input to be considered the same, not only the names must be identical but the files' contents as well. For more info about this parameter, see [this blog post](https://www.nextflow.io/blog/2019/demystifying-nextflow-resume.html).
+Specify this when restarting a pipeline. Nextflow will use cached results (from within the `/work` directory) from any pipeline steps where the inputs are the same, continuing from where it got to previously. For input to be considered the same, not only the names must be identical but the files' contents as well. For more info about this parameter, see [this blog post](https://www.nextflow.io/blog/2019/demystifying-nextflow-resume.html).
 
 You can also supply a run name to resume a specific run: `-resume [run-name]`. Use the `nextflow log` command to show previous run names.
 
