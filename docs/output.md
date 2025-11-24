@@ -2,15 +2,15 @@
 
 ## Introduction
 
-The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory:
+The directories listed below will be created in the results directory after `nf-core/deepmutscan` has finished. All paths are relative to the top-level results directory:
 
-```tree
+```tree title="nf-core/deepmutscan results"
 results/
-├── fastqc/              # Individual HTML reports for specified fastq files, raw sequencing QC
+├── fastqc/              # Individual raw sequencing QC reports for each specified fastq file, in HTML
 ├── fitness/             # Merged variant count tables, fitness and error estimates, replicate correlations and heatmaps
 ├── intermediate_files/  # Raw alignments, raw and pre-filtered variant count tables, QC reports
 ├── library_QC/          # Sample-specific PDF visualizations: position-wise sequencing coverage, count heatmaps, etc.
-├── multiqc/             # Shared HTML reports for all fastq files, raw sequencing QC
+├── multiqc/             # Shared raw sequencing QC report for all fastq files, in HTML
 ├── pipelineinfo/        # Nextflow helper files for timeline and summary report generation
 ├── timeline.html        # Nextflow timeline for all tasks
 └── report.html          # Nextflow summary report incl. detailed CPU and memory usage per for all tasks
@@ -28,6 +28,10 @@ results/
   - `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
 
 </details>
+
+<p align="left">
+  <img title="FASTQC report" src="docs/fastqc.png" width=50%>
+</p>
 
 ### MultiQC
 
