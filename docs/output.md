@@ -27,11 +27,11 @@ results/
   - `*_fastqc.html`: FastQC report containing quality metrics.
   - `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
 
-</details>
-
-<p align="left">
-  <img title="FASTQC report" src="docs/fastqc.png" width=50%>
+<p align="center">
+  <img title="FASTQC report" src="docs/fastqc.png" width=80%>
 </p>
+
+</details>
 
 ### MultiQC
 
@@ -44,6 +44,18 @@ results/
   - `multiqc_report.html`: a standalone HTML file that can be viewed in your web browser.
   - `multiqc_data/`: directory containing parsed statistics from the different tools used in the pipeline.
   - `multiqc_plots/`: directory containing static images from the report in various formats.
+
+<p align="center">
+  <img title="MULTIQC overview" src="docs/multiqc1.png" width=80%>
+</p>
+
+<p align="center">
+  <img title="MULTIQC base-quality summary" src="docs/multiqc2.png" width=80%>
+</p>
+
+<p align="center">
+  <img title="MULTIQC GC-content summary" src="docs/multiqc3.png" width=80%>
+</p>
 
 </details>
 
