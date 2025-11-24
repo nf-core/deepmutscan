@@ -28,7 +28,7 @@ results/
   - `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images
 
 <p align="center">
-  <img title="FASTQC report" src="images/fastqc.png" width=50%>
+  <img title="FASTQC report" src="images/fastqc.png" width=75%>
 </p>
 
 </details>
@@ -46,15 +46,15 @@ results/
   - `multiqc_plots/`: directory containing static images from the report in various formats
 
 <p align="center">
-  <img title="MULTIQC overview" src="images/multiqc1.png" width=50%>
+  <img title="MULTIQC overview" src="images/multiqc1.png" width=75%>
 </p>
 
 <p align="center">
-  <img title="MULTIQC base-quality summary" src="images/multiqc2.png" width=50%>
+  <img title="MULTIQC base-quality summary" src="images/multiqc2.png" width=75%>
 </p>
 
 <p align="center">
-  <img title="MULTIQC GC-content summary" src="images/multiqc3.png" width=50%>
+  <img title="MULTIQC GC-content summary" src="images/multiqc3.png" width=75%>
 </p>
 
 </details>
@@ -88,34 +88,34 @@ This directory is created during the second series of steps of the pipeline, fea
   - `counts_heatmap.pdf`: a complete heatmap of absolute mutant counts, stratified by mutant amino acid (Y-axis) per position (X-axis)
 
 <p align="center">
-  <img title="Count heatmap" src="images/library_QC_counts_heatmap.png" width=50%>
+  <img title="Count heatmap" src="images/library_QC_counts_heatmap.png" width=75%>
 </p>
 
   - `counts_per_cov_heatmap.pdf`: as above, but as a fraction of the total sequencing coverage
   - `logdiff_plot.pdf`: sorted, log-scale coverage distribution of all mutants
 
 <p align="center">
-  <img title="Logarithmic differences" src="images/library_QC_logdiff_plot.png" width=50%>
+  <img title="Logarithmic differences" src="images/library_QC_logdiff_plot.png" width=75%>
 </p>
 
   - `logdiff_varying_bases.pdf`: as above, but stratified by hamming distance to the wildtype nucleotide sequence (colour shading)
   - `rolling_coverage.pdf`: sliding-window rolling coverage
 
 <p align="center">
-  <img title="Rolling coverage" src="images/library_QC_rolling_counts.png" width=50%>
+  <img title="Rolling coverage" src="images/library_QC_rolling_counts.png" width=75%>
 </p>
 
   - `rolling_counts.pdf`: sliding-window rolling coverage, stratified by hamming distance to the wildtype nucleotide sequence (colour shading)
 
 <p align="center">
-  <img title="Rolling counts" src="images/library_QC_rolling_counts.png" width=50%>
+  <img title="Rolling counts" src="images/library_QC_rolling_counts.png" width=75%>
 </p>
 
   - `rolling_counts_per_cov.pdf`: as above, but as a fraction of the total sequencing coverage
   - `SeqDepth.pdf` (optional via the `--run_seqdepth` argument): rarefaction curve of the sequencing coverage and how it relates to the percentage of programmed variants detected
 
 <p align="center">
-  <img title="Sequencing coverage rarefaction" src="images/library_QC_SeqDepth.png" width=50%>
+  <img title="Sequencing coverage rarefaction" src="images/library_QC_SeqDepth.png" width=75%>
 </p>
 
 </details>
@@ -132,19 +132,19 @@ This directory is created during the final series of steps of the pipeline, feat
   - `default_results/fitness_estimation_count_correlation.pdf`: pair-wise replicate variant count scatterplots and correlations between all specified samples
  
 <p align="center">
-  <img title="Variant count correlation(s)" src="images/fitness_estimation_count_correlation.png" width=50%>
+  <img title="Variant count correlation(s)" src="images/fitness_estimation_count_correlation.png" width=75%>
 </p>
 
   - `default_results/fitness_estimation_fitness_correlation.pdf`: pair-wise fitness replicate scatterplots and correlations between all specified output samples
  
 <p align="center">
-  <img title="Fitness correlation(s)" src="images/fitness_estimation_fitness_correlation.png" width=50%>
+  <img title="Fitness correlation(s)" src="images/fitness_estimation_fitness_correlation.png" width=75%>
 </p>
 
   - `default_results/fitness_heatmap.pdf`: a complete heatmap of absolute mutant counts, stratified by mutant amino acid (Y-axis) per position (X-axis)
  
 <p align="center">
-  <img title="Default fitness heatmap" src="images/fitness_heatmap.png" width=50%>
+  <img title="Default fitness heatmap" src="images/fitness_heatmap.png" width=75%>
 </p>
 
   - `default_results/fitness_estimation.tsv`: table file with all fitness and fitness error estimates calculated
