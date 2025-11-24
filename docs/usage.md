@@ -90,7 +90,7 @@ Several optional parameters are available for `nf-core/deepmutscan`, some of whi
 
 After execution, the pipeline creates the following directory structure:
 
-```console title="nf-core/deepmutscan results"
+```tree title="nf-core/deepmutscan results"
 results/
 ├── fastqc/              # Individual HTML reports for specified fastq files, raw sequencing QC
 ├── fitness/             # Merged variant count tables, fitness and error estimates, replicate correlations and heatmaps
