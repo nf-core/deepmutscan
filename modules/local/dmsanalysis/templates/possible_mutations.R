@@ -49,7 +49,7 @@ generate_possible_variants <- function(wt_seq_input, start_stop_pos, mutagenesis
 
     # Function to split a DNA sequence into codons (triplets)
     split_into_codons <- function(seq) {
-        # WICHTIG: doppeltes escaping für perl regex
+        # Important: double escaping for perl regex
         return(strsplit(seq, "(?<=.{3})", perl = TRUE)[[1]])
     }
 
