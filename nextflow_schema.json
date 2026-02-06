@@ -70,7 +70,7 @@
                 "custom_codon_library": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "Path to a comma-separated .txt file listing custom codons (e.g., 'AAA,AAC,AAG,...'). Required when mutagenesis_type is set to 'custom'."
+                    "description": "Path to a comma-separated .txt file listing custom codons (e.g., 'AAA,AAC,AAG,...'). Required when mutagenesis_type is set to `custom`."
                 },
                 "dimsum": {
                     "type": "boolean",
