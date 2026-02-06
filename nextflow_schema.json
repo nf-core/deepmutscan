@@ -75,7 +75,7 @@
                 "dimsum": {
                     "type": "boolean",
                     "default": false,
-                    "description": "Run DiMSum for fitness/functionality scores from grwoth-based selection input & output samples"
+                    "description": "Run DiMSum for fitness/functionality scores from growth-based selection input & output samples"
                 },
                 "fitness": {
                     "type": "boolean",
