@@ -38,17 +38,6 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_deep
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Params defaults
-params.min_counts 	= 3                                     // minimum counts for variant to be recognized. All variants<min_counts will be set to 0
-params.mutagenesis_type = 'nnk'                      		// default library is set to nnk
-params.custom_codon_library = '/NULL'            		// when mutagenesis_type is set to >>custom<< this variable has to be path to .txt with custom library
-params.sliding_window_size = 10 				// sliding window size to flatten graphs in plots (e.g. GLOBAL_POS_BIASES_COUNTS function)
-params.aimed_cov 	= 100                                  	// aimed coverage (assuming equal spread) to visualize threshold in plots
-params.run_seqdepth 	= false         			// creating seqdepth simulation plot, is computationally quite heavy. per default disabled.
-params.fitness      	= false 				// run basic fitness calculation from selection input & output samples
-params.dimsum       	= false					// run DiMSum for fitness/functionality scores from selection input & output samples
-
-
 // Define fasta file as channel (e.g. for BWA index)
 Channel
     .fromPath(params.fasta, checkIfExists: true)

@@ -48,24 +48,34 @@
                 },
                 "min_counts": {
                     "type": "integer",
-                    "description": "Minimum number of variant observations required.",
+                    "description": "minimum counts for variant to be recognized. All variants below min_counts will be set to 0",
                     "minimum": 1,
                     "default": 3
                 },
+		"sliding_window_size": {
+                    "type": "integer",
+                    "description": "To flatten graphs in plots (e.g. `GLOBAL_POS_BIASES_COUNTS` function)",
+                    "default": 10
+                },
+		"aimed_cov": {
+                    "type": "integer",
+                    "description": "aimed coverage (assuming equal spread) to visualize threshold in plots",
+                    "default": 100
+                },
                 "mutagenesis_type": {
                     "type": "string",
-                    "description": "Type of mutagenic primers. Choose from nnk, nns, max_diff_to_wt, custom. When using 'custom', also provide the parameter 'custom_codon_library'",
+                    "description": "Type of mutagenic primers. Choose from nnk, nns, max_diff_to_wt, custom. When using 'custom', also provide the parameter 'custom_codon_library'.",
                     "default": "nnk"
                 },
                 "custom_codon_library": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "Path to a comma-separated .txt file listing custom codons (e.g., 'AAA,AAC,AAG,...'). Required when mutagenesis_type is 'custom'."
+                    "description": "Path to a comma-separated .txt file listing custom codons (e.g., 'AAA,AAC,AAG,...'). Required when mutagenesis_type is set to `custom`."
                 },
                 "dimsum": {
                     "type": "boolean",
                     "default": false,
-                    "description": "Enable DiMSum execution."
+                    "description": "Run DiMSum for fitness/functionality scores from growth-based selection input & output samples"
                 },
                 "fitness": {
                     "type": "boolean",
@@ -75,7 +85,7 @@
                 "run_seqdepth": {
                     "type": "boolean",
                     "default": false,
-                    "description": "Whether to run the SeqDepth simulation module. This is computationally intensive and optional."
+                    "description": "Whether to run the SeqDepth simulation module, to check on the sequencing depth. This is computationally intensive and optional."
                 }
             }
         },
