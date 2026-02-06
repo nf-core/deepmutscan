@@ -54,7 +54,7 @@
                 },
 		"sliding_window_size": {
                     "type": "integer",
-                    "description": "To flatten graphs in plots (e.g. GLOBAL_POS_BIASES_COUNTS function)",
+                    "description": "To flatten graphs in plots (e.g. `GLOBAL_POS_BIASES_COUNTS` function)",
                     "default": 10
                 },
 		"aimed_cov": {
