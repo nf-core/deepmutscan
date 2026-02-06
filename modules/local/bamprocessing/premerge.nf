@@ -36,7 +36,7 @@ process PREMERGE {
         premerge: \$(samtools --version |& sed '1!d ; s/samtools //')
     END_VERSIONS
     """
-    
+
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """

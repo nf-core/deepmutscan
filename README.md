@@ -5,31 +5,27 @@
   </picture>
 </h1>
 
-[![GitHub Actions CI Status](https://github.com/nf-core/deepmutscan/actions/workflows/ci.yml/badge.svg)](https://github.com/nf-core/deepmutscan/actions/workflows/ci.yml)
-[![GitHub Actions Linting Status](https://github.com/nf-core/deepmutscan/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/deepmutscan/actions/workflows/linting.yml)
-[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/deepmutscan/results)
-[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new/nf-core/deepmutscan)
+[![GitHub Actions CI Status](https://github.com/nf-core/deepmutscan/actions/workflows/nf-test.yml/badge.svg)](https://github.com/nf-core/deepmutscan/actions/workflows/nf-test.yml)
+[![GitHub Actions Linting Status](https://github.com/nf-core/deepmutscan/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/deepmutscan/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/deepmutscan/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)
+[![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.04.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
+[![nf-core template version](https://img.shields.io/badge/nf--core_template-3.4.1-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.4.1)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 [![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/deepmutscan)
-[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23deepmutscan-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/deepmutscan)
-[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)
-[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)
-[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
+
+[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23deepmutscan-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/deepmutscan)[![Follow on Bluesky](https://img.shields.io/badge/bluesky-%40nf__core-1185fe?labelColor=000000&logo=bluesky)](https://bsky.app/profile/nf-co.re)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
 ## Introduction
 
-`nf-core/deepmutscan` is a workflow designed for the analysis of deep mutational scanning (DMS) data. DMS enables researchers to experimentally measure the fitness effects of thousands of genes or gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn the fundamental rules of virus evolution, protein architecture, splicing, small-molecule interactions and many other phenotypes.
+**nf-core/deepmutscan** is a workflow designed for the analysis of deep mutational scanning (DMS) data. DMS enables researchers to experimentally measure the fitness effects of thousands of genes or gene variants simultaneously, helping to classify disease causing mutants in human and animal populations, to learn the fundamental rules of protein architecture, small-molecule binding, mRNA splicing, viral evolution and many other quantifiable phenotypes.
 
-While DNA synthesis and sequencing technologies have advanced substantially, long open reading frame (ORF) targets still present major challenges for DMS studies. Shotgun DNA sequencing can be used to greatly speed up the inference of long ORF mutant fitness landscapes, theoretically at no expense in accuracy. We have designed the `nf-core/deepmutscan` pipeline to unlock the power of shotgun sequencing based DMS studies on long ORFs, to simplify and standardise the complex bioinformatics steps involved in data processing of such experiments – from read alignment to QC reporting and fitness landscape inferences.
+While DNA synthesis and sequencing technologies have advanced substantially, long open reading frame (ORF) targets still present a major challenge for DMS studies. Shotgun DNA sequencing can be used to greatly speed up the inference of long ORF mutant fitness landscapes, theoretically at no expense in accuracy. We have designed the `nf-core/deepmutscan` pipeline to unlock the power of shotgun sequencing based DMS studies on long ORFs, to simplify and standardise the complex bioinformatics steps involved in data processing of such experiments – from read alignment to QC reporting and fitness landscape inferences.
 
-<p align="center">
-  <img title="DeepMutScan Workflow" src="docs/pipeline.png" width=80%>
-</p>
+![nf-core/deepmutscan workflow](docs/images/pipeline.png)
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
@@ -58,7 +54,7 @@ The pipeline processes deep mutational scanning (DMS) sequencing data in several
 5. DMS library quality control
 6. Data summarisation across samples
 7. Single nucleotide variant error correction _(in development)_
-8. Fitness estimation _(in development)_
+8. Fitness estimation
 
 ## Usage
 
@@ -79,7 +75,7 @@ Secondly, specify the gene or gene region of interest using a reference FASTA fi
 
 Now, you can run the pipeline using:
 
-```bash title="example pipeline run"
+```bash title="example_run.sh"
 nextflow run nf-core/deepmutscan \
    -profile <docker/singularity/.../institute> \
    --input ./samplesheet.csv \
@@ -88,25 +84,12 @@ nextflow run nf-core/deepmutscan \
    --outdir ./results
 ```
 
-There are several optional [parameters](https://nf-co.re/deepmutscan/parameters), some of which are currently in development. For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/deepmutscan/usage).
-
 ## Pipeline output
 
-After execution, the pipeline creates the following directory structure:
+To see the results of an example test run with a full size dataset refer to the [results](https://nf-co.re/deepmutscan/results) tab on the nf-core website pipeline page.
 
-```folder title="output folder structure"
-results/
-├── fastqc/              # Individual HTML reports for specified fastq files, raw sequencing QC
-├── fitness/             # Merged variant count tables, fitness and error estimates, replicate correlations and heatmaps
-├── intermediate_files/  # Raw alignments, raw and pre-filtered variant count tables, QC reports
-├── library_QC/          # Sample-specific PDF visualizations: position-wise sequencing coverage, count heatmaps, etc.
-├── multiqc/             # Shared HTML reports for all fastq files, raw sequencing QC
-├── pipelineinfo/        # Nextflow helper files for timeline and summary report generation
-├── timeline.html        # Nextflow timeline for all tasks
-└── report.html          # Nextflow summary report incl. detailed CPU and memory usage per for all tasks
-```
-
-For a full overview of the output file types, please refer to the specific [documentation](https://nf-co.re/deepmutscan/output).
+For more details about the output files and reports, please refer to the
+[output documentation](https://nf-co.re/deepmutscan/output).
 
 ## Contributing
 
@@ -122,7 +105,7 @@ If you are interested in getting involved as a developer, please consider joinin
 
 ## Credits
 
-`nf-core/deepmutscan` was originally written by [Benjamin Wehnert](https://github.com/BenjaminWehnert1008) and [Max Stammnitz](https://github.com/MaximilianStammnitz) at the [Centre for Genomic Regulation, Barcelona](https://www.crg.eu/), with the generous support of an EMBO Long-term Postdoctoral Fellowship and a Marie Skłodowska-Curie grant by the European Union.
+nf-core/deepmutscan was originally written by [Benjamin Wehnert](https://github.com/BenjaminWehnert1008) and [Max Stammnitz](https://github.com/MaximilianStammnitz) at the [Centre for Genomic Regulation, Barcelona](https://www.crg.eu/), with the generous support of an EMBO Long-term Postdoctoral Fellowship and a Marie Skłodowska-Curie grant by the European Union.
 
 If you use `nf-core/deepmutscan` in your analyses, please cite:
 
@@ -133,13 +116,11 @@ Please also cite the `nf-core` framework:
 > 📄 Ewels et al., _Nature Biotechnology_, 2020
 > [https://doi.org/10.1038/s41587-020-0439-x](https://doi.org/10.1038/s41587-020-0439-x)
 
+For further information or help, don't hesitate to get in touch on the [Slack `#deepmutscan` channel](https://nfcore.slack.com/channels/deepmutscan) (you can join with [this invite](https://nf-co.re/join/slack)).
+
 ## Scientific contact
 
 For scientific discussions around the use of this pipeline (e.g. on experimental design or sequencing data requirements), please feel free to get in touch with us directly:
 
 - Benjamin Wehnert — wehnertbenjamin@gmail.com
 - Maximilian Stammnitz — maximilian.stammnitz@crg.eu
-
-## CHANGELOG
-
-- [CHANGELOG](CHANGELOG.md)
