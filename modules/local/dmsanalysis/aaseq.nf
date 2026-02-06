@@ -10,7 +10,6 @@ process DMSANALYSIS_AASEQ {
     input:
     tuple val(meta), path(wt_seq)
     val pos_range
-    path script  // aa_seq.R
 
     output:
     tuple val(meta), path("aa_seq.txt"), emit: aa_seq
@@ -20,22 +19,7 @@ process DMSANALYSIS_AASEQ {
     task.ext.when == null || task.ext.when
 
     script:
-    """
-    start_stop_codon="$pos_range"
-
-    R_version=\$(R --version | head -n 1 | sed 's/^R version //')
-
-    Rscript -e "source('$script'); aa_seq('$wt_seq', '\$start_stop_codon', 'aa_seq.txt')"
-
-    # Extract R base and packages versions
-    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
-    BIOSTRINGS_VERSION=\$(Rscript -e "packageVersion('Biostrings')" | grep -Eo '[0-9]+(\\.[0-9]+)+')
-    cat <<-END_VERSIONS > versions.yml
-    DMSANALYSIS_AASEQ:
-      r-base: \$R_VERSION
-      biostrings: \$BIOSTRINGS_VERSION
-    END_VERSIONS
-    """
+    template 'aa_seq.R'
 
     stub:
     """

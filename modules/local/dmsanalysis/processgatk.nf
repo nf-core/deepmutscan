@@ -14,10 +14,6 @@ process DMSANALYSIS_PROCESS_GATK {
     path possible_mutations
     path aa_seq
     val min_counts
-    path process_raw_gatk_script
-    path filter_by_library_script
-    path complete_gatk_script
-    path prepare_counts_heatmap_script
 
     output:
     tuple val(meta),
@@ -33,18 +29,7 @@ process DMSANALYSIS_PROCESS_GATK {
     task.ext.when == null || task.ext.when
 
     script:
-    """
-    Rscript -e "source('$process_raw_gatk_script'); process_raw_gatk('$variantCounts', 'annotated_variantCounts.csv')"
-    Rscript -e "source('$filter_by_library_script'); filter_gatk_by_codon_library('annotated_variantCounts.csv', '$possible_mutations', 'variantCounts_filtered_by_library.csv')"
-    Rscript -e "source('$complete_gatk_script'); complete_prefiltered_gatk('$possible_mutations', 'variantCounts_filtered_by_library.csv', 'library_completed_variantCounts.csv')"
-    Rscript -e "source('$prepare_counts_heatmap_script'); prepare_gatk_data_for_counts_heatmaps('variantCounts_filtered_by_library.csv', '$aa_seq', 'variantCounts_for_heatmaps.csv', $min_counts)"
-
-    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
-    cat <<-END_VERSIONS > versions.yml
-    DMSANALYSIS_PROCESSGATK:
-      r-base: \$R_VERSION
-    END_VERSIONS
-    """
+    template 'process_gatk.R'
 
     stub:
     """

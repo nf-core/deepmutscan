@@ -13,7 +13,6 @@ process DMSANALYSIS_POSSIBLE_MUTATIONS {
     val pos_range
     val mutagenesis_type
     path custom_codon_library
-    path script // possible_mutations.R
 
     output:
     tuple val(meta), path("possible_mutations.csv"), emit: possible_mutations
@@ -23,24 +22,7 @@ process DMSANALYSIS_POSSIBLE_MUTATIONS {
     task.ext.when == null || task.ext.when
 
     script:
-    """
-    start_stop_codon="$pos_range"
-
-    if [[ "$custom_codon_library" == "/NULL" ]]; then
-        Rscript -e "source('$script'); generate_possible_variants('$wt_seq', '\$start_stop_codon', '$mutagenesis_type', NULL, 'possible_mutations.csv')"
-    else
-        Rscript -e "source('$script'); generate_possible_variants('$wt_seq', '\$start_stop_codon', '$mutagenesis_type', '$custom_codon_library', 'possible_mutations.csv')"
-    fi
-
-    # Extract R base and packages versions
-    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
-    BIOSTRINGS_VERSION=\$(Rscript -e "packageVersion('Biostrings')" | grep -Eo '[0-9]+(\\.[0-9]+)+')
-    cat <<-END_VERSIONS > versions.yml
-    DMSANALYSIS_POSSIBLE_MUTATIONS:
-      r-base: \$R_VERSION
-      biostrings: \$BIOSTRINGS_VERSION
-    END_VERSIONS
-    """
+    template 'possible_mutations.R'
 
     stub:
     """

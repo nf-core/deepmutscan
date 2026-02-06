@@ -11,7 +11,6 @@ process GATK_GATKTOFITNESS {
     tuple val(meta), path(variantCounts_filtered_by_library)
     path wt_seq
     val pos_range
-    path script // R script
 
     output:
     tuple val(meta), path("${meta.id}_fitness_input.tsv"), emit: fitness_input
@@ -21,17 +20,7 @@ process GATK_GATKTOFITNESS {
     task.ext.when == null || task.ext.when
 
     script:
-    """
-    start_stop_codon="$pos_range"
-
-    Rscript -e "source('$script'); generate_fitness_input('$wt_seq', '$variantCounts_filtered_by_library', '\$start_stop_codon', '${meta.id}_fitness_input.tsv')"
-
-    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
-    cat <<-END_VERSIONS > versions.yml
-    GATK_GATKTOFITNESS:
-      r-base: \$R_VERSION
-    END_VERSIONS
-    """
+    template 'gatk_to_fitness.R'
 
     stub:
     """

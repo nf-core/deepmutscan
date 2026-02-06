@@ -10,7 +10,6 @@ process VISUALIZATION_COUNTS_PER_COV {
     input:
     tuple val(meta), path(variantCounts_for_heatmaps)
     val min_counts
-    path script // counts_per_cov_heatmap.R
 
     output:
     tuple val(meta), path("counts_per_cov_heatmap.pdf"), emit: counts_per_cov_heatmap
@@ -20,15 +19,7 @@ process VISUALIZATION_COUNTS_PER_COV {
     task.ext.when == null || task.ext.when
 
     script:
-    """
-    Rscript -e "source('$script'); counts_per_cov_heatmap('$variantCounts_for_heatmaps', $min_counts, 'counts_per_cov_heatmap.pdf')"
-
-    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
-    cat <<-END_VERSIONS > versions.yml
-    VISUALIZATION_COUNTS_PER_COV:
-      r-base: \$R_VERSION
-    END_VERSIONS
-    """
+    template 'counts_per_cov_heatmap.R'
 
     stub:
     """
@@ -50,7 +41,6 @@ process VISUALIZATION_COUNTS_HEATMAP {
     input:
     tuple val(meta), path(variantCounts_for_heatmaps)
     val min_counts
-    path script // counts_heatmap.R
 
     output:
     tuple val(meta), path("counts_heatmap.pdf"), emit: counts_heatmap
@@ -60,15 +50,7 @@ process VISUALIZATION_COUNTS_HEATMAP {
     task.ext.when == null || task.ext.when
 
     script:
-    """
-    Rscript -e "source('$script'); counts_heatmap('$variantCounts_for_heatmaps', $min_counts, 'counts_heatmap.pdf')"
-
-    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
-    cat <<-END_VERSIONS > versions.yml
-    VISUALIZATION_COUNTS_PER_COV:
-      r-base: \$R_VERSION
-    END_VERSIONS
-    """
+    template 'counts_heatmap.R'
 
     stub:
     """
@@ -91,7 +73,6 @@ process VISUALIZATION_GLOBAL_POS_BIASES_COUNTS {
     tuple val(meta), path(variantCounts_filtered_by_library)
     path aa_seq
     val sliding_window_size
-    path script // global_position_biases_counts_and_counts_per_cov.R
 
     output:
     tuple val(meta), path("rolling_counts.pdf"), emit: rolling_counts
@@ -102,15 +83,7 @@ process VISUALIZATION_GLOBAL_POS_BIASES_COUNTS {
     task.ext.when == null || task.ext.when
 
     script:
-    """
-    Rscript -e "source('$script'); position_biases('$variantCounts_filtered_by_library', '$aa_seq', $sliding_window_size)"
-
-    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
-    cat <<-END_VERSIONS > versions.yml
-    VISUALIZATION_COUNTS_PER_COV:
-      r-base: \$R_VERSION
-    END_VERSIONS
-    """
+    template 'global_position_biases_counts_and_counts_per_cov.R'
 
     stub:
     """
@@ -135,7 +108,6 @@ process VISUALIZATION_GLOBAL_POS_BIASES_COV {
     path aa_seq
     val sliding_window_size
     val aimed_cov
-    path script // R script
 
     output:
     tuple val(meta), path("rolling_coverage.pdf"), emit: rolling_coverage
@@ -145,15 +117,7 @@ process VISUALIZATION_GLOBAL_POS_BIASES_COV {
     task.ext.when == null || task.ext.when
 
     script:
-    """
-    Rscript -e "source('$script'); position_biases('$variantCounts_filtered_by_library', '$aa_seq', $sliding_window_size, 'rolling_coverage.pdf', $aimed_cov)"
-
-    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
-    cat <<-END_VERSIONS > versions.yml
-    VISUALIZATION_COUNTS_PER_COV:
-      r-base: \$R_VERSION
-    END_VERSIONS
-    """
+    template 'global_position_biases_cov.R'
 
     stub:
     """
@@ -174,7 +138,6 @@ process VISUALIZATION_LOGDIFF {
 
     input:
     tuple val(meta), path(library_completed_variantCounts)
-    path script // R script
 
     output:
     tuple val(meta), path("logdiff_plot.pdf"), emit: logdiff_plot
@@ -185,15 +148,7 @@ process VISUALIZATION_LOGDIFF {
     task.ext.when == null || task.ext.when
 
     script:
-    """
-    Rscript -e "source('$script'); logdiff_plot('$library_completed_variantCounts')"
-
-    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
-    cat <<-END_VERSIONS > versions.yml
-    VISUALIZATION_COUNTS_PER_COV:
-      r-base: \$R_VERSION
-    END_VERSIONS
-    """
+    template 'logdiff.R'    
 
     stub:
     """
@@ -217,7 +172,6 @@ process VISUALIZATION_SEQDEPTH {
     tuple val(meta), path(variantCounts_filtered_by_library)
     path possible_mutations
     val min_counts
-    path script // R script
 
     output:
     tuple val(meta), path("SeqDepth.pdf"), emit: SeqDepth
@@ -227,20 +181,10 @@ process VISUALIZATION_SEQDEPTH {
     task.ext.when == null || task.ext.when
 
     script:
-    """
-    Rscript -e "source('$script'); SeqDepth_simulation_plot('$variantCounts_filtered_by_library', '$possible_mutations', 'SeqDepth.pdf', 0.01, $min_counts)"
-
-    R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
-    cat <<-END_VERSIONS > versions.yml
-    VISUALIZATION_COUNTS_PER_COV:
-      r-base: \$R_VERSION
-    END_VERSIONS
-    """
+    template 'SeqDepth_simulation.R'
 
     stub:
     """
     touch SeqDepth.pdf
-    echo "VISUALIZATION_COUNTS_HEATMAP:" > versions.yml
-    echo "  stub-version: 0.0.0" >> versions.yml
     """
 }

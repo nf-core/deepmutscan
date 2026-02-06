@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 suppressPackageStartupMessages({
   library(methods)
   library(dplyr)
@@ -20,7 +22,7 @@ get_rescaled_cols <- function(df) {
   nms  <- colnames(df)
   hits <- grep("^rescaled[_ ]?fitness", nms, ignore.case = TRUE, value = TRUE)
   if (!length(hits)) stop("No 'rescaled_fitness' columns found.")
-  idx <- suppressWarnings(as.integer(gsub(".*?([0-9]+)$", "\\1", hits)))
+  idx <- suppressWarnings(as.integer(gsub(".*?([0-9]+)\$", "\\\\1", hits))) 	# additional backslashs to make it groovy readable
   hits[order(is.na(idx), idx, hits)]
 }
 
@@ -38,7 +40,7 @@ read_wt_seq_aa_txt <- function(path) {
   x <- readLines(path, warn = FALSE)
   x <- x[nzchar(x)]
   if (!length(x)) stop("WT AA TXT is empty.")
-  aa <- toupper(gsub("\\s+", "", x[which.max(nchar(x))]))
+  aa <- toupper(gsub("\\\\s+", "", x[which.max(nchar(x))]))
   # Keep only valid amino acid letters (including stop '*')
   aa <- gsub("[^ACDEFGHIKLMNPQRSTVWY*]", "", aa)
   if (!nchar(aa)) stop("WT AA TXT contains no valid AA letters.")
@@ -72,8 +74,8 @@ build_heatmap_long <- function(df,
     filter(is.finite(position))
 
   # drop any rows that claim positions beyond WT length
-  if (nrow(df0) && any(df0$position > wt_len, na.rm = TRUE)) {
-    dropped <- sum(df0$position > wt_len, na.rm = TRUE)
+  if (nrow(df0) && any(df0\$position > wt_len, na.rm = TRUE)) {
+    dropped <- sum(df0\$position > wt_len, na.rm = TRUE)
     warning(sprintf("Dropping %d row(s) with position > WT length (%d).", dropped, wt_len))
     df0 <- df0 %>% filter(position <= wt_len)
   }
@@ -99,7 +101,7 @@ build_heatmap_long <- function(df,
     left_join(fit_df, by = c("position","mut_aa"))
 
   if (fill_missing_as_zero) {
-    d$fitness[is.na(d$fitness) & d$position <= wt_len] <- 0
+    d\$fitness[is.na(d\$fitness) & d\$position <= wt_len] <- 0
   }
 
   # authoritative WT AA per real position; tail gets placeholder 'Y'
@@ -118,7 +120,7 @@ build_heatmap_long <- function(df,
     )
 
   # IMPORTANT: use WT length as the true end of the protein
-  d$max_pos <- wt_len
+  d\$max_pos <- wt_len
   d
 }
 
@@ -138,7 +140,7 @@ syn_segments <- function(d, positions_per_row = 75) {
 
 # Draw one solid white rectangle per row group covering the padded tail region
 white_tail_rects <- function(d, positions_per_row = 75) {
-  wt_len <- unique(d$max_pos)[1]
+  wt_len <- unique(d\$max_pos)[1]
   if (!is.finite(wt_len)) return(dplyr::tibble()[0,])
 
   # if perfectly divisible by 75, there is no tail to cover
@@ -163,9 +165,9 @@ plot_heatmap <- function(d, title_text, positions_per_row = 75) {
                          "S", "T", "C", "N", "Q", "P", "*"))
   d <- d %>% mutate(mut_aa = factor(mut_aa, levels = amino_order))
 
-  min_f <- suppressWarnings(min(d$fitness, na.rm = TRUE)); if (!is.finite(min_f)) min_f <- 0
-  max_f <- suppressWarnings(max(d$fitness, na.rm = TRUE)); if (!is.finite(max_f)) max_f <- 0
-  max_orig_pos <- unique(d$max_pos)[1]
+  min_f <- suppressWarnings(min(d\$fitness, na.rm = TRUE)); if (!is.finite(min_f)) min_f <- 0
+  max_f <- suppressWarnings(max(d\$fitness, na.rm = TRUE)); if (!is.finite(max_f)) max_f <- 0
+  max_orig_pos <- unique(d\$max_pos)[1]
 
   syn  <- syn_segments(d, positions_per_row)
   rect <- white_tail_rects(d, positions_per_row)
@@ -240,7 +242,7 @@ run_fitness_rescaled_heatmaps <- function(fitness_table_path,
   ## 1) Mean first – use existing "mean fitness" column if available
   mean_col <- find_mean_col(df)
   if (is.null(mean_col)) {
-    df$`rescaled_fitness_mean` <- if (length(rescaled_cols) == 1) df[[rescaled_cols[1]]] else rowMeans(df[, rescaled_cols], na.rm = TRUE)
+    df\$`rescaled_fitness_mean` <- if (length(rescaled_cols) == 1) df[[rescaled_cols[1]]] else rowMeans(df[, rescaled_cols], na.rm = TRUE)
     mean_col <- "rescaled_fitness_mean"
   }
   long_df_mean <- build_heatmap_long(df, wt_aa_col, pos_col, mut_aa_col, mean_col,
@@ -262,11 +264,49 @@ run_fitness_rescaled_heatmaps <- function(fitness_table_path,
   }
 
   # Device height: (#row groups × 4)
-  page_heights <- vapply(plots, function(p) max(p$data$row_group, na.rm = TRUE), numeric(1))
+  page_heights <- vapply(plots, function(p) max(p\$data\$row_group, na.rm = TRUE), numeric(1))
   device_height <- max(4, as.numeric(page_heights) * 4, na.rm = TRUE)
 
   grDevices::pdf(output_pdf_path, width = 16, height = device_height)
   on.exit(try(grDevices::dev.off(), silent = TRUE), add = TRUE)
-  for (p in plots) print(plot_heatmap(p$data, p$title, positions_per_row))
+  for (p in plots) print(plot_heatmap(p\$data, p\$title, positions_per_row))
   invisible(TRUE)
 }
+
+####
+# run function
+####
+run_fitness_rescaled_heatmaps(
+  fitness_table_path = "$fitness_estimation_tsv",
+  wt_seq_aa_txt_path = "$wt_seq",
+  output_pdf_path    = "fitness_heatmap.pdf"
+)
+
+####
+# create versions.yml
+####
+r_version <- strsplit(version[['version.string']], ' ')[[1]][3]
+dplyr_version <- as.character(packageVersion("dplyr"))
+ggplot2_version <- as.character(packageVersion("ggplot2"))
+methods_version <- as.character(packageVersion("methods"))
+grid_version <- as.character(packageVersion("grid"))
+
+if (is.null(r_version)) r_version <- "unknown"
+if (length(dplyr_version) == 0) dplyr_version <- "unknown"
+if (length(ggplot2_version) == 0) ggplot2_version <- "unknown"
+if (length(methods_version) == 0) methods_version <- "unknown"
+if (length(grid_version) == 0) grid_version <- "unknown"
+
+f <- file("versions.yml", "w")
+writeLines(
+  c(
+    '"${task.process}":',
+    paste('    r-base:', r_version),
+    paste('    r-dplyr:', dplyr_version),
+    paste('    r-ggplot2:', ggplot2_version),
+    paste('    r-methods:', methods_version),
+    paste('    r-grid:', grid_version)
+  ),
+  f
+)
+close(f)

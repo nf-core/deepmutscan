@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # input: wildtype-seq, start&stopp pos.
 # output: amino acid sequence within the start-stop frame (.txt)
 
@@ -31,7 +33,34 @@ aa_seq <- function(wt_seq_input, pos_range, output_file) {
   write(as.character(aa_seq), file = output_file)
 }
 
-# Example usage:
-# translate_to_protein("/path/to/sequence.fasta", "23-1225", "/path/to/output_protein.txt")
 
-#aa_seq("/Users/benjaminwehnert/CRG/DMS_QC/testing_data/MORtn5_reference.fa", "23-1225", "/Users/benjaminwehnert/CRG/DMS_QC/testing_data/testing_outputs/aa_seq.txt")
+#####
+# run function
+#####
+aa_seq(
+  wt_seq_input = "$wt_seq",
+  "$pos_range",
+  "aa_seq.txt"
+  )
+
+
+####
+# create versions.yml
+####
+r_version <- strsplit(version[['version.string']], ' ')[[1]][3]
+Biostrings_version <- as.character(packageVersion("Biostrings"))
+
+if (is.null(r_version)) r_version <- "unknown"
+if (length(Biostrings_version) == 0) Biostrings_version <- "unknown"
+
+f <- file("versions.yml", "w")
+writeLines(
+  c(
+    '"\${task.process}":',
+    paste('    r-base:', r_version),
+    paste('    r-Biostrings:', Biostrings_version)
+  ),
+  f
+)
+close(f)
+

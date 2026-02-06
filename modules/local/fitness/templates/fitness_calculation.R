@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 ## default fitness estimation for nf-core/deepmutscan
 ## 27.10.2025
 ## maximilian.stammnitz@crg.eu
@@ -16,13 +18,13 @@ compute_nt_hamming <- function(merged.counts, wt.seq) {
   merged.counts <- cbind("nt_ham" = rep(NA, nrow(merged.counts)), merged.counts)
   for (i in 1:nrow(merged.counts)){
     tmp.wt <- strsplit(as.character(wt.seq), "")[[1]]
-    tmp.mut <- strsplit(as.character(merged.counts$nt_seq[i]), "")[[1]]
+    tmp.mut <- strsplit(as.character(merged.counts\$nt_seq[i]), "")[[1]]
     if(length(which(tmp.mut != tmp.wt)) == 0){
-      merged.counts$nt_ham[i] <- 0
+      merged.counts\$nt_ham[i] <- 0
       rm(tmp.mut, tmp.wt)
       next
     }else{
-      merged.counts$nt_ham[i] <- length(which(tmp.mut != tmp.wt))
+      merged.counts\$nt_ham[i] <- length(which(tmp.mut != tmp.wt))
       rm(tmp.mut, tmp.wt)
       next
     }
@@ -32,7 +34,7 @@ compute_nt_hamming <- function(merged.counts, wt.seq) {
 
 # translate sequences and add aa_seq
 add_aa_seq <- function(merged.counts) {
-  merged.counts <- cbind("aa_seq" = as.character(translate(DNAStringSet(merged.counts$nt_seq))), merged.counts)
+  merged.counts <- cbind("aa_seq" = as.character(translate(DNAStringSet(merged.counts\$nt_seq))), merged.counts)
   merged.counts
 }
 
@@ -41,13 +43,13 @@ compute_aa_hamming <- function(merged.counts, wt.seq.aa) {
   merged.counts <- cbind("aa_ham" = rep(NA, nrow(merged.counts)), merged.counts)
   for (i in 1:nrow(merged.counts)){
     tmp.wt <- strsplit(as.character(wt.seq.aa), "")[[1]]
-    tmp.mut <- strsplit(as.character(merged.counts$aa_seq[i]), "")[[1]]
+    tmp.mut <- strsplit(as.character(merged.counts\$aa_seq[i]), "")[[1]]
     if(length(which(tmp.mut != tmp.wt)) == 0){
-      merged.counts$aa_ham[i] <- 0
+      merged.counts\$aa_ham[i] <- 0
       rm(tmp.mut, tmp.wt)
       next
     }else{
-      merged.counts$aa_ham[i] <- length(which(tmp.mut != tmp.wt))
+      merged.counts\$aa_ham[i] <- length(which(tmp.mut != tmp.wt))
       rm(tmp.mut, tmp.wt)
       next
     }
@@ -61,14 +63,14 @@ name_mutations <- function(merged.counts, wt.seq.aa) {
                          "pos" = rep(NA, nrow(merged.counts)),
                          "mut aa" = rep(NA, nrow(merged.counts)), merged.counts)
   for (i in 1:nrow(merged.counts)){
-    if(merged.counts$aa_ham[i] == 0){
+    if(merged.counts\$aa_ham[i] == 0){
       next
     }else{
       tmp.wt <- strsplit(as.character(wt.seq.aa), "")[[1]]
-      tmp.mut <- strsplit(as.character(merged.counts$aa_seq[i]), "")[[1]]
-      merged.counts$pos[i] <- which(tmp.mut != tmp.wt)
-      merged.counts$`wt aa`[i] <- tmp.wt[merged.counts$pos[i]]
-      merged.counts$`mut aa`[i] <- tmp.mut[merged.counts$pos[i]]
+      tmp.mut <- strsplit(as.character(merged.counts\$aa_seq[i]), "")[[1]]
+      merged.counts\$pos[i] <- which(tmp.mut != tmp.wt)
+      merged.counts\$`wt aa`[i] <- tmp.wt[merged.counts\$pos[i]]
+      merged.counts\$`mut aa`[i] <- tmp.mut[merged.counts\$pos[i]]
       rm(tmp.mut, tmp.wt)
     }
   }
@@ -81,17 +83,17 @@ aggregate_by_aa <- function(merged.counts) {
   merged.counts <- cbind(merged.counts,
                          "wt" = rep(NA, nrow(merged.counts)),
                          "stop" = rep(NA, nrow(merged.counts)))
-  merged.counts$wt[which(merged.counts$nt_ham == 0)] <- TRUE
-  merged.counts$stop[which(merged.counts$`mut aa` == "*")] <- TRUE
-
+  merged.counts\$wt[which(merged.counts\$nt_ham == 0)] <- TRUE
+  merged.counts\$stop[which(merged.counts\$`mut aa` == "*")] <- TRUE
+  
   ## aggregate counts of variants which are identical on the aa (but not nt) level
   ## exception: wildtype ones
   ## thereby shrinking the matrix
-  uniq.aa.vars <- unique(merged.counts$aa_seq)
-  uniq.aa.vars <- uniq.aa.vars[-which(uniq.aa.vars == merged.counts$aa_seq[which(merged.counts$wt == TRUE)])]
+  uniq.aa.vars <- unique(merged.counts\$aa_seq)
+  uniq.aa.vars <- uniq.aa.vars[-which(uniq.aa.vars == merged.counts\$aa_seq[which(merged.counts\$wt == TRUE)])]
   for(i in 1:length(uniq.aa.vars)){
     tmp.aa_seq <- uniq.aa.vars[i]
-    hits <- which(as.character(merged.counts$aa_seq) == tmp.aa_seq)
+    hits <- which(as.character(merged.counts\$aa_seq) == tmp.aa_seq)
     if(length(hits) == 1){
       rm(tmp.aa_seq, hits)
       next
@@ -111,7 +113,7 @@ aggregate_by_aa <- function(merged.counts) {
 # 3. Raw fitness calculations ##
 calc_raw_fitness <- function(merged.counts, exp.design) {
   ## how many fitness replicates are there
-  reps <- length(unique(exp.design$experiment_replicate))
+  reps <- length(unique(exp.design\$experiment_replicate))
   for (i in 1:reps){
     merged.counts <- cbind(merged.counts, rep(NA, nrow(merged.counts)))
     colnames(merged.counts)[ncol(merged.counts)] <- paste0("raw_fitness_rep", i)
@@ -128,9 +130,9 @@ calc_raw_fitness <- function(merged.counts, exp.design) {
     tmp.output.counts[which(tmp.output.counts == 0 & tmp.input.counts != 0)] <- 1
 
     ### take logs
-    tmp.wt.log.ratio <- log(tmp.output.counts[which(merged.counts$wt == TRUE)] /
-                              tmp.input.counts[which(merged.counts$wt == TRUE)])
-    tmp.fitness <- log(tmp.output.counts /
+    tmp.wt.log.ratio <- log(tmp.output.counts[which(merged.counts\$wt == TRUE)] / 
+                              tmp.input.counts[which(merged.counts\$wt == TRUE)])
+    tmp.fitness <- log(tmp.output.counts / 
                          tmp.input.counts) - tmp.wt.log.ratio
 
     ### uncertain values to NA
@@ -156,9 +158,9 @@ rescale_and_summarize <- function(merged.counts, reps) {
     colnames(merged.counts)[ncol(merged.counts)] <- paste0("rescaled_fitness_rep", i)
 
     ### fetch the key counts
-    tmp.wt.fitness <- merged.counts[which(merged.counts$aa_ham == 0),ncol(merged.counts) - reps]
-    tmp.stop.fitness <- merged.counts[which(merged.counts$stop == TRUE),ncol(merged.counts) - reps]
-
+    tmp.wt.fitness <- merged.counts[which(merged.counts\$aa_ham == 0),ncol(merged.counts) - reps]
+    tmp.stop.fitness <- merged.counts[which(merged.counts\$stop == TRUE),ncol(merged.counts) - reps]
+    
     ### rescale
     tmp.wt.fitness.med <- median(tmp.wt.fitness, na.rm = TRUE)
     tmp.stop.fitness.med <- median(tmp.stop.fitness, na.rm = TRUE)
@@ -167,17 +169,17 @@ rescale_and_summarize <- function(merged.counts, reps) {
       tmp.wt.fitness.mean <- mean(tmp.wt.fitness, na.rm = TRUE)
       tmp.stop.fitness.mean <- mean(tmp.stop.fitness, na.rm = TRUE)
       lm.rescale <- lm(c(0, -1) ~ c(tmp.wt.fitness.mean, tmp.stop.fitness.mean))
-      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale$coefficients[[2]] + lm.rescale$coefficients[[1]]
-      rm(tmp.wt.fitness, tmp.stop.fitness,
-         tmp.wt.fitness.mean, tmp.stop.fitness.mean,
+      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale\$coefficients[[2]] + lm.rescale\$coefficients[[1]]
+      rm(tmp.wt.fitness, tmp.stop.fitness, 
+         tmp.wt.fitness.mean, tmp.stop.fitness.mean, 
          tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale)
       next
 
     }else{
 
       lm.rescale <- lm(c(0, -1) ~ c(tmp.wt.fitness.med, tmp.stop.fitness.med))
-      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale$coefficients[[2]] + lm.rescale$coefficients[[1]]
-      rm(tmp.wt.fitness, tmp.stop.fitness,
+      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale\$coefficients[[2]] + lm.rescale\$coefficients[[1]]
+      rm(tmp.wt.fitness, tmp.stop.fitness, 
          tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale)
       next
 
@@ -190,16 +192,16 @@ rescale_and_summarize <- function(merged.counts, reps) {
                          "fitness sd" = rep(NA, nrow(merged.counts)))
 
   if(reps == 1){
-
-    merged.counts$`mean fitness` <- merged.counts[,ncol(merged.counts) - 2]
-
+    
+    merged.counts\$`mean fitness` <- merged.counts[,ncol(merged.counts) - 2]
+    
   }else if(reps > 1){
-
-    merged.counts$`mean fitness` <- apply(merged.counts[,c(ncol(merged.counts) - 2*reps + 1, ncol(merged.counts) - reps)],
+    
+    merged.counts\$`mean fitness` <- apply(merged.counts[,c(ncol(merged.counts) - 2*reps + 1, ncol(merged.counts) - reps)],
                                           1,
                                           mean,
                                           na.rm = TRUE)
-    merged.counts$`fitness sd` <- apply(merged.counts[,c(ncol(merged.counts) - 2*reps + 1, ncol(merged.counts) - reps)],
+    merged.counts\$`fitness sd` <- apply(merged.counts[,c(ncol(merged.counts) - 2*reps + 1, ncol(merged.counts) - reps)],
                                         1,
                                         sd,
                                         na.rm = TRUE)
@@ -225,9 +227,9 @@ run_fitness_estimation <- function(counts_path,
                                    output_path) {
   ## 1. Import key files ##
   #########################
-
-  merged.counts <- read.table(counts_path, sep = "\t", header = TRUE, check.names = FALSE)
-  exp.design   <- read.table(design_path, sep = "\t", header = TRUE, check.names = FALSE)
+  
+  merged.counts <- read.table(counts_path, sep = "\\t", header = TRUE, check.names = FALSE)
+  exp.design   <- read.table(design_path, sep = "\\t", header = TRUE, check.names = FALSE)
   wt.seq       <- DNAString(as.character(read.table(wt_seq_path)))
   wt.seq.aa    <- translate(wt.seq)
 
@@ -252,9 +254,9 @@ run_fitness_estimation <- function(counts_path,
   ## 3. Raw fitness calculations ##
   #################################
   fitness_res <- calc_raw_fitness(merged.counts, exp.design)
-  merged.counts <- fitness_res$merged.counts
-  reps <- fitness_res$reps
-
+  merged.counts <- fitness_res\$merged.counts
+  reps <- fitness_res\$reps
+  
   ## 4. Fitness and error refinements ##
   ######################################
   merged.counts <- rescale_and_summarize(merged.counts, reps)
@@ -264,8 +266,8 @@ run_fitness_estimation <- function(counts_path,
 
   ## export
   write.table(merged.counts, output_path,
-              col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t", na = "")
-
+              col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\\t", na = "")
+  
   invisible(merged.counts)
 }
 
@@ -296,6 +298,40 @@ run_fitness_estimation <- function(counts_path,
 # [6] BiocGenerics_0.54.0 generics_0.1.4
 #
 # loaded via a namespace (and not attached):
-# [1] httr_1.4.7              compiler_4.5.1          R6_2.6.1                tools_4.5.1
-# [5] GenomeInfoDbData_1.2.14 rstudioapi_0.17.1       crayon_1.5.3            UCSC.utils_1.4.0
-# [9] jsonlite_2.0.0
+# [1] httr_1.4.7              compiler_4.5.1          R6_2.6.1                tools_4.5.1            
+# [5] GenomeInfoDbData_1.2.14 rstudioapi_0.17.1       crayon_1.5.3            UCSC.utils_1.4.0       
+# [9] jsonlite_2.0.0   
+
+
+
+#####
+# run function
+#####
+run_fitness_estimation(
+  counts_path = "$counts_merged",
+  design_path = "$exp_design",
+  wt_seq_path = "$syn_wt_txt",
+  output_path = "fitness_estimation.tsv"
+)
+
+####
+# create versions.yml
+####
+r_version <- strsplit(version[['version.string']], ' ')[[1]][3]
+Biostrings_version <- as.character(packageVersion("Biostrings"))
+
+if (is.null(r_version)) r_version <- "unknown"
+if (length(Biostrings_version) == 0) Biostrings_version <- "unknown"
+
+f <- file("versions.yml", "w")
+writeLines(
+  c(
+    '"${task.process}":',
+    paste('    r-base:', r_version),
+    paste('    r-Biostrings:', Biostrings_version)
+  ),
+  f
+)
+close(f)
+
+
