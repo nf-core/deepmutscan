@@ -1,5 +1,5 @@
 lint: {}
-nf_core_version: 3.4.1
+nf_core_version: 3.1.2
 repository_type: pipeline
 template:
   author: Benjamin Wehnert & Max Stammnitz

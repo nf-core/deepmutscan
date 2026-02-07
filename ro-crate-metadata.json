@@ -129,12 +129,23 @@
                 "SoftwareSourceCode",
                 "ComputationalWorkflow"
             ],
+            "@type": [
+                "File",
+                "SoftwareSourceCode",
+                "ComputationalWorkflow"
+            ],
             "dateCreated": "",
             "dateModified": "2025-11-10T10:04:57Z",
             "dct:conformsTo": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE/",
             "keywords": [
                 "nf-core",
                 "nextflow"
+            ],
+            "license": [
+                "MIT"
+            ],
+            "name": [
+                "nf-core/deepmutscan"
             ],
             "license": [
                 "MIT"
@@ -155,6 +166,13 @@
             "version": [
                 "1.0.0"
             ]
+            "url": [
+                "https://github.com/nf-core/deepmutscan",
+                "https://nf-co.re/deepmutscan/1.0.0/"
+            ],
+            "version": [
+                "1.0.0"
+            ]
         },
         {
             "@id": "https://w3id.org/workflowhub/workflow-ro-crate#nextflow",
@@ -166,6 +184,7 @@
             "url": {
                 "@id": "https://www.nextflow.io/"
             },
+            "version": "!>=24.04.2"
             "version": "!>=24.04.2"
         },
         {
@@ -185,6 +204,7 @@
             "@id": "#b0a1d187-61ce-46f7-8e2a-53759e1eafd5",
             "@type": "TestInstance",
             "name": "GitHub Actions workflow for testing nf-core/deepmutscan",
+            "resource": "repos/nf-core/deepmutscan/actions/workflows/ci.yml",
             "resource": "repos/nf-core/deepmutscan/actions/workflows/ci.yml",
             "runsOn": {
                 "@id": "https://w3id.org/ro/terms/test#GithubService"
