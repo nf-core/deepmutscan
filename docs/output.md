@@ -75,23 +75,24 @@ This directory is created during the second series of steps of the pipeline, fea
 <summary>Output files</summary>
 
 - `library_QC/`
+
   - `counts_heatmap.pdf`: a complete heatmap of absolute mutant counts, stratified by mutant amino acid (Y-axis) per position (X-axis)
-![Count heatmap](images/library_QC_counts_heatmap.png)
+    ![Count heatmap](images/library_QC_counts_heatmap.png)
 
   - `counts_per_cov_heatmap.pdf`: as above, but as a fraction of the total sequencing coverage
   - `logdiff_plot.pdf`: sorted, log-scale coverage distribution of all mutants
-![Logarithmic count differences](images/library_QC_logdiff_plot.png)
+    ![Logarithmic count differences](images/library_QC_logdiff_plot.png)
 
   - `logdiff_varying_bases.pdf`: as above, but stratified by hamming distance to the wildtype nucleotide sequence (colour shading)
   - `rolling_coverage.pdf`: sliding-window rolling coverage
-![Rolling coverage](images/library_QC_rolling_coverage.png)
+    ![Rolling coverage](images/library_QC_rolling_coverage.png)
 
   - `rolling_counts.pdf`: sliding-window rolling coverage, stratified by hamming distance to the wildtype nucleotide sequence (colour shading)
-![Rolling counts](images/library_QC_rolling_counts.png)
+    ![Rolling counts](images/library_QC_rolling_counts.png)
 
   - `rolling_counts_per_cov.pdf`: as above, but as a fraction of the total sequencing coverage
   - `SeqDepth.pdf` (optional via the `--run_seqdepth` argument): rarefaction curve of the sequencing coverage and how it relates to the percentage of programmed variants detected
-![Sequencing coverage rarefaction](images/library_QC_SeqDepth.png)
+    ![Sequencing coverage rarefaction](images/library_QC_SeqDepth.png)
 
 </details>
 
@@ -103,15 +104,16 @@ This directory is created during the final series of steps of the pipeline, feat
 <summary>Output files</summary>
 
 - `fitness/`
+
   - `counts_merged.tsv`: summarised gene variant counts across all input and output samples
   - `default_results/fitness_estimation_count_correlation.pdf`: pair-wise replicate variant count scatterplots and correlations between all specified samples
-![Variant count correlation(s)](images/fitness_estimation_count_correlation.png)
+    ![Variant count correlation(s)](images/fitness_estimation_count_correlation.png)
 
   - `default_results/fitness_estimation_fitness_correlation.pdf`: pair-wise fitness replicate scatterplots and correlations between all specified output samples
-![Fitness correlation(s)](images/fitness_estimation_fitness_correlation.png)
+    ![Fitness correlation(s)](images/fitness_estimation_fitness_correlation.png)
 
   - `default_results/fitness_heatmap.pdf`: a complete heatmap of absolute mutant counts, stratified by mutant amino acid (Y-axis) per position (X-axis)
-![Default fitness heatmap](images/fitness_heatmap.png)
+    ![Default fitness heatmap](images/fitness_heatmap.png)
 
   - `default_results/fitness_estimation.tsv`: table file with all fitness and fitness error estimates calculated
   - `DiMSum_results/dimsum_results/` (optional): subfolder with the full set of [DiMSum](https://github.com/lehner-lab/DiMSum) outputs, including the associated `.HTML` report, `.Rdata` and `.tsv` files with fitness and fitness error estimates
