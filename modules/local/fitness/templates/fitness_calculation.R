@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 ## default fitness estimation for nf-core/deepmutscan
-## 27.10.2025
+## 15.02.2026
 ## maximilian.stammnitz@crg.eu
 
 ## 0. Libraries ##
@@ -197,11 +197,11 @@ rescale_and_summarize <- function(merged.counts, reps) {
     
   }else if(reps > 1){
     
-    merged.counts\$`mean fitness` <- apply(merged.counts[,c(ncol(merged.counts) - 2*reps + 1, ncol(merged.counts) - reps)],
+    merged.counts\$`mean fitness` <- apply(merged.counts[,c(ncol(merged.counts) - 1 - reps):c(ncol(merged.counts) - 2)],
                                           1,
                                           mean,
                                           na.rm = TRUE)
-    merged.counts\$`fitness sd` <- apply(merged.counts[,c(ncol(merged.counts) - 2*reps + 1, ncol(merged.counts) - reps)],
+    merged.counts\$`fitness sd` <- apply(merged.counts[,c(ncol(merged.counts) - 1 - reps):c(ncol(merged.counts) - 2)],
                                         1,
                                         sd,
                                         na.rm = TRUE)
