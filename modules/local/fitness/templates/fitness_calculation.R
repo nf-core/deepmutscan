@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 ## default fitness estimation for nf-core/deepmutscan
-## 15.02.2026
+## 18.02.2026
 ## maximilian.stammnitz@crg.eu
 
 ## 0. Libraries ##
@@ -110,6 +110,22 @@ aggregate_by_aa <- function(merged.counts) {
   merged.counts
 }
 
+# calculate bimodal fitness distribution
+density_peaks <- function(x, adjust = 1, ...) {
+
+  ## obtain density distribution
+  d <- density(x, adjust = adjust, n = 5000, na.rm = T, ...)
+  y <- d$y
+  idx <- which(diff(sign(diff(y))) == -2) + 1
+  if (length(idx) == 0) return(numeric(0))
+
+  ## order density peaks by height (y value); take top 2
+  idx <- idx[order(y[idx], decreasing = TRUE)]
+  peaks_x <- d$x[idx]
+  peaks_x[seq_len(min(2, length(peaks_x)))]
+
+}
+
 # 3. Raw fitness calculations ##
 calc_raw_fitness <- function(merged.counts, exp.design) {
   ## how many fitness replicates are there
@@ -164,24 +180,36 @@ rescale_and_summarize <- function(merged.counts, reps) {
     ### rescale
     tmp.wt.fitness.med <- median(tmp.wt.fitness, na.rm = TRUE)
     tmp.stop.fitness.med <- median(tmp.stop.fitness, na.rm = TRUE)
-    if(tmp.stop.fitness.med >= tmp.wt.fitness.med){
-
-      tmp.wt.fitness.mean <- mean(tmp.wt.fitness, na.rm = TRUE)
-      tmp.stop.fitness.mean <- mean(tmp.stop.fitness, na.rm = TRUE)
-      lm.rescale <- lm(c(0, -1) ~ c(tmp.wt.fitness.mean, tmp.stop.fitness.mean))
-      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale\$coefficients[[2]] + lm.rescale\$coefficients[[1]]
-      rm(tmp.wt.fitness, tmp.stop.fitness, 
-         tmp.wt.fitness.mean, tmp.stop.fitness.mean, 
-         tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale)
-      next
-
-    }else{
-
+        ## if both WT and STOP mutants are available
+    if(!is.na(tmp.wt.fitness.med) & !is.na(tmp.stop.fitness.med)){
       lm.rescale <- lm(c(0, -1) ~ c(tmp.wt.fitness.med, tmp.stop.fitness.med))
-      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale\$coefficients[[2]] + lm.rescale\$coefficients[[1]]
-      rm(tmp.wt.fitness, tmp.stop.fitness, 
-         tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale)
-      next
+      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale$coefficients[[2]] + lm.rescale$coefficients[[1]]
+      rm(tmp.wt.fitness, tmp.stop.fitness,
+         tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale)    
+      
+    ## if only WT mutants are available: lower peak determined by bimodal distribution fitting
+    }else if(!is.na(tmp.wt.fitness.med) & is.na(tmp.stop.fitness.med)){
+      tmp.peaks <- sort(density_peaks(x = merged.counts[,ncol(merged.counts) - reps]))
+      lm.rescale <- lm(c(0, -1) ~ c(tmp.wt.fitness.med, tmp.peaks[1]))
+      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale$coefficients[[2]] + lm.rescale$coefficients[[1]]
+      rm(tmp.wt.fitness, tmp.stop.fitness,
+         tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale, tmp.peaks)
+      
+    ## if only STOP mutants are available: higher peak determined by bimodal distribution fitting
+    }else if(is.na(tmp.wt.fitness.med) & !is.na(tmp.stop.fitness.med)){
+      tmp.peaks <- sort(density_peaks(x = merged.counts[,ncol(merged.counts) - reps]))
+      lm.rescale <- lm(c(0, -1) ~ c(tmp.peaks[2], tmp.stop.fitness.med))
+      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale$coefficients[[2]] + lm.rescale$coefficients[[1]]
+      rm(tmp.wt.fitness, tmp.stop.fitness,
+         tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale, tmp.peaks)
+      
+    ## if neither WT nor STOP mutants are available: both peak determined by bimodal distribution fitting
+    }else if(is.na(tmp.wt.fitness.med) & is.na(tmp.stop.fitness.med)){
+      tmp.peaks <- sort(density_peaks(x = merged.counts[,ncol(merged.counts) - reps]))
+      lm.rescale <- lm(c(0, -1) ~ c(tmp.peaks[2], tmp.peaks[1]))
+      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale$coefficients[[2]] + lm.rescale$coefficients[[1]]
+      rm(tmp.wt.fitness, tmp.stop.fitness,
+         tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale, tmp.peaks)
 
     }
   }
