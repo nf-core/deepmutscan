@@ -31,7 +31,7 @@ Note that the pipeline will create the following files in your working directory
 
 ```console title="working directory"
 work               # Directory containing the nextflow working files
-results            # Finished results in specified location (defined with --outdir)
+results            # Finished results in specified location (defined with --outdir); needs full writing access
 .nextflow_log      # Log file from Nextflow
 ```
 
@@ -82,7 +82,7 @@ Several optional parameters are available for `nf-core/deepmutscan`, some of whi
 | `--run_seqdepth`     | `false`         | Estimate sequencing saturation by rarefaction                 |
 | `--fitness`          | `false`         | Default fitness inference module                              |
 | `--dimsum`           | `false`         | Optional fitness inference module _(AMD/x86_64 systems only)_ |
-| `--mutagenesis`      | `nnk`           | Deep mutational scanning strategy used _(in development)_     |
+| `--mutagenesis`      | `nnk`           | Deep mutational scanning strategy used                        |
 | `--error-estimation` | `wt_sequencing` | Error model used to correct 1nt counts _(in development)_     |
 | `--read-align`       | `bwa-mem`       | Customised read aligner _(in development)_                    |
 
