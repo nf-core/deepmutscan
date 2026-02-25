@@ -70,7 +70,7 @@
                 "custom_codon_library": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "Path to a comma-separated .txt file listing custom codons (e.g., 'AAA,AAC,AAG,...'). Required when mutagenesis_type is set to `custom`."
+                    "description": "Path to a file defining a custom codon library. Required when mutagenesis_type is set to `custom`. The script auto-detects the format: provide either a global comma-separated list of codons (e.g., 'AAA,AAC,AAG') OR a position-specific, headerless list where each row specifies the target sequence position followed by its allowed codons (e.g., '1,ACG,AAA,ACA' and '2,AAA,TTT,ACA' on separate lines). Both as .csv."
                 },
                 "dimsum": {
                     "type": "boolean",
