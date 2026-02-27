@@ -1,145 +1,197 @@
 #!/usr/bin/env Rscript
 
-# input: wildtype-seq (string or fasta file), start&stopp pos., output_folder_path, mutagenesis_type (choose from nnk, nns, max_diff_to_wt, custom), if you choose custom, add: custom_codon_library -> comma-separated .txt (-> "AAA, AAC, AAG, AAT, ...")
-# output: .csv with all possible programmed codons for each position
-
-# ----------------------------------------------------------------------
-# 1. SETUP AND NEXTFLOW INPUT INJECTION
-# ----------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Script: Generate Programmed Codon Variants
+# Description: Generates all possible programmed codon mutations for a given 
+#              wild-type sequence based on a specified mutagenesis strategy.
+# Input: 
+#   - wt_seq_input: Wild-type sequence (string or path to FASTA file).
+#   - start_stop_pos: Target sequence range format "start-stop".
+#   - mutagenesis_type: Strategy ('nnk', 'nns', 'max_diff_to_wt', 'custom').
+#   - custom_codon_library_path: Path to custom library. Automatically detects 
+#     if the file is a global list ("AAA, AAC...") or a position-wise CSV 
+#     (requires a "Position" header).
+#   - output_file: Desired name/path for the output CSV.
+# Output: A CSV file containing all possible mutated codons per position.
+# ------------------------------------------------------------------------------
 
 suppressMessages(library(Biostrings))
 suppressMessages(library(methods))
 
 generate_possible_variants <- function(wt_seq_input, start_stop_pos, mutagenesis_type,
                                        custom_codon_library_path, output_file) {
+  
+  # Parse the start and stop positions from the input format "start-stop"
+  positions <- unlist(strsplit(start_stop_pos, "-"))
+  start_pos <- as.numeric(positions[1])
+  stop_pos <- as.numeric(positions[2])
+  
+  # Load sequence from file or process as a direct string
+  if (file.exists(wt_seq_input)) {
+    seq_data <- Biostrings::readDNAStringSet(filepath = wt_seq_input)
+    wt_seq <- seq_data[[1]]
+  } else {
+    wt_seq <- Biostrings::DNAString(wt_seq_input)
+  }
+  
+  # Extract the target coding sequence
+  coding_seq <- Biostrings::subseq(wt_seq, start = start_pos, end = stop_pos)
+  coding_seq <- as.character(coding_seq)
+  
+  # Predefined codon dictionaries
+  nnk_codons <- c('AAG', 'AAT', 'ATG', 'ATT', 'AGG', 'AGT', 'ACG', 'ACT', 'TAG', 'TAT', 'TTG', 'TTT', 'TGG', 'TGT', 'TCG', 'TCT', 'GAG', 'GAT', 'GTG', 'GTT', 'GGG', 'GGT', 'GCG', 'GCT', 'CAG', 'CAT', 'CTG', 'CTT', 'CGG', 'CGT', 'CCG', 'CCT')
+  nns_codons <- c('AAG', 'AAC', 'ATG', 'ATC', 'AGG', 'AGC', 'ACG', 'ACC', 'TAG', 'TAC', 'TTG', 'TTC', 'TGG', 'TGC', 'TCG', 'TCC', 'GAG', 'GAC', 'GTG', 'GTC', 'GGG', 'GGC', 'GCG', 'GCC', 'CAG', 'CAC', 'CTG', 'CTC', 'CGG', 'CGC', 'CCG', 'CCC')
+  nnh_codons <- c('AAA', 'AAC', 'AAT', 'ATA', 'ATC', 'ATT', 'AGA', 'AGC', 'AGT', 'ACA', 'ACC', 'ACT', 'TAA', 'TAC', 'TAT', 'TTA', 'TTC', 'TTT', 'TGA', 'TGC', 'TGT', 'TCA', 'TCC', 'TCT', 'GAA', 'GAC', 'GAT', 'GTA', 'GTC', 'GTT', 'GGA', 'GGC', 'GGT', 'GCA', 'GCC', 'GCT', 'CAA', 'CAC', 'CAT', 'CTA', 'CTC', 'CTT', 'CGA', 'CGC', 'CGT', 'CCA', 'CCC', 'CCT')
+  nnn_codons <- c('AAA', 'AAC', 'AAG', 'AAT', 'ATA', 'ATC', 'ATG', 'ATT', 'AGA', 'AGC', 'AGG', 'AGT', 'ACA', 'ACC', 'ACG', 'ACT', 'TAA', 'TAC', 'TAG', 'TAT', 'TTA', 'TTC', 'TTG', 'TTT', 'TGA', 'TGC', 'TGG', 'TGT', 'TCA', 'TCC', 'TCG', 'TCT', 'GAA', 'GAC', 'GAG', 'GAT', 'GTA', 'GTC', 'GTG', 'GTT', 'GGA', 'GGC', 'GGG', 'GGT', 'GCA', 'GCC', 'GCG', 'GCT', 'CAA', 'CAC', 'CAG', 'CAT', 'CTA', 'CTC', 'CTG', 'CTT', 'CGA', 'CGC', 'CGG', 'CGT', 'CCA', 'CCC', 'CCG', 'CCT')
 
-    # Parse the start and stop positions from the input format "start-stop"
-    positions <- unlist(strsplit(start_stop_pos, "-"))
-    start_pos <- as.numeric(positions[1])
-    stop_pos <- as.numeric(positions[2])
-
-    # Check if the input is a file or a string
-    if (file.exists(wt_seq_input)) {
-        seq_data <- Biostrings::readDNAStringSet(filepath = wt_seq_input)
-        wt_seq <- seq_data[[1]]  # Extract the sequence
+  # --------------------------------------------------------------------------
+  # Custom Library Parsing with Auto-Detection
+  # --------------------------------------------------------------------------
+  is_position_wise <- FALSE
+  position_lookup <- list()
+  custom_codons <- NULL
+  
+  if (mutagenesis_type == "custom") {
+    if (!file.exists(custom_codon_library_path) || is.null(custom_codon_library_path)) {
+      stop("Custom codons file must be provided and valid when using 'custom' mutagenesis_type.")
+    }
+    
+    # Auto-detect format by inspecting the first line
+    first_line <- readLines(custom_codon_library_path, n = 1)
+    
+    if (grepl("Position", first_line, ignore.case = TRUE)) {
+      # Format 1: Position-wise CSV file
+      is_position_wise <- TRUE
+      
+      # Read line-by-line instead of read.csv to avoid strict column matching errors
+      lines <- readLines(custom_codon_library_path)
+      
+      # Loop through lines, skipping the header (index 1)
+      for (line in lines[-1]) {
+        # Skip empty lines
+        if (trimws(line) == "") next 
+        
+        # Split the line by commas
+        parts <- trimws(unlist(strsplit(line, ",")))
+        
+        # The first part is the position, everything else are the codons
+        pos_idx <- parts[1]
+        codon_vec <- parts[-1]
+        
+        # Remove any accidental empty strings (e.g., from trailing commas)
+        codon_vec <- codon_vec[codon_vec != ""]
+        
+        position_lookup[[pos_idx]] <- codon_vec
+      }
     } else {
-        wt_seq <- Biostrings::DNAString(wt_seq_input)
+      # Format 2: Global comma-separated list (Legacy compatibility)
+      custom_codons <- unlist(strsplit(readLines(custom_codon_library_path), ","))
+      custom_codons <- trimws(custom_codons)
     }
-
-    # Extract the sequence between start and stop codons
-    coding_seq <- Biostrings::subseq(wt_seq, start = start_pos, end = stop_pos)
-    coding_seq <- as.character(coding_seq)
-
-    # List of predefined NNK & NNS codons (logic kept the same)
-    nnk_codons <- c('AAG', 'AAT', 'ATG', 'ATT', 'AGG', 'AGT', 'ACG', 'ACT', 'TAG', 'TAT', 'TTG', 'TTT', 'TGG', 'TGT', 'TCG', 'TCT', 'GAG', 'GAT', 'GTG', 'GTT', 'GGG', 'GGT', 'GCG', 'GCT', 'CAG', 'CAT', 'CTG', 'CTT', 'CGG', 'CGT', 'CCG', 'CCT')
-    nns_codons <- c('AAG', 'AAC', 'ATG', 'ATC', 'AGG', 'AGC', 'ACG', 'ACC', 'TAG', 'TAC', 'TTG', 'TTC', 'TGG', 'TGC', 'TCG', 'TCC', 'GAG', 'GAC', 'GTG', 'GTC', 'GGG', 'GGC', 'GCG', 'GCC', 'CAG', 'CAC', 'CTG', 'CTC', 'CGG', 'CGC', 'CCG', 'CCC')
-
-    # Read custom codons if mode is 'custom' (LOGIC ADAPTED)
-    if (mutagenesis_type == "custom") {
-        if (!file.exists(custom_codon_library_path) || is.null(custom_codon_library_path)) {
-            # This should not happen if the Nextflow filter works, but R needs a check.
-            stop("Custom codons file must be provided and valid when using 'custom' mutagenesis_type.")
-        }
-        # Read and parse the custom codons from the file
-        custom_codons <- unlist(strsplit(readLines(custom_codon_library_path), ","))
-        custom_codons <- trimws(custom_codons)  # Remove any whitespace
-    } else {
-        custom_codons <- NULL # Ensure it's defined
-    }
-
-    # Function to split a DNA sequence into codons (triplets)
-    split_into_codons <- function(seq) {
-        # Important: double escaping for perl regex
-        return(strsplit(seq, "(?<=.{3})", perl = TRUE)[[1]])
-    }
-
-    # Split wild-type sequence into codons
-    wt_codons <- split_into_codons(coding_seq)
-
-    # Initialize DataFrame to store mutated variants
-    # WICHTIG: \$ escaping
-    result <- data.frame(Codon_Number = integer(), wt_codon = character(), Variant = character(), stringsAsFactors = FALSE)
-
-    # Determine the codon list based on the mutagenesis_type
-    get_codon_list <- function(wt_codon) {
-        if (mutagenesis_type == "nnk") {
-            return(nnk_codons)
-        } else if (mutagenesis_type == "nns") {
-            return(nns_codons)
-        } else if (mutagenesis_type == "max_diff_to_wt") {
+  }
+  
+  # Helper function to split a DNA sequence into nucleotide triplets
+  split_into_codons <- function(seq) {
+    # Note: Double escaping is required for Perl regular expressions here
+    return(strsplit(seq, "(?<=.{3})", perl = TRUE)[[1]])
+  }
+  
+  wt_codons <- split_into_codons(coding_seq)
+  
+  # Initialize dataframe to store final variant results
+  # Note: \$ escaping is maintained for Nextflow compatibility
+  result <- data.frame(Codon_Number = integer(), wt_codon = character(), Variant = character(), stringsAsFactors = FALSE)
+  
+  # Helper function to determine the target codon list per position
+  get_codon_list <- function(wt_codon, codon_index) {
+    if (mutagenesis_type == "nnk") {
+      return(nnk_codons)
+    } else if (mutagenesis_type == "nns") {
+      return(nns_codons)
+    } else if (mutagenesis_type == "nnh") {
+            return(nnh_codons)
+    } else if (mutagenesis_type == "nnn") {
+            return(nnn_codons)
+    } else if (mutagenesis_type == "nnk_nns") {
+      if (substr(wt_codon, 3, 3) == "T") return(nns_codons) else return(nnk_codons)
+    } else if (mutagenesis_type == "nnk_nns_nnh") {
             if (substr(wt_codon, 3, 3) == "T") {
                 return(nns_codons)
+            } else if (substr(wt_codon, 3, 3) == "G"){
+                return(nnh_codons)
             } else {
                 return(nnk_codons)
             }
-        } else if (mutagenesis_type == "custom") {
-            if (is.null(custom_codons)) stop("Custom codons list not defined.")
-            return(custom_codons)
+    } else if (mutagenesis_type == "custom") {
+      if (is_position_wise) {
+        idx_str <- as.character(codon_index)
+        if (!is.null(position_lookup[[idx_str]])) {
+          return(position_lookup[[idx_str]])
         } else {
-            stop("Invalid mutagenesis_type Choose from 'nnk', 'nns', 'max_diff_to_wt', or 'custom'.")
+          return(NULL) # Skip positions not explicitly defined in the CSV
         }
+      } else {
+        return(custom_codons)
+      }
+    } else {
+      stop("Invalid mutagenesis_type. Choose from 'nnk', 'nns', 'nnh', 'nnn', 'nnk_nns', 'nnk_nns_nnh', or 'custom'.")
     }
-
-    # Iterate over each codon in the wild-type sequence
-    for (i in seq_along(wt_codons)) {
-        wt_codon <- wt_codons[i]
-        codon_list <- get_codon_list(wt_codon)
-
-        # Filter codons that are different from the wild-type codon
-        possible_variants <- codon_list[codon_list != wt_codon]
-
-        # Add all variants to the result list, including the wild-type codon
-        for (variant in possible_variants) {
-            # WICHTIG: \$ escaping
-            result <- rbind(result, data.frame(Codon_Number = i, wt_codon = wt_codon, Variant = variant, stringsAsFactors = FALSE))
-        }
+  }
+  
+  # Iterate over each wild-type codon to assign programmed variants
+  for (i in seq_along(wt_codons)) {
+    wt_codon <- wt_codons[i]
+    codon_list <- get_codon_list(wt_codon, i)
+    
+    # Skip iteration if no custom codons were assigned to this specific position
+    if (is.null(codon_list)) next 
+    
+    # Filter out the wild-type codon from the mutation list
+    possible_variants <- codon_list[codon_list != wt_codon]
+    
+    for (variant in possible_variants) {
+      # Note: \$ escaping is maintained for Nextflow compatibility
+      result <- rbind(result, data.frame(Codon_Number = i, wt_codon = wt_codon, Variant = variant, stringsAsFactors = FALSE))
     }
-
-    # Save the variants into a CSV file
-    write.csv(result, output_file, row.names = FALSE)
+  }
+  
+  write.csv(result, output_file, row.names = FALSE)
 }
 
-# ----------------------------------------------------------------------
-# 2. MAIN EXECUTION BLOCK (Nextflow substitution occurs here)
-# ----------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Main Execution Block (Nextflow variable substitution)
+# ------------------------------------------------------------------------------
 
-# The Bash 'if/else' is replaced by R's conditional logic on the string "/NULL"
-# If the file input was optional and missing, Nextflow passes the string "/NULL".
-# If it's "/NULL", we pass the R NULL object to the function.
-
+# Replaces bash if/else logic. If Nextflow omits the optional file, 
+# it passes "/NULL", which R translates to an actual NULL object.
 custom_lib_arg <- if ("$custom_codon_library" == "/NULL") {
-    NULL
+  NULL
 } else {
-    "$custom_codon_library"
+  "$custom_codon_library"
 }
 
-#####
-# run function
-#####
 generate_possible_variants(
-    wt_seq_input          = "$wt_seq",
-    start_stop_pos        = "$pos_range",
-    mutagenesis_type      = "$mutagenesis_type",
-    custom_codon_library_path = "$custom_codon_library",	# Will be '/NULL' or a file path
-    output_file           = "possible_mutations.csv"
+  wt_seq_input              = "$wt_seq",
+  start_stop_pos            = "$pos_range",
+  mutagenesis_type          = "$mutagenesis_type",
+  custom_codon_library_path = "$custom_codon_library",
+  output_file               = "possible_mutations.csv"
 )
 
-# ----------------------------------------------------------------------
-# 3. VERSIONING
-# ----------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Versioning Generation
+# ------------------------------------------------------------------------------
 
-# Extract R base and Biostrings versions
 r_version <- strsplit(version[['version.string']], ' ')[[1]][3]
 biostrings_version <- as.character(packageVersion("Biostrings"))
 
 f <- file("versions.yml", "w")
 writeLines(
-    c(
-        '"${task.process}":',
-        paste('    r-base:', r_version),
-        paste('    biostrings:', biostrings_version)
-    ),
-    f
+  c(
+    '"${task.process}":',
+    paste('    r-base:', r_version),
+    paste('    biostrings:', biostrings_version)
+  ),
+  f
 )
 close(f)
-
