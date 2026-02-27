@@ -134,7 +134,7 @@ generate_possible_variants <- function(wt_seq_input, start_stop_pos, mutagenesis
         return(custom_codons)
       }
     } else {
-      stop("Invalid mutagenesis_type. Choose from 'nnk', 'nns', 'nnh', 'nnn', 'nnk_nns', or 'custom'.")
+      stop("Invalid mutagenesis_type. Choose from 'nnk', 'nns', 'nnh', 'nnn', 'nnk_nns', 'nnk_nns_nnh', or 'custom'.")
     }
   }
   
