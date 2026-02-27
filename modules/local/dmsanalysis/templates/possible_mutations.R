@@ -7,7 +7,7 @@
 # Input: 
 #   - wt_seq_input: Wild-type sequence (string or path to FASTA file).
 #   - start_stop_pos: Target sequence range format "start-stop".
-#   - mutagenesis_type: Strategy ('nnk', 'nns', 'max_diff_to_wt', 'custom').
+#   - mutagenesis_type: Strategy ('nnk', 'nns', 'nnh', 'nnn', 'nnk_nns', 'nnk_nns_nnh', 'custom').
 #   - custom_codon_library_path: Path to custom library. Automatically detects 
 #     if the file is a global list ("AAA, AAC...") or a position-wise CSV 
 #     (requires a "Position" header).
