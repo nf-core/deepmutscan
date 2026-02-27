@@ -64,7 +64,7 @@
                 },
                 "mutagenesis_type": {
                     "type": "string",
-                    "description": "Type of mutagenic primers. Choose from nnk, nns, max_diff_to_wt, custom. When using 'custom', also provide the parameter 'custom_codon_library'.",
+                    "description": "Type of mutagenic primers. Choose from nnk, nns, nnh, nnn, nnk_nns, nnk_nns_nnh, custom. When using 'custom', also provide the parameter 'custom_codon_library'.",
                     "default": "nnk"
                 },
                 "custom_codon_library": {
