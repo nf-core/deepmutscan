@@ -41,7 +41,9 @@ generate_possible_variants <- function(wt_seq_input, start_stop_pos, mutagenesis
   # Predefined codon dictionaries
   nnk_codons <- c('AAG', 'AAT', 'ATG', 'ATT', 'AGG', 'AGT', 'ACG', 'ACT', 'TAG', 'TAT', 'TTG', 'TTT', 'TGG', 'TGT', 'TCG', 'TCT', 'GAG', 'GAT', 'GTG', 'GTT', 'GGG', 'GGT', 'GCG', 'GCT', 'CAG', 'CAT', 'CTG', 'CTT', 'CGG', 'CGT', 'CCG', 'CCT')
   nns_codons <- c('AAG', 'AAC', 'ATG', 'ATC', 'AGG', 'AGC', 'ACG', 'ACC', 'TAG', 'TAC', 'TTG', 'TTC', 'TGG', 'TGC', 'TCG', 'TCC', 'GAG', 'GAC', 'GTG', 'GTC', 'GGG', 'GGC', 'GCG', 'GCC', 'CAG', 'CAC', 'CTG', 'CTC', 'CGG', 'CGC', 'CCG', 'CCC')
-  
+  nnh_codons <- c('AAA', 'AAC', 'AAT', 'ATA', 'ATC', 'ATT', 'AGA', 'AGC', 'AGT', 'ACA', 'ACC', 'ACT', 'TAA', 'TAC', 'TAT', 'TTA', 'TTC', 'TTT', 'TGA', 'TGC', 'TGT', 'TCA', 'TCC', 'TCT', 'GAA', 'GAC', 'GAT', 'GTA', 'GTC', 'GTT', 'GGA', 'GGC', 'GGT', 'GCA', 'GCC', 'GCT', 'CAA', 'CAC', 'CAT', 'CTA', 'CTC', 'CTT', 'CGA', 'CGC', 'CGT', 'CCA', 'CCC', 'CCT')
+  nnn_codons <- c('AAA', 'AAC', 'AAG', 'AAT', 'ATA', 'ATC', 'ATG', 'ATT', 'AGA', 'AGC', 'AGG', 'AGT', 'ACA', 'ACC', 'ACG', 'ACT', 'TAA', 'TAC', 'TAG', 'TAT', 'TTA', 'TTC', 'TTG', 'TTT', 'TGA', 'TGC', 'TGG', 'TGT', 'TCA', 'TCC', 'TCG', 'TCT', 'GAA', 'GAC', 'GAG', 'GAT', 'GTA', 'GTC', 'GTG', 'GTT', 'GGA', 'GGC', 'GGG', 'GGT', 'GCA', 'GCC', 'GCG', 'GCT', 'CAA', 'CAC', 'CAG', 'CAT', 'CTA', 'CTC', 'CTG', 'CTT', 'CGA', 'CGC', 'CGG', 'CGT', 'CCA', 'CCC', 'CCG', 'CCT')
+
   # --------------------------------------------------------------------------
   # Custom Library Parsing with Auto-Detection
   # --------------------------------------------------------------------------
@@ -106,8 +108,20 @@ generate_possible_variants <- function(wt_seq_input, start_stop_pos, mutagenesis
       return(nnk_codons)
     } else if (mutagenesis_type == "nns") {
       return(nns_codons)
-    } else if (mutagenesis_type == "max_diff_to_wt") {
+    } else if (mutagenesis_type == "nnh") {
+            return(nnh_codons)
+    } else if (mutagenesis_type == "nnn") {
+            return(nnn_codons)
+    } else if (mutagenesis_type == "nnk_nns") {
       if (substr(wt_codon, 3, 3) == "T") return(nns_codons) else return(nnk_codons)
+    } else if (mutagenesis_type == "nnk_nns_nnh") {
+            if (substr(wt_codon, 3, 3) == "T") {
+                return(nns_codons)
+            } else if (substr(wt_codon, 3, 3) == "G"){
+                return(nnh_codons)
+            } else {
+                return(nnk_codons)
+            }
     } else if (mutagenesis_type == "custom") {
       if (is_position_wise) {
         idx_str <- as.character(codon_index)
@@ -120,7 +134,7 @@ generate_possible_variants <- function(wt_seq_input, start_stop_pos, mutagenesis
         return(custom_codons)
       }
     } else {
-      stop("Invalid mutagenesis_type. Choose from 'nnk', 'nns', 'max_diff_to_wt', or 'custom'.")
+      stop("Invalid mutagenesis_type. Choose from 'nnk', 'nns', 'nnh', 'nnn', 'nnk_nns', or 'custom'.")
     }
   }
   
