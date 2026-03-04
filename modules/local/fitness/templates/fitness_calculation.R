@@ -59,9 +59,9 @@ compute_aa_hamming <- function(merged.counts, wt.seq.aa) {
 
 # name the mutations
 name_mutations <- function(merged.counts, wt.seq.aa) {
-  merged.counts <- cbind("wt aa" = rep(NA, nrow(merged.counts)),
+  merged.counts <- cbind("wt_aa" = rep(NA, nrow(merged.counts)),
                          "pos" = rep(NA, nrow(merged.counts)),
-                         "mut aa" = rep(NA, nrow(merged.counts)), merged.counts)
+                         "mut_aa" = rep(NA, nrow(merged.counts)), merged.counts)
   for (i in 1:nrow(merged.counts)){
     if(merged.counts$aa_ham[i] == 0){
       next
@@ -69,8 +69,8 @@ name_mutations <- function(merged.counts, wt.seq.aa) {
       tmp.wt <- strsplit(as.character(wt.seq.aa), "")[[1]]
       tmp.mut <- strsplit(as.character(merged.counts$aa_seq[i]), "")[[1]]
       merged.counts$pos[i] <- which(tmp.mut != tmp.wt)
-      merged.counts$`wt aa`[i] <- tmp.wt[merged.counts$pos[i]]
-      merged.counts$`mut aa`[i] <- tmp.mut[merged.counts$pos[i]]
+      merged.counts$`wt_aa`[i] <- tmp.wt[merged.counts$pos[i]]
+      merged.counts$`mut_aa`[i] <- tmp.mut[merged.counts$pos[i]]
       rm(tmp.mut, tmp.wt)
     }
   }
@@ -84,7 +84,7 @@ aggregate_by_aa <- function(merged.counts) {
                          "wt" = rep(NA, nrow(merged.counts)),
                          "stop" = rep(NA, nrow(merged.counts)))
   merged.counts$wt[which(merged.counts$nt_ham == 0)] <- TRUE
-  merged.counts$stop[which(merged.counts$`mut aa` == "*")] <- TRUE
+  merged.counts$stop[which(merged.counts$`mut_aa` == "*")] <- TRUE
   
   ## aggregate counts of variants which are identical on the aa (but not nt) level
   ## exception: wildtype ones
