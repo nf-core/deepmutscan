@@ -113,5 +113,3 @@ writeLines(
   f
 )
 close(f)
-
-

@@ -148,7 +148,7 @@ process VISUALIZATION_LOGDIFF {
     task.ext.when == null || task.ext.when
 
     script:
-    template 'logdiff.R'    
+    template 'logdiff.R'
 
     stub:
     """

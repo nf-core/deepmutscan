@@ -225,7 +225,7 @@ workflow DEEPMUTSCAN {
       ch_possible_mut_for_proc,     // path(possible_mutations)               -- N
       ch_aa_seq_for_proc,           // path(aa_seq)                           -- N
       ch_min_counts_for_proc        // val(min_counts)                        -- N
-    )    
+    )
 
     annotated_variantCounts_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, a) }
     variantCounts_filtered_by_library_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, b) }
@@ -298,7 +298,7 @@ workflow DEEPMUTSCAN {
 
     // Execution of fitness subworkflow, if --fitness true
     if (params.fitness) {
-        
+
         CALCULATEFITNESS (
             GATK_GATKTOFITNESS.out.fitness_input, // Input vom vorherigen Schritt
             ch_samplesheet_csv,                   // Pfad zum Samplesheet

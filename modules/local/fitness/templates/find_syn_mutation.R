@@ -38,7 +38,7 @@ pick_synonymous_wt_from_range <- function(wt_fasta, counts_merged_tsv, pos_range
   df <- utils::read.delim(counts_merged_tsv, sep = "\\t", header = TRUE,
                           stringsAsFactors = FALSE, check.names = FALSE)
   if (!"nt_seq" %in% names(df)) stop("counts_merged_tsv must have a 'nt_seq' column.")
-  
+
   df\$nt_seq <- toupper(df\$nt_seq)
   keep_len <- nchar(df\$nt_seq) == wt_len
   if (!any(keep_len)) stop("No sequences match WT window length (", wt_len, ").")
