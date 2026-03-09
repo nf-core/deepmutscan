@@ -85,7 +85,7 @@ aggregate_by_aa <- function(merged.counts) {
                          "stop" = rep(NA, nrow(merged.counts)))
   merged.counts\$wt[which(merged.counts\$nt_ham == 0)] <- TRUE
   merged.counts\$stop[which(merged.counts\$'mut_aa' == "*")] <- TRUE
-  
+
   ## aggregate counts of variants which are identical on the aa (but not nt) level
   ## exception: wildtype ones
   ## thereby shrinking the matrix
@@ -146,9 +146,9 @@ calc_raw_fitness <- function(merged.counts, exp.design) {
     tmp.output.counts[which(tmp.output.counts == 0 & tmp.input.counts != 0)] <- 1
 
     ### take logs
-    tmp.wt.log.ratio <- log(tmp.output.counts[which(merged.counts\$wt == TRUE)] / 
+    tmp.wt.log.ratio <- log(tmp.output.counts[which(merged.counts\$wt == TRUE)] /
                               tmp.input.counts[which(merged.counts\$wt == TRUE)])
-    tmp.fitness <- log(tmp.output.counts / 
+    tmp.fitness <- log(tmp.output.counts /
                          tmp.input.counts) - tmp.wt.log.ratio
 
     ### uncertain values to NA
@@ -176,7 +176,7 @@ rescale_and_summarize <- function(merged.counts, reps) {
     ### fetch the key counts
     tmp.wt.fitness <- merged.counts[which(merged.counts\$aa_ham == 0),ncol(merged.counts) - reps]
     tmp.stop.fitness <- merged.counts[which(merged.counts\$stop == TRUE),ncol(merged.counts) - reps]
-    
+
     ### rescale
     tmp.wt.fitness.med <- median(tmp.wt.fitness, na.rm = TRUE)
     tmp.stop.fitness.med <- median(tmp.stop.fitness, na.rm = TRUE)
@@ -185,8 +185,8 @@ rescale_and_summarize <- function(merged.counts, reps) {
       lm.rescale <- lm(c(0, -1) ~ c(tmp.wt.fitness.med, tmp.stop.fitness.med))
       merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale\$coefficients[[2]] + lm.rescale\$coefficients[[1]]
       rm(tmp.wt.fitness, tmp.stop.fitness,
-         tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale)    
-      
+         tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale)
+
     ## if only WT mutants are available: lower peak determined by bimodal distribution fitting
     }else if(!is.na(tmp.wt.fitness.med) & is.na(tmp.stop.fitness.med)){
       tmp.peaks <- sort(density_peaks(x = merged.counts[,ncol(merged.counts) - reps]))
@@ -194,7 +194,7 @@ rescale_and_summarize <- function(merged.counts, reps) {
       merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale\$coefficients[[2]] + lm.rescale\$coefficients[[1]]
       rm(tmp.wt.fitness, tmp.stop.fitness,
          tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale, tmp.peaks)
-      
+
     ## if only STOP mutants are available: higher peak determined by bimodal distribution fitting
     }else if(is.na(tmp.wt.fitness.med) & !is.na(tmp.stop.fitness.med)){
       tmp.peaks <- sort(density_peaks(x = merged.counts[,ncol(merged.counts) - reps]))
@@ -202,7 +202,7 @@ rescale_and_summarize <- function(merged.counts, reps) {
       merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale\$coefficients[[2]] + lm.rescale\$coefficients[[1]]
       rm(tmp.wt.fitness, tmp.stop.fitness,
          tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale, tmp.peaks)
-      
+
     ## if neither WT nor STOP mutants are available: both peak determined by bimodal distribution fitting
     }else if(is.na(tmp.wt.fitness.med) & is.na(tmp.stop.fitness.med)){
       tmp.peaks <- sort(density_peaks(x = merged.counts[,ncol(merged.counts) - reps]))
@@ -220,11 +220,11 @@ rescale_and_summarize <- function(merged.counts, reps) {
                          "fitness sd" = rep(NA, nrow(merged.counts)))
 
   if(reps == 1){
-    
+
     merged.counts\$'mean fitness' <- merged.counts[,ncol(merged.counts) - 2]
-    
+
   }else if(reps > 1){
-    
+
     merged.counts\$'mean fitness' <- apply(merged.counts[,c(ncol(merged.counts) - 1 - reps):c(ncol(merged.counts) - 2)],
                                           1,
                                           mean,
@@ -255,7 +255,7 @@ run_fitness_estimation <- function(counts_path,
                                    output_path) {
   ## 1. Import key files ##
   #########################
-  
+
   merged.counts <- read.table(counts_path, sep = "\t", header = TRUE, check.names = FALSE)
   exp.design   <- read.table(design_path, sep = "\t", header = TRUE, check.names = FALSE)
   wt.seq       <- DNAString(as.character(read.table(wt_seq_path)))
@@ -284,7 +284,7 @@ run_fitness_estimation <- function(counts_path,
   fitness_res <- calc_raw_fitness(merged.counts, exp.design)
   merged.counts <- fitness_res\$merged.counts
   reps <- fitness_res\$reps
-  
+
   ## 4. Fitness and error refinements ##
   ######################################
   merged.counts <- rescale_and_summarize(merged.counts, reps)
@@ -295,7 +295,7 @@ run_fitness_estimation <- function(counts_path,
   ## export
   write.table(merged.counts, output_path,
               col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t", na = "")
-  
+
   invisible(merged.counts)
 }
 
@@ -326,9 +326,9 @@ run_fitness_estimation <- function(counts_path,
 # [6] BiocGenerics_0.54.0 generics_0.1.4
 #
 # loaded via a namespace (and not attached):
-# [1] httr_1.4.7              compiler_4.5.1          R6_2.6.1                tools_4.5.1            
-# [5] GenomeInfoDbData_1.2.14 rstudioapi_0.17.1       crayon_1.5.3            UCSC.utils_1.4.0       
-# [9] jsonlite_2.0.0   
+# [1] httr_1.4.7              compiler_4.5.1          R6_2.6.1                tools_4.5.1
+# [5] GenomeInfoDbData_1.2.14 rstudioapi_0.17.1       crayon_1.5.3            UCSC.utils_1.4.0
+# [9] jsonlite_2.0.0
 
 
 
@@ -361,5 +361,3 @@ writeLines(
   f
 )
 close(f)
-
-

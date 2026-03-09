@@ -59,7 +59,7 @@ workflow CALCULATEFITNESS {
     // 4. Find Synonymous Mutations
     // Prepare inputs (broadcast logic)
     def ch_fasta_path = ch_fasta.map { it[1] } // strip meta
-    
+
     FIND_SYNONYMOUS_MUTATION(
         MERGE_COUNTS.out.merged_counts,
         ch_fasta_path.combine(MERGE_COUNTS.out.merged_counts).map { it[0] },
@@ -69,7 +69,7 @@ workflow CALCULATEFITNESS {
 
 
     // 5. Align Channels for Fitness Calculation
-    
+
     // Key counts and WT by biological sample name
     def ch_counts_keyed_d = MERGE_COUNTS.out.merged_counts
         .map { smp, counts -> tuple(smp.sample as String, smp, counts) }
@@ -109,16 +109,16 @@ workflow CALCULATEFITNESS {
     ch_versions = ch_versions.mix(FITNESS_HEATMAP.out.versions)
 
     // 7. Run DiMSum (optional based on params inside subworkflow or handled by control logic)
-    // Note: Logic checking for 'params.dimsum' needs to be handled. 
+    // Note: Logic checking for 'params.dimsum' needs to be handled.
     // Since subworkflows inherit params, we can check params.dimsum here.
-    
+
     if (params.dimsum) {
         log.warn("""
         '--dimsum true' only works together with '--fitness true'
         and is currently (30 Oct 2025) NOT supported on ARM processors.
         Use AMD/x86_64 systems for DiMSum execution.
         """)
-        
+
         RUN_DIMSUM(
             ch_run_counts_d,
             ch_run_wt_d,
@@ -131,4 +131,3 @@ workflow CALCULATEFITNESS {
     fitness_estimation = FITNESS_CALCULATION.out.fitness_estimation
     versions           = ch_versions
 }
-

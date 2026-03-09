@@ -91,11 +91,11 @@ if (n_out > 0) {
 
 # Write Output
 utils::write.table(
-  out, 
-  file = "counts_merged.tsv", 
-  sep = "\\t", 
-  row.names = FALSE, 
-  col.names = TRUE, 
+  out,
+  file = "counts_merged.tsv",
+  sep = "\\t",
+  row.names = FALSE,
+  col.names = TRUE,
   quote = FALSE
 )
 
