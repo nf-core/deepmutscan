@@ -1,0 +1,7 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::gatk4=4.6.2.0
+  - bioconda::samtools=1.21
+  - conda-forge::java-1.7.0-openjdk-conda-aarch64=1.7.0.261
