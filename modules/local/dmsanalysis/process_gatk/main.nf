@@ -1,9 +1,12 @@
 process DMSANALYSIS_PROCESS_GATK {
     tag "$meta.id"
     label 'process_single'
-    label 'r_env'
 
     conda "${moduleDir}/environment.yml"
+
+    container "${ workflow.containerEngine == 'singularity'
+        ? 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:ce2ba7ad7f6e7f2c'
+        : 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa' }"
 
     publishDir "${params.outdir}/intermediate_files", mode: 'copy'
 

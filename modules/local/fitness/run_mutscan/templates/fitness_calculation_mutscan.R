@@ -168,51 +168,51 @@ mutantName <- function(x, wt.seq){
 
 # mutscan 'summaryTable' building (from merged counts TSV file)
 mutscan.summaryTable.from.counts <- function(x, sample, wt.seq){
-  
+
   ### pre-process
   x <- x[,c(1, grep(sample, colnames(x)))]
   colnames(x) <- c("sequence", "nbrReads")
   x <- cbind(x, "maxNbrReads" = x[,"nbrReads"], "nbrUmis" = x[,"nbrReads"])
-  
+
   ### nbrMutBases
   x <- nbrMutBases(x, wt.seq)
-  
+
   ### nbrMutCodons
   x <- nbrMutCodons(x, wt.seq)
-  
+
   ### sequenceAA
   x <- sequenceAA(x)
-  
+
   ### nbrMutAAs
   x <- nbrMutAAs(x, wt.seq)
-  
+
   ### varLengths
   x <- cbind(x, "varLengths" = as.character(nchar(x\$sequence)))
-  
+
   ### mutantNameBase
   x <- mutantNameBase(x, wt.seq)
-  
+
   ### mutantNameCodon
   x <- mutantNameCodon(x, wt.seq)
-  
+
   ### mutantNameBaseHGVS (would ideally look like this: "f:c", "f:c.32_33delinsAC", etc.)
   x <- cbind(x, "mutantNameBaseHGVS" = x\$mutantNameCodon)
-  
+
   ### mutantNameAA
   x <- mutantNameAA(x, wt.seq)
-  
+
   ### mutantNameAAHGVS (would ideally look like this: "f:p" or "f:p.(Leu11His)")
   x <- cbind(x, "mutantNameAAHGVS" = x\$mutantNameAA)
-  
+
   ### mutationTypes: silent, stop, nonsynonymous
   x <- mutationTypes(x)
-  
+
   ### mutantName
   x <- mutantName(x, wt.seq)
-  
+
   ### re-order columns
   x <- x[,c(1:7,9:16,8)]
-  
+
   ### output
   return(x)
 }
@@ -232,41 +232,41 @@ run_mutscan_fitness_estimation <- function(counts_path,
                                            wt_seq_path,
                                            output_path_edgeR,
                                            output_path_limma){
-  
+
   ## 1. Import key files ##
   #########################
-  
+
   merged.counts <- read.table(counts_path, sep = "\t", header = T, check.names = F)
   exp.design <- read.table(design_path, sep = "\t", header = T, check.names = F)
   wt.seq <- DNAString(as.character(read.table(wt_seq_path)))
-  
+
   ## 2. Variant count matrix reformatting ##
   ##########################################
-  
+
   var.tables <- vector(mode = "list", length = nrow(exp.design))
   names(var.tables) <- exp.design[,"sample_name"]
   var.tables <- lapply(var.tables, function(x){x <- vector(mode = "list", length = 4);
-  names(x) <- c("summaryTable", "filterSummary", "errorStatistics", "parameters"); 
+  names(x) <- c("summaryTable", "filterSummary", "errorStatistics", "parameters");
   return(x)})
-  
+
   # mutscan 'summaryTable'
   for(i in 1:length(var.tables)){
     print(i)
     var.tables[[i]]\$summaryTable <- mutscan.summaryTable.from.counts(merged.counts, names(var.tables)[i], wt.seq)
   }
-  
+
   # mutscan 'filterSummary' (fill with minimal decoy)
   var.tables <- lapply(var.tables, function(x){x\$filterSummary <- data.frame(NA); return(x)})
-  
+
   # mutscan 'errorStatistics' (fill with minimal decoy)
   var.tables <- lapply(var.tables, function(x){x\$errorStatistics <- NA; return(x)})
-  
+
   # mutscan 'parameters' (fill with minimal decoy)
   var.tables <- lapply(var.tables, function(x){x\$parameters\$mutNameDelimiter <- '.'; return(x)})
-  
+
   ## 3. summarizeExperiment object ##
   ###################################
-  
+
   # mutscan 'coldata' object (from experimental design TSV file)
   condition <- exp.design\$selection_id
   condition[which(condition == '0')] <- "input"
@@ -275,65 +275,65 @@ run_mutscan_fitness_estimation <- function(counts_path,
                                  "Condition" = condition,
                                  "Replicate" = exp.design\$experiment_replicate))
   class(coldata\$Replicate) <- "integer"
-  
+
   # mutscan 'summarizeExperiment' object
   se <- summarizeExperiment(x = var.tables,
-                            coldata = coldata, 
+                            coldata = coldata,
                             countType = "reads")
 
   ## 4. logFC calculations ##
   ###########################
-  
+
   # mutscan 'model.matrix' object to calculate logFC values
   model.design <- model.matrix(~ Replicate + Condition, data = se@colData)
-  
+
   # edgeR
-  logFC.edgeR <- calculateRelativeFC(se = se, 
+  logFC.edgeR <- calculateRelativeFC(se = se,
                                      design = model.design,
                                      coef = "Conditionoutput",
                                      WTrows = "WT",
                                      selAssay = "counts",
                                      pseudocount = 1,
                                      method = "edgeR")
-  
+
   # limma
-  logFC.limma <- calculateRelativeFC(se = se, 
+  logFC.limma <- calculateRelativeFC(se = se,
                                      design = model.design,
                                      coef = "Conditionoutput",
                                      WTrows = "WT",
                                      selAssay = "counts",
                                      pseudocount = 1,
                                      method = "limma")
-  
+
   ## 5. QC plots ##
   #################
-  
+
   # raw counts comparison
   pdf('mutscan_counts_corr.pdf', height = 9, width = 14)
   print(plotPairs(se, selAssay = "counts", addIdentityLine = TRUE))
   dev.off()
-  
+
   # edgeR volcano plot
   pdf('mutscan_edgeR_volcano.pdf', height = 9, width = 14)
   print(plotVolcano(logFC.edgeR, pointSize = "large"))
   dev.off()
-  
+
   # limma volcano plot
   pdf('mutscan_limma_volcano.pdf', height = 9, width = 14)
   print(plotVolcano(logFC.limma, pointSize = "large"))
   dev.off()
-  
+
   ## 6. Data export ##
   ####################
-  
+
   write.table(logFC.edgeR, output_path_edgeR,
               col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t", na = "")
   write.table(logFC.limma, output_path_limma,
               col.names = TRUE, row.names = FALSE, quote = FALSE, sep = "\t", na = "")
-  
+
   invisible(logFC.edgeR)
   invisible(logFC.limma)
-  
+
 }
 
 #####

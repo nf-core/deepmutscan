@@ -1,9 +1,12 @@
 process VISUALIZATION_COUNTS_HEATMAP {
     tag "$meta.id"
     label 'process_single'
-    label 'r_env'
 
     conda "${moduleDir}/environment.yml"
+
+    container "${ workflow.containerEngine == 'singularity'
+        ? 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:ce2ba7ad7f6e7f2c'
+        : 'community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-biocmanager_r-dplyr_pruned:0fd2e39a5bf2ecaa' }"
 
     input:
     tuple val(meta), path(variantCounts_for_heatmaps)

@@ -5,4 +5,3 @@ dependencies:
   - bioconda::bioconductor-biostrings=2.74.0
   - bioconda::bioconductor-mutscan=1.0.0
   - conda-forge::r-base=4.4.1
- 

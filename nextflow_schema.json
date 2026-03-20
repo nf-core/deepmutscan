@@ -77,11 +77,11 @@
                     "default": false,
                     "description": "Run DiMSum for fitness/functionality scores from growth-based selection input & output samples"
                 },
-		"mutscan": {
-    		    "type": "boolean",
-    		    "default": false,
-    		    "description": "Run mutscan (Soneson et al., 2023) to estimate fitness/functionality scores from input & output samples"
-},
+                "mutscan": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Run mutscan (Soneson et al., 2023) to estimate fitness/functionality scores from input & output samples"
+                },
                 "fitness": {
                     "type": "boolean",
                     "default": false,

@@ -3,6 +3,9 @@ process RUN_MUTSCAN {
   label 'process_medium'
 
   conda "${moduleDir}/environment.yml"
+  container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'community.wave.seqera.io/library/bioconductor-biostrings_bioconductor-mutscan_r-base:052513a13396cb72' :
+        'community.wave.seqera.io/library/bioconductor-biostrings_bioconductor-mutscan_r-base:052513a13396cb72' }"
 
   input:
     tuple val(sample), path(counts_merged)
