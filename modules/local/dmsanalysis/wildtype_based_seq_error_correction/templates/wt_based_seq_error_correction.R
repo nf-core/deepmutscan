@@ -43,7 +43,7 @@ seq_error_correct_by_WT_nt <- function(wt_seq_count_path, input_count_path, outp
   }
 
   # Write the processed data
-  write.csv(input.counts, file = output_file_path)
+  write.csv(input.counts, file = output_file_path, row.names = F, col.names = T)
   
 }
 
@@ -143,7 +143,7 @@ seq_error_correct_counts_for_heatmaps <- function(gatk_file_path, aa_seq_file_pa
   rownames(heatmap_data) <- 1:nrow(heatmap_data)
   
   # Save output
-  write.csv(heatmap_data, file = output_csv_path, row.names = FALSE)
+  write.csv(heatmap_data, file = output_csv_path, row.names = F, col.names = T)
 
 }
 
