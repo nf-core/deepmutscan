@@ -21,30 +21,40 @@ seq_error_correct_by_false_doubles <- function(input_count_path_raw, input_count
   input.counts.processed$counts_corrected <- input.counts.processed$counts
   input.counts.processed$counts_per_cov_corrected <- input.counts.processed$counts_per_cov
   
-  # Process the GATK file, only look at single nucleotide variants
-  # Need to parallelise
+  # Process the GATK file, error-correct single nucleotide variant counts
   cat("Sequencing error correction of GATK counts...\n")
   for (i in grep("[,]", input.counts.processed[,"base_mut"], invert = T)){
-    
-    ## only look at single nucleotide variants
+        
+    tmp.single <- input.counts.processed[i,"base_mut"] 
     
     ## locate this variant across all multi-codon variants in the original count matrix
-    tmp.false.doubles <- input.counts.raw[grep(input.counts.processed[i,"codon_mut"], input.counts.raw[,"codon_mut"]),]
+    tmp.false.doubles <- input.counts.raw[grep(paste0("(?<!\\d)",input.counts.processed[i,"codon_mut"]), input.counts.raw[,"codon_mut"], perl = T),]
     
-    ## subset multi-codon variants
+    ## subset false multi-codon variants
     tmp.false.doubles <- tmp.false.doubles[which(tmp.false.doubles[,"varying_bases"] >= 3 & tmp.false.doubles[,"varying_codons"] < 3),]
     if(nrow(tmp.false.doubles) == 0){
       next
     }
+    tmp.false.doubles.counts.per.cov <- tmp.false.doubles[,"counts"] / tmp.false.doubles[,"cov"]
+
+    ## need to match with the corresponding correct single codon variant(s)
+    tmp.true.singles <- tmp.false.doubles$base_mut
+    tmp.true.singles <- strsplit(tmp.true.singles, ", ")
+    tmp.true.singles <- lapply(tmp.true.singles, function(x){x <- x[x != tmp.single]; x <- paste0(x, collapse = ", "); return(x)})
+    tmp.true.singles <- do.call(c, tmp.true.singles)
+    tmp.true.singles <- input.counts.processed[match(tmp.true.singles, input.counts.processed[,"base_mut"]),]
+    tmp.true.singles <- tmp.true.singles[,"counts_per_cov"]
+    if(all(is.na(tmp.true.singles) == T)){
+      next
+    }
     
-    ## subtract the (probable) false fraction from actual single counts
-    # boxplot(tmp.false.doubles[,"counts"] / tmp.false.doubles[,"cov"], log = "y", pch = 16)
-    # median(tmp.false.doubles[,"counts"] / tmp.false.doubles[,"cov"])
-    tmp.false.doubles.median.counts.per.cov <- median(tmp.false.doubles[,"counts"] / tmp.false.doubles[,"cov"])
-    input.counts.processed[i,"counts_per_cov_corrected"] <- input.counts.processed[i,"counts_per_cov"] - sqrt(tmp.false.doubles.median.counts.per.cov) ## square root
-    
-    ## based on this, also adjust the total_counts (cross-multiplication)
-    ## total_counts_corrected ~ total_counts * c(total_counts_per_cov_corrected / total_counts_per_cov)
+    ## calculate the expected false 1nt count probability
+    tmp.false.single.counts.per.cov <- tmp.false.doubles.counts.per.cov / tmp.true.singles
+    tmp.false.single.counts.per.cov <- tmp.false.single.counts.per.cov[!is.na(tmp.false.single.counts.per.cov)]
+    tmp.false.single.counts.per.cov <- median(tmp.false.single.counts.per.cov)
+    input.counts.processed[i,"counts_per_cov_corrected"] <- input.counts.processed[i,"counts_per_cov"] - tmp.false.single.counts.per.cov
+
+    ## based on this, also adjust the total_counts by cross-multiplication
     input.counts.processed[i,"counts_corrected"] <- input.counts.processed[i,"counts"] * c(input.counts.processed[i,"counts_per_cov_corrected"] / input.counts.processed[i,"counts_per_cov"])
     
     ## round to nearest integer, do not allow for negative counts
