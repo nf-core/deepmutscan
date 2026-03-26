@@ -35,7 +35,12 @@ generate_fitness_input <- function(wt_seq_path, gatk_file, pos_range, output_fil
     for (i in 1:nrow(gatk_data)) {
       # Extract the mutation info
       codon_mut <- gatk_data\$codon_mut[i]
-      counts <- gatk_data\$counts[i]
+
+      if("counts_corrected" %in% colnames(gatk_data)){
+        counts <- gatk_data\$counts_corrected[i]
+      }else{
+        counts <- gatk_data\$counts[i]
+      }
 
       # Create a mutable copy of the wild-type codons
       mutated_codons <- wt_codons
