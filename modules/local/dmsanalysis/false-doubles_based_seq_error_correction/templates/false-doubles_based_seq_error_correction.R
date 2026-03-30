@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 ## false-doubles based sequencing error correction in nf-core/deepmutscan
-## 23.03.2026
+## 30.03.2026
 
 
 ## --- Helper functions ---
@@ -35,7 +35,6 @@ seq_error_correct_by_false_doubles <- function(input_count_path_raw, input_count
     if(nrow(tmp.false.doubles) == 0){
       next
     }
-    tmp.false.doubles.counts.per.cov <- tmp.false.doubles[,"counts"] / tmp.false.doubles[,"cov"]
 
     ## need to match with the corresponding correct single codon variant(s)
     tmp.true.singles <- tmp.false.doubles$base_mut
@@ -43,16 +42,22 @@ seq_error_correct_by_false_doubles <- function(input_count_path_raw, input_count
     tmp.true.singles <- lapply(tmp.true.singles, function(x){x <- x[x != tmp.single]; x <- paste0(x, collapse = ", "); return(x)})
     tmp.true.singles <- do.call(c, tmp.true.singles)
     tmp.true.singles <- input.counts.processed[match(tmp.true.singles, input.counts.processed[,"base_mut"]),]
-    tmp.true.singles <- tmp.true.singles[,"counts_per_cov"]
     if(all(is.na(tmp.true.singles) == T)){
       next
     }
-    
-    ## calculate the expected false 1nt count probability
-    tmp.false.single.counts.per.cov <- tmp.false.doubles.counts.per.cov / tmp.true.singles
-    tmp.false.single.counts.per.cov <- tmp.false.single.counts.per.cov[!is.na(tmp.false.single.counts.per.cov)]
-    tmp.false.single.counts.per.cov <- median(tmp.false.single.counts.per.cov)
-    input.counts.processed[i,"counts_per_cov_corrected"] <- input.counts.processed[i,"counts_per_cov"] - tmp.false.single.counts.per.cov
+          
+    ## make sure that we only count events for which there are both true single codon and false double codon variants
+    if(any(is.na(tmp.true.singles$counts))){
+      tmp.false.doubles <- tmp.false.doubles[-which(is.na(tmp.true.singles$counts)),]
+      tmp.true.singles <- tmp.true.singles[-which(is.na(tmp.true.singles$counts)),]
+    }
+    if(all(is.na(tmp.true.singles) == T)){
+      next
+    }
+      
+    ## calculate the expected false 1nt count probability (MLE)
+    e_MLE <- sum(tmp.false.doubles$counts) / sum(tmp.true.singles$counts * c(tmp.false.doubles$cov / tmp.true.singles$cov))
+    input.counts.processed[i,"counts_per_cov_corrected"] <- input.counts.processed[i,"counts_per_cov"] - e_MLE
 
     ## based on this, also adjust the total_counts by cross-multiplication
     input.counts.processed[i,"counts_corrected"] <- input.counts.processed[i,"counts"] * c(input.counts.processed[i,"counts_per_cov_corrected"] / input.counts.processed[i,"counts_per_cov"])
