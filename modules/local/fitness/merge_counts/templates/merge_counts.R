@@ -4,13 +4,9 @@
 # 1. SETUP & INPUTS
 # --------------------------------------------------------------
 
-# Nextflow übergibt Listen von Dateien (path input_counts) als
-# leerzeichengetrennten String (z.B. "file1 file2 file3").
-# Wir lesen diese Strings ein:
 raw_inputs_str  <- "$input_counts"
 raw_outputs_str <- "$output_counts"
 
-# Funktion zum Splitten des Strings in einen Vektor
 parse_paths <- function(x) {
   if (x == "" || x == "[]") return(character(0))
   # Split at spaces
@@ -60,7 +56,6 @@ col_names <- c(
 )
 
 # Initialize dataframe with 0 counts
-# Wir nutzen matrix initialization für Performance
 out <- data.frame(
   nt_seq = all_seqs,
   matrix(0, nrow = length(all_seqs), ncol = n_in + n_out),

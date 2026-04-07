@@ -10,6 +10,7 @@ include { FITNESS_CALCULATION }      from '../../modules/local/fitness/fitness_c
 include { FITNESS_QC }               from '../../modules/local/fitness/fitness_QC/main'
 include { FITNESS_HEATMAP }          from '../../modules/local/fitness/fitness_heatmap/main'
 include { RUN_DIMSUM }               from '../../modules/local/fitness/run_dimsum/main'
+include { RUN_MUTSCAN }              from '../../modules/local/fitness/run_mutscan/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,6 +126,16 @@ workflow CALCULATEFITNESS {
             ch_run_exp_d
         )
         ch_versions = ch_versions.mix(RUN_DIMSUM.out.versions)
+    }
+
+    // 8. Run Mutscan
+    if (params.mutscan) {
+        RUN_MUTSCAN(
+            ch_run_counts_d,
+            ch_run_wt_d,
+            ch_run_exp_d
+        )
+        ch_versions = ch_versions.mix(RUN_MUTSCAN.out.versions)
     }
 
     emit:

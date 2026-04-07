@@ -1,6 +1,6 @@
-process FITNESS_CALCULATION {
-  tag { sample.sample }
-  label 'process_single'
+process RUN_MUTSCAN {
+  tag "${sample.sample}"
+  label 'process_medium'
 
   conda "${moduleDir}/environment.yml"
 
@@ -10,20 +10,15 @@ process FITNESS_CALCULATION {
 
   input:
     tuple val(sample), path(counts_merged)
-    path(exp_design)
     path(syn_wt_txt)
+    path(exp_design)
 
   output:
-    tuple val(sample), path("fitness_estimation.tsv"), emit: fitness_estimation
+    tuple val(sample), path("fitness_estimation_mutscan_edgeR.tsv"), emit: fitness_mutscan_edgeR
+    tuple val(sample), path("fitness_estimation_mutscan_limma.tsv"), emit: fitness_mutscan_limma
+    tuple val(sample), path("*.pdf"), emit: qc_plots
     path "versions.yml", emit: versions
 
   script:
-  template 'fitness_calculation.R'
-
-  stub:
-  """
-    touch fitness_estimation.tsv
-    echo "FITNESS_CALCULATION:" > versions.yml
-    echo "  stub-version: 0.0.0" >> versions.yml
-  """
+  template 'fitness_calculation_mutscan.R'
 }
