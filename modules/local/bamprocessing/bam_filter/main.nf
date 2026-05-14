@@ -32,7 +32,7 @@ process BAMFILTER_DMS {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         samtools: \$(samtools --version |& sed '1!d ; s/samtools //')
-    END_VERSIONS
+END_VERSIONS
     """
 
     stub:
@@ -44,6 +44,6 @@ process BAMFILTER_DMS {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bamfilteringdms: \$(samtools --version |& sed '1!d ; s/samtools //')
-    END_VERSIONS
+END_VERSIONS
     """
 }

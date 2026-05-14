@@ -44,7 +44,7 @@ process GATK_SATURATIONMUTAGENESIS {
     "${task.process}":
         samtools: \$(samtools --version |& sed '1!d ; s/samtools //')
         gatk: \$(gatk --version |& sed 's/^.*GATK/\1/')
-    END_VERSIONS
+END_VERSIONS
     """
 
     stub:

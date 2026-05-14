@@ -2,6 +2,7 @@
 // Subworkflow that uses the nf-schema plugin to validate parameters and render the parameter summary
 //
 
+include { paramsHelp         } from 'plugin/nf-schema'
 include { paramsSummaryLog   } from 'plugin/nf-schema'
 include { validateParameters } from 'plugin/nf-schema'
 
@@ -10,11 +11,13 @@ workflow UTILS_NFSCHEMA_PLUGIN {
     take:
     input_workflow      // workflow: the workflow object used by nf-schema to get metadata from the workflow
     validate_params     // boolean:  validate the parameters
-    parameters_schema   // string:   path to the parameters JSON schema.
-                        //           this has to be the same as the schema given to `validation.parametersSchema`
-                        //           when this input is empty it will automatically use the configured schema or
-                        //           "${projectDir}/nextflow_schema.json" as default. This input should not be empty
-                        //           for meta pipelines
+    help                // boolean:  print help message
+    help_full           // boolean:  print help message with hidden parameters
+    show_hidden         // boolean:  show hidden parameters in help message
+    parameters_schema   // string:   path to the parameters JSON schema
+    before_text         // string:   text to print before the help message
+    after_text          // string:   text to print after the help message
+    command             // string:   command to run the pipeline
 
     main:
 

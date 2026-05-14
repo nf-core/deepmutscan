@@ -8,3 +8,8 @@ testing*
 *.pyc
 null/
 .lineage/
+
+# Pipeline outputs
+test_results/
+work/
+.nextflow*
