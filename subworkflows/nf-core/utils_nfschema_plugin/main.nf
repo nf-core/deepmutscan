@@ -18,6 +18,24 @@ workflow UTILS_NFSCHEMA_PLUGIN {
 
     main:
 
+    if(help || help_full) {
+        help_options = [
+            beforeText: before_text,
+            afterText: after_text,
+            command: command,
+            showHidden: show_hidden,
+            fullHelp: help_full,
+        ]
+        if(parameters_schema) {
+            help_options << [parametersSchema: parameters_schema]
+        }
+        log.info paramsHelp(
+            help_options,
+            (params.help instanceof String && params.help != "true") ? params.help : "",
+        )
+        exit 0
+    }
+
     //
     // Print parameter summary to stdout. This will display the parameters
     // that differ from the default given in the JSON schema
@@ -43,4 +61,3 @@ workflow UTILS_NFSCHEMA_PLUGIN {
     emit:
     dummy_emit = true
 }
-
