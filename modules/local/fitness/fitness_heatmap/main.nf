@@ -10,7 +10,7 @@ process FITNESS_HEATMAP {
 
   input:
     tuple val(sample), path(fitness_estimation_tsv)   // from FITNESS_CALCULATION
-    tuple val(sample), path(wt_seq)   		      // WT sequence
+    tuple val(sample2), path(wt_seq)   		      // WT sequence
 
   output:
     tuple val(sample), path("fitness_heatmap.pdf"), emit: fitness_heatmap

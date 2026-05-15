@@ -34,37 +34,6 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_deep
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Define input variables as channels
-Channel
-    .fromPath(params.fasta, checkIfExists: true)
-    .map { fasta -> tuple( [id: 'ref'], fasta ) }
-    .set { ch_fasta }
-Channel
-    .value(params.reading_frame)
-    .set { reading_frame_ch }
-Channel
-    .value(params.min_counts)
-    .set { min_counts_ch }
-Channel
-    .value(params.custom_codon_library)
-    .set { custom_codon_library_ch }
-Channel
-    .value(params.mutagenesis_type)
-    .set { mutagenesis_type_ch }
-Channel
-    .value(params.sliding_window_size)
-    .set { sliding_window_size_ch }
-Channel
-    .value(params.aimed_cov)
-    .set { aimed_cov_ch }
-Channel
-    .value(params.run_seqdepth)
-    .set { run_seqdepth_ch }
-Channel
-  .fromPath(params.input, checkIfExists: true)
-  .set { ch_samplesheet_csv }
-
-
 workflow DEEPMUTSCAN {
 
     take:
@@ -76,8 +45,24 @@ workflow DEEPMUTSCAN {
 
     main:
 
-    def ch_versions = channel.empty()
-    def ch_multiqc_files = channel.empty()
+    def ch_versions = Channel.empty()
+    def ch_multiqc_files = Channel.empty()
+
+    // Define input channels from parameters
+    def ch_fasta = Channel
+        .fromPath(params.fasta, checkIfExists: true)
+        .map { fasta -> tuple( [id: 'ref'], fasta ) }
+
+    def reading_frame_ch        = Channel.value(params.reading_frame)
+    def min_counts_ch           = Channel.value(params.min_counts)
+    def custom_codon_library_ch = Channel.value(params.custom_codon_library)
+    def mutagenesis_type_ch     = Channel.value(params.mutagenesis_type)
+    def sliding_window_size_ch  = Channel.value(params.sliding_window_size)
+    def aimed_cov_ch            = Channel.value(params.aimed_cov)
+    def run_seqdepth_ch         = Channel.value(params.run_seqdepth)
+    
+    // Raw samplesheet path channel for downstream subworkflows
+    def ch_samplesheet_csv      = Channel.fromPath(params.input, checkIfExists: true)
 
     //
     // MODULE: Run FastQC
@@ -161,13 +146,10 @@ workflow DEEPMUTSCAN {
     // Anchor (N items; one per sample)
     def ch_vc = GATK_SATURATIONMUTAGENESIS.out.variantCounts   // tuple(val(meta), path)
 
-    // Fan-out helpers (broadcast singleton → N)
-    def fanout = { ch_singleton -> ch_singleton.combine(ch_vc).map { it[0] } }
-
-    // Build per-sample inputs
-    def ch_possible_mut_for_proc = fanout( DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map { it[1] } )
-    def ch_aa_seq_for_proc       = fanout( DMSANALYSIS_AASEQ.out.aa_seq.map { it[1] } )
-    def ch_min_counts_for_proc   = fanout( min_counts_ch )
+    // Build per-sample inputs using inline combinations (replaces fanout)
+    def ch_possible_mut_for_proc = DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map { it[1] }.combine(ch_vc).map { it[0] }
+    def ch_aa_seq_for_proc       = DMSANALYSIS_AASEQ.out.aa_seq.map { it[1] }.combine(ch_vc).map { it[0] }
+    def ch_min_counts_for_proc   = min_counts_ch.combine(ch_vc).map { it[0] }
 
     // Call with all inputs aligned (each has N items now)
     DMSANALYSIS_PROCESS_GATK(
@@ -177,28 +159,23 @@ workflow DEEPMUTSCAN {
       ch_min_counts_for_proc        // val(min_counts)                        -- N
     )
 
-    def annotated_variantCounts_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, a) }
+    def annotated_variantCounts_ch           = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, a) }
     def variantCounts_filtered_by_library_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, b) }
-    def library_completed_variantCounts_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, c) }
-    def variantCounts_for_heatmaps_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, d) }
+    def library_completed_variantCounts_ch   = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, c) }
+    def variantCounts_for_heatmaps_ch        = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, d) }
 
-    // Broadcast `singleton` so it emits once per item in `anchorN`
-    def fanoutTo = { anchorN, singleton -> singleton.combine(anchorN).map { it[0] } }
+    // --- For VISUALIZATION_COUNTS_PER_COV & HEATMAP (replaces fanoutTo)
+    def min_counts_for_cov_ch          = min_counts_ch.combine(variantCounts_for_heatmaps_ch).map { it[0] }
+    def min_counts_for_heatmap_ch      = min_counts_ch.combine(variantCounts_for_heatmaps_ch).map { it[0] }
 
-    // --- For VISUALIZATION_COUNTS_PER_COV (anchor: variantCounts_for_heatmaps_ch)
-    def min_counts_for_cov_ch          = fanoutTo(variantCounts_for_heatmaps_ch, min_counts_ch)
+    // --- For VISUALIZATION_GLOBAL_POS_BIASES_*
+    def aa_seq_for_bias_ch             = DMSANALYSIS_AASEQ.out.aa_seq.map { it[1] }.combine(variantCounts_filtered_by_library_ch).map { it[0] }
+    def sliding_window_size_N          = sliding_window_size_ch.combine(variantCounts_filtered_by_library_ch).map { it[0] }
+    def aimed_cov_N                    = aimed_cov_ch.combine(variantCounts_filtered_by_library_ch).map { it[0] }
 
-    // --- For VISUALIZATION_COUNTS_HEATMAP (anchor: variantCounts_for_heatmaps_ch)
-    def min_counts_for_heatmap_ch      = fanoutTo(variantCounts_for_heatmaps_ch, min_counts_ch)
-
-    // --- For VISUALIZATION_GLOBAL_POS_BIASES_* (anchor: variantCounts_filtered_by_library_ch)
-    def aa_seq_for_bias_ch             = fanoutTo(variantCounts_filtered_by_library_ch, DMSANALYSIS_AASEQ.out.aa_seq.map { it[1] })
-    def sliding_window_size_N          = fanoutTo(variantCounts_filtered_by_library_ch, sliding_window_size_ch)
-    def aimed_cov_N                    = fanoutTo(variantCounts_filtered_by_library_ch, aimed_cov_ch)
-
-    // --- For VISUALIZATION_SEQDEPTH (anchor: variantCounts_filtered_by_library_ch)
-    def possible_mutations_N           = fanoutTo(variantCounts_filtered_by_library_ch, DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map { it[1] })
-    def min_counts_for_seqdepth_ch     = fanoutTo(variantCounts_filtered_by_library_ch, min_counts_ch)
+    // --- For VISUALIZATION_SEQDEPTH
+    def possible_mutations_N           = DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map { it[1] }.combine(variantCounts_filtered_by_library_ch).map { it[0] }
+    def min_counts_for_seqdepth_ch     = min_counts_ch.combine(variantCounts_filtered_by_library_ch).map { it[0] }
 
     VISUALIZATION_COUNTS_PER_COV(
       variantCounts_for_heatmaps_ch,
