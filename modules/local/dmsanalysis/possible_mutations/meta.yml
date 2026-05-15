@@ -1,0 +1,63 @@
+name: "dmsanalysis_possible_mutations"
+description: |
+  Generates a comprehensive table of all theoretically possible variants based on the 
+  mutagenesis strategy (e.g., NNK, NNS) and the reference sequence. This table acts 
+  as the ground truth for downstream filtering and analysis.
+keywords:
+  - deep mutational scanning
+  - dms
+  - mutagenesis
+  - library design
+  - variants
+tools:
+  - "mutscan":
+      description: "R package for analysis of deep mutational scanning data"
+      homepage: "https://bioconductor.org/packages/release/bioc/html/mutscan.html"
+      documentation: "https://bioconductor.org/packages/release/bioc/manuals/mutscan/man/mutscan.pdf"
+      tool_dev_url: "https://github.com/csoneson/mutscan"
+      doi: "10.1186/s12859-023-05187-y"
+      licence: ["GPL-3.0-or-later"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'ref' ]`
+    - wt_seq:
+        type: file
+        description: FASTA file containing the wild-type reference DNA sequence
+        pattern: "*.{fasta,fa}"
+  - - pos_range:
+        type: string
+        description: Start and stop codon positions (ORF) in the format 'start-stop', e.g., '352-1383'
+  - - mutagenesis_type:
+        type: string
+        description: |
+          Type of mutagenic primers used. 
+          Supported types: nnk, nns, nnh, nnn, nnk_nns, nnk_nns_nnh, or custom.
+  - - custom_codon_library:
+        type: file
+        description: |
+          Optional CSV file defining a custom codon library. 
+          Only required if mutagenesis_type is set to 'custom'.
+
+output:
+  - possible_mutations:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - possible_mutations.csv:
+          type: file
+          description: CSV file containing all theoretically possible mutations for the experiment
+          pattern: "possible_mutations.csv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

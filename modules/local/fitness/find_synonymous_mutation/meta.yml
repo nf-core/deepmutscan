@@ -1,0 +1,58 @@
+name: "find_synonymous_mutation"
+description: Identifies synonymous mutations within the merged count table, prioritizing those with high counts (typically 2nt changes) to serve as a reference for normalizing fitness scores.
+keywords:
+  - deep mutational scanning
+  - dms
+  - synonymous mutation
+  - fitness calculation
+  - normalization
+tools:
+  - "mutscan":
+      description: "R package for analysis of deep mutational scanning data"
+      homepage: "https://bioconductor.org/packages/release/bioc/html/mutscan.html"
+      documentation: "https://bioconductor.org/packages/release/bioc/manuals/mutscan/man/mutscan.pdf"
+      tool_dev_url: "https://github.com/csoneson/mutscan"
+      doi: "10.1186/s12859-023-05187-y"
+      licence: ["GPL-3.0-or-later"]
+  - "bioconductor-biostrings":
+      description: "Memory efficient string containers, string matching algorithms, and other utilities, for fast manipulation of large biological sequences or sets of sequences"
+      homepage: "https://bioconductor.org/packages/Biostrings"
+      licence: ["Artistic-2.0"]
+
+input:
+  - - sample:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test' ]`
+    - counts_merged:
+        type: file
+        description: TSV/CSV file containing variant counts merged across samples or replicates
+        pattern: "*.{tsv,csv}"
+  - - wt_fasta:
+        type: file
+        description: FASTA file containing the wild-type reference DNA sequence
+        pattern: "*.{fasta,fa}"
+  - - pos_range:
+        type: string
+        description: Start and stop codon positions (ORF) in the format 'start-stop', e.g., '352-1383'
+
+output:
+  - synonymous_wt:
+      - sample:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - synonymous_wt.txt:
+          type: file
+          description: Text file identifying the chosen synonymous mutation to be used as a wild-type reference
+          pattern: "synonymous_wt.txt"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"
