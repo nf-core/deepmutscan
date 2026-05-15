@@ -2,22 +2,27 @@
 // Subworkflow that uses the nf-schema plugin to validate parameters and render the parameter summary
 //
 
-include { paramsHelp         } from 'plugin/nf-schema'
 include { paramsSummaryLog   } from 'plugin/nf-schema'
 include { validateParameters } from 'plugin/nf-schema'
+include { paramsHelp         } from 'plugin/nf-schema'
 
 workflow UTILS_NFSCHEMA_PLUGIN {
 
     take:
     input_workflow      // workflow: the workflow object used by nf-schema to get metadata from the workflow
     validate_params     // boolean:  validate the parameters
-    help                // boolean:  print help message
-    help_full           // boolean:  print help message with hidden parameters
+    parameters_schema   // string:   path to the parameters JSON schema.
+                        //           this has to be the same as the schema given to `validation.parametersSchema`
+                        //           when this input is empty it will automatically use the configured schema or
+                        //           "${projectDir}/nextflow_schema.json" as default. This input should not be empty
+                        //           for meta pipelines
+    help                // boolean:  show help message
+    help_full           // boolean:  show full help message
     show_hidden         // boolean:  show hidden parameters in help message
-    parameters_schema   // string:   path to the parameters JSON schema
-    before_text         // string:   text to print before the help message
-    after_text          // string:   text to print after the help message
-    command             // string:   command to run the pipeline
+    before_text         // string:   text to show before the help message and parameters summary
+    after_text          // string:   text to show after the help message and parameters summary
+    command             // string:   an example command of the pipeline
+    cli_typecast        // boolean:  whether to perform typecasting of CLI parameters. Set this to `null` to use the default behaviour
 
     main:
 
@@ -34,7 +39,7 @@ workflow UTILS_NFSCHEMA_PLUGIN {
         }
         log.info paramsHelp(
             help_options,
-            (params.help instanceof String && params.help != "true") ? params.help : "",
+            (help instanceof String && help != "true") ? help : "",
         )
         exit 0
     }
@@ -43,22 +48,28 @@ workflow UTILS_NFSCHEMA_PLUGIN {
     // Print parameter summary to stdout. This will display the parameters
     // that differ from the default given in the JSON schema
     //
+
+    summary_options = [:]
     if(parameters_schema) {
-        log.info paramsSummaryLog(input_workflow, parameters_schema:parameters_schema)
-    } else {
-        log.info paramsSummaryLog(input_workflow)
+        summary_options << [parametersSchema: parameters_schema]
     }
+    log.info before_text
+    log.info paramsSummaryLog(summary_options, input_workflow)
+    log.info after_text
 
     //
     // Validate the parameters using nextflow_schema.json or the schema
     // given via the validation.parametersSchema configuration option
     //
     if(validate_params) {
+        validateOptions = [:]
         if(parameters_schema) {
-            validateParameters(parameters_schema:parameters_schema)
-        } else {
-            validateParameters()
+            validateOptions << [parametersSchema: parameters_schema]
         }
+        if(cli_typecast != null) {
+            validateOptions << [cliTypecast: cli_typecast]
+        }
+        validateParameters(validateOptions)
     }
 
     emit:

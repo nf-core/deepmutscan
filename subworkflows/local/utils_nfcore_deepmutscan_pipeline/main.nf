@@ -84,7 +84,8 @@ workflow PIPELINE_INITIALISATION {
         null,
         before_text,
         after_text,
-        command
+        command,
+        "${projectDir}/nextflow_schema.json"
     )
 
     //
@@ -256,7 +257,6 @@ def toolCitationText() {
 }
 
 def toolBibliographyText() {
-    // TODO nf-core: Optionally add bibliographic entries to this list.
     // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "<li>Author (2023) Pub name, Journal, DOI</li>" : "",
     // Uncomment function in methodsDescriptionText to render in MultiQC report
     def reference_text = [

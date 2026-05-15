@@ -21,7 +21,7 @@ include { VISUALIZATION_LOGDIFF      } from '../modules/local/visualization/logd
 include { VISUALIZATION_SEQDEPTH      } from '../modules/local/visualization/seqdepth/main'
 include { GATK_GATKTOFITNESS          } from '../modules/local/gatk/gatk_to_fitness/main'
 
-include { CALCULATEFITNESS } from '../subworkflows/local/calculatefitness'
+include { CALCULATEFITNESS } from '../subworkflows/local/calculate_fitness/main'
 
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'

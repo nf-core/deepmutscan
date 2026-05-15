@@ -3,14 +3,14 @@
     IMPORT MODULES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { MERGE_COUNTS }             from '../../modules/local/fitness/merge_counts/main'
-include { EXPDESIGN_FITNESS }        from '../../modules/local/fitness/fitness_experimental_design/main'
-include { FIND_SYNONYMOUS_MUTATION } from '../../modules/local/fitness/find_synonymous_mutation/main'
-include { FITNESS_CALCULATION }      from '../../modules/local/fitness/fitness_calculation/main'
-include { FITNESS_QC }               from '../../modules/local/fitness/fitness_QC/main'
-include { FITNESS_HEATMAP }          from '../../modules/local/fitness/fitness_heatmap/main'
-include { RUN_DIMSUM }               from '../../modules/local/fitness/run_dimsum/main'
-include { RUN_MUTSCAN }              from '../../modules/local/fitness/run_mutscan/main'
+include { MERGE_COUNTS }             from '../../../modules/local/fitness/merge_counts/main'
+include { EXPDESIGN_FITNESS }        from '../../../modules/local/fitness/fitness_experimental_design/main'
+include { FIND_SYNONYMOUS_MUTATION } from '../../../modules/local/fitness/find_synonymous_mutation/main'
+include { FITNESS_CALCULATION }      from '../../../modules/local/fitness/fitness_calculation/main'
+include { FITNESS_QC }               from '../../../modules/local/fitness/fitness_QC/main'
+include { FITNESS_HEATMAP }          from '../../../modules/local/fitness/fitness_heatmap/main'
+include { RUN_DIMSUM }               from '../../../modules/local/fitness/run_dimsum/main'
+include { RUN_MUTSCAN }              from '../../../modules/local/fitness/run_mutscan/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
