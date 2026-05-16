@@ -1,39 +1,56 @@
-name: "utils_nfcore_deepmutscan_pipeline"
-description: Local utility functions and parameter validation wrappers for deepmutscan.
+name: "PIPELINE_INITIALISATION"
+description: Local utility functions, pipeline initialization, completion workflows, and parameter validation wrappers for the deepmutscan pipeline.
 keywords:
   - "utility"
   - "validation"
   - "manifest"
+  - "initialisation"
+  - "completion"
 components:
   - "utils_nfschema_plugin"
   - "utils_nfcore_pipeline"
   - "utils_nextflow_pipeline"
+
 input:
   - version:
       type: boolean
-      description: Display version flag
+      description: Display version and exit
   - validate_params:
       type: boolean
-      description: Boolean whether to validate parameters
+      description: Boolean whether to validate parameters against the schema at runtime
   - monochrome_logs:
       type: boolean
-      description: Disable ANSI color codes
+      description: Do not use coloured log outputs
   - nextflow_cli_args:
       type: array
-      description: List of positional CLI args
+      description: List of positional nextflow CLI args
   - outdir:
       type: string
-      description: Output directory path
+      description: The output directory where the results will be saved
   - input:
       type: string
       description: Path to input samplesheet
+  - email:
+      type: string
+      description: Email address for completion summary
+  - email_on_fail:
+      type: string
+      description: Email address sent on pipeline failure
+  - plaintext_email:
+      type: boolean
+      description: Send plain-text email instead of HTML
+  - multiqc_report:
+      type: string
+      description: Path to MultiQC report
+
 output:
   - samplesheet:
       type: channel
-      description: Processed samplesheet channel containing metadata maps and fastq paths
+      description: Processed samplesheet channel containing metadata objects and file paths
   - versions:
       type: channel
-      description: Software versions channel
+      description: Empty version channel for use in the workflow
+
 authors:
   - "@BenjaminWehnert1008"
   - "@MaximilianStammnitz"
