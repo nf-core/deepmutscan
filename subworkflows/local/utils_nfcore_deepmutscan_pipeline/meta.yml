@@ -1,0 +1,8 @@
+name: "utils_nfcore_deepmutscan_pipeline"
+description: Local utility functions and parameters validation validation wrappers for deepmutscan.
+keywords:
+  - utility
+  - validation
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

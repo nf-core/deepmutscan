@@ -1,61 +1,40 @@
 name: "calculate_fitness"
-description: |
-  Consolidates variant counts, generates experimental design metadata, identifies 
-  synonymous reference mutations, and calculates fitness scores using various 
-  statistical frameworks (Mutscan, DiMSum). It also generates diagnostic QC 
-  plots and final fitness heatmaps.
+description: Consolidates variant counts, generates experimental design metadata, and calculates fitness scores.
 keywords:
   - deep mutational scanning
-  - dms
-  - fitness estimation
-  - enrichment
-  - mutation landscape
+  - fitness
 components:
-  - merge_counts
-  - expdesign_fitness
-  - find_synonymous_mutation
-  - fitness_calculation
-  - fitness_qc
-  - fitness_heatmap
-  - run_dimsum
-  - run_mutscan
-
+  - "merge/counts"
+  - "fitness/calculation"
+  - "fitness/heatmap"
+  - "fitness/qc"
+  - "run/dimsum"
+  - "run/mutscan"
+  - "expdesign/fitness"
+  - "find/synonymous/mutation"
 input:
   - ch_fitness_input:
       type: channel
-      description: |
-        A channel containing variant counts from GATK or other sources, 
-        grouped by biological sample and replicate.
-        Structure: [ val(meta), path(tsv) ]
+      description: GATK variant count channels
   - ch_samplesheet_csv:
       type: channel
-      description: Path to the primary pipeline samplesheet CSV file.
+      description: Pipeline samplesheet
   - ch_fasta:
       type: channel
-      description: |
-        Channel containing the wild-type DNA reference sequence.
-        Structure: [ val(meta), path(fasta) ]
+      description: Reference sequence channel
   - val_reading_frame:
       type: value
-      description: The reading frame position range (start-stop) used for translation logic.
+      description: Reading frame parameter
   - ch_aa_seq:
       type: channel
-      description: |
-        Channel containing the translated amino acid sequence used for heatmap plotting.
-        Structure: [ val(meta), path(txt) ]
-
+      description: Amino acid sequence channel
 output:
   - fitness_estimation:
       type: channel
-      description: |
-        The final fitness estimations and associated statistics.
-        Structure: [ val(meta), path(tsv) ]
+      description: Output fitness metrics
   - versions:
       type: channel
-      description: |
-        A channel containing the software versions of all tools used in the subworkflow.
-        Structure: [ path(versions.yml) ]
-
+      description: Software versions
 authors:
   - "@BenjaminWehnert1008"
   - "@MaximilianStammnitz"

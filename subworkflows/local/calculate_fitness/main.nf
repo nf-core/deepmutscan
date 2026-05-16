@@ -18,7 +18,7 @@ include { RUN_MUTSCAN }              from '../../../modules/local/fitness/run_mu
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-workflow CALCULATEFITNESS {
+workflow CALCULATE_FITNESS {
 
     take:
     ch_fitness_input    // channel: output from GATK_GATKTOFITNESS (grouped by sample/replicate logic)
