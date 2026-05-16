@@ -48,12 +48,12 @@ The pipeline processes deep mutational scanning (DMS) sequencing data in several
 
 1. Alignment of reads to the reference open reading frame (ORF) (`BWA-mem`)
 2. Filtering of wildtype and erroneous reads (`samtools view`)
-3. Read merging for base error reduction (`vsearch merge`, `BWA-mem`)
-4. Mutation counting (`GATK AnalyzeSaturationMutagenesis`)
-5. DMS library quality control
-6. Data summarisation across samples
-7. Single nucleotide variant error correction
-8. Fitness estimation
+3. Read merging for base error reduction (`vsearch merge`)
+4. Mutation counting
+5. Single nucleotide variant error correction
+6. DMS library quality control
+7. Data summarisation across samples
+8. Fitness estimation (`DiMSum`, `mutscan`)
 
 ## Usage
 
