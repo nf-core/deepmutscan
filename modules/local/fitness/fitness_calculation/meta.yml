@@ -1,0 +1,54 @@
+name: "fitness_calculation"
+description: Calculates fitness scores for Deep Mutational Scanning (DMS) variants. It typically uses a log-enrichment ratio approach, comparing variant frequencies in selection (output) versus baseline (input) samples, normalized to a synonymous wild-type reference.
+keywords:
+  - deep mutational scanning
+  - dms
+  - fitness calculation
+  - log-ratio
+  - enrichment
+tools:
+  - "mutscan":
+      description: "R package for analysis of deep mutational scanning data"
+      homepage: "https://bioconductor.org/packages/release/bioc/html/mutscan.html"
+      documentation: "https://bioconductor.org/packages/release/bioc/manuals/mutscan/man/mutscan.pdf"
+      tool_dev_url: "https://github.com/csoneson/mutscan"
+      doi: "10.1186/s12859-023-05187-y"
+      licence: ["GPL-3.0-or-later"]
+
+input:
+  - - sample:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test' ]`
+    - counts_merged:
+        type: file
+        description: TSV or CSV file containing the consolidated variant counts across all replicates
+        pattern: "*.{tsv,csv}"
+  - - exp_design:
+        type: file
+        description: CSV or text file defining the experimental design, including input/output mappings and replicates
+        pattern: "*.{csv,txt}"
+  - - syn_wt_txt:
+        type: file
+        description: Text file identifying the synonymous wild-type variant used as the normalization baseline
+        pattern: "*.txt"
+
+output:
+  - fitness_estimation:
+      - sample:
+          type: map
+          description: Groovy Map containing sample information
+      - fitness_estimation.tsv:
+          type: file
+          description: TSV file containing the final calculated fitness scores for all variants
+          pattern: "fitness_estimation.tsv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/nf-core/deepmutscan/master/nextflow_schema.json",
     "title": "nf-core/deepmutscan pipeline parameters",
-    "description": "Until now, most Deep Mutational Scanning (DMS) experiments relied on variant-specific barcoded libraries for sequencing. This method enabled DMS on large proteins and led to many great publications. Recently, efforts have increased to make use of the classic and more simple random fragmentation-based short-read sequencing (“shotgun-sequencing”). This saves time and money and due to its simpler experimental design is less prone to mistakes. dmscore handles the essential computational steps, processing the raw FASTQ files and generating a count table of variants. Along the way, it provides multiple QC metrics, enabling users to quickly evaluate the success of their experimental setup.",
+    "description": "Until now, most Deep Mutational Scanning (DMS) experiments relied on variant-specific barcoded libraries for sequencing. This method enabled DMS on large proteins and led to many great publications. Recently, efforts have increased to make use of the classic and more simple random fragmentation-based short-read sequencing (\u201cshotgun-sequencing\u201d). This saves time and money and due to its simpler experimental design is less prone to mistakes. dmscore handles the essential computational steps, processing the raw FASTQ files and generating a count table of variants. Along the way, it provides multiple QC metrics, enabling users to quickly evaluate the success of their experimental setup.",
     "type": "object",
     "$defs": {
         "input_output_options": {
@@ -70,27 +70,24 @@
                 "custom_codon_library": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "Path to a file defining a custom codon library. Required when mutagenesis_type is set to `custom`. The script auto-detects the format: provide either a global comma-separated list of codons (e.g., 'AAA,AAC,AAG') OR a position-specific, headerless list where each row specifies the target sequence position followed by its allowed codons (e.g., '1,ACG,AAA,ACA' and '2,AAA,TTT,ACA' on separate lines). Both as .csv."
+                    "description": "Path to a file defining a custom codon library. Required when mutagenesis_type is set to `custom`. The script auto-detects the format: provide either a global comma-separated list of codons (e.g., 'AAA,AAC,AAG') OR a position-specific, headerless list where each row specifies the target sequence position followed by its allowed codons (e.g., '1,ACG,AAA,ACA' and '2,AAA,TTT,ACA' on separate lines). Both as .csv.",
+                    "default": "/NULL"
                 },
                 "dimsum": {
-                    "type": "boolean",
-                    "default": false,
+                    "type": ["boolean", "string"],
                     "description": "Run DiMSum for fitness/functionality scores from growth-based selection input & output samples"
                 },
                 "mutscan": {
-                    "type": "boolean",
-                    "default": false,
+                    "type": ["boolean", "string"],
                     "description": "Run mutscan (Soneson et al., 2023) to estimate fitness/functionality scores from input & output samples"
                 },
                 "fitness": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Enable basic fitness calculation and preceded data preparation (group and merge counts per sample into counts_merged.tsv, create a specific experimental design file and find a high-count 2nt synonymous mutation). All data prepared serves also as input for the dimsum fitness calculator."
+                    "type": ["boolean", "string"],
+                    "description": "Enable basic fitness calculation and preceded data preparation."
                 },
                 "run_seqdepth": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Whether to run the SeqDepth simulation module, to check on the sequencing depth. This is computationally intensive and optional."
+                    "type": ["boolean", "string"],
+                    "description": "Whether to run the SeqDepth simulation module."
                 }
             }
         },
@@ -125,7 +122,6 @@
                 },
                 "igenomes_base": {
                     "type": "string",
-                    "format": "directory-path",
                     "description": "The base path to the igenomes reference files",
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
@@ -229,13 +225,6 @@
                     "type": "boolean",
                     "description": "Do not use coloured log outputs.",
                     "fa_icon": "fas fa-palette",
-                    "hidden": true
-                },
-                "hook_url": {
-                    "type": "string",
-                    "description": "Incoming hook URL for messaging service",
-                    "fa_icon": "fas fa-people-group",
-                    "help_text": "Incoming hook URL for messaging service. Currently, MS Teams and Slack are supported.",
                     "hidden": true
                 },
                 "multiqc_config": {

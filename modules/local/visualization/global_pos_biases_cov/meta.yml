@@ -1,0 +1,56 @@
+name: "visualization_global_pos_biases_cov"
+description: Calculates and plots the rolling mean coverage across the protein sequence to identify positional biases, regions of low coverage, or potential experimental dropouts.
+keywords:
+  - deep mutational scanning
+  - dms
+  - visualization
+  - coverage
+  - rolling window
+  - bias
+tools:
+  - "mutscan":
+      description: "R package for analysis of deep mutational scanning data"
+      homepage: "https://bioconductor.org/packages/release/bioc/html/mutscan.html"
+      documentation: "https://bioconductor.org/packages/release/bioc/manuals/mutscan/man/mutscan.pdf"
+      tool_dev_url: "https://github.com/csoneson/mutscan"
+      doi: "10.1186/s12859-023-05187-y"
+      licence: ["GPL-3.0-or-later"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - variantCounts_filtered_by_library:
+        type: file
+        description: CSV file containing variant counts filtered against the target library
+        pattern: "*.{csv}"
+  - - aa_seq:
+        type: file
+        description: Text file containing the reference amino acid sequence
+  - - sliding_window_size:
+        type: integer
+        description: The size of the window (in amino acids) used for calculating the rolling mean coverage
+  - - aimed_cov:
+        type: integer
+        description: The target coverage threshold to visualize as a horizontal reference line in the plot
+
+output:
+  - rolling_coverage:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - rolling_coverage.pdf:
+          type: file
+          description: PDF plot showing the rolling mean coverage across sequence positions
+          pattern: "rolling_coverage.pdf"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

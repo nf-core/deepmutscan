@@ -1,0 +1,51 @@
+name: "merge_counts"
+description: Consolidates variant counts from multiple input (baseline) and output (selection) files into a single merged TSV table, organized by sample or replicate.
+keywords:
+  - deep mutational scanning
+  - dms
+  - count merging
+  - variant table
+  - preprocessing
+tools:
+  - "mutscan":
+      description: "R package for analysis of deep mutational scanning data"
+      homepage: "https://bioconductor.org/packages/release/bioc/html/mutscan.html"
+      documentation: "https://bioconductor.org/packages/release/bioc/manuals/mutscan/man/mutscan.pdf"
+      tool_dev_url: "https://github.com/csoneson/mutscan"
+      doi: "10.1186/s12859-023-05187-y"
+      licence: ["GPL-3.0-or-later"]
+
+input:
+  - - sample:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test' ]`
+    - metas:
+        type: list
+        description: A list of metadata maps corresponding to the input and output count files
+    - input_counts:
+        type: list
+        description: A list of paths to count files representing the baseline/input population
+    - output_counts:
+        type: list
+        description: A list of paths to count files representing the selection/output population
+
+output:
+  - merged_counts:
+      - sample:
+          type: map
+          description: Groovy Map containing sample information
+      - counts_merged.tsv:
+          type: file
+          description: A consolidated TSV file containing merged counts for all provided inputs and outputs
+          pattern: "counts_merged.tsv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

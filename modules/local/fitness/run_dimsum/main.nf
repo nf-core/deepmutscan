@@ -38,6 +38,6 @@ process RUN_DIMSUM {
   cat <<-END_VERSIONS > versions.yml
   DIMSUM_RUN:
     r-base: \$R_VERSION
-  END_VERSIONS
+END_VERSIONS
   """
 }

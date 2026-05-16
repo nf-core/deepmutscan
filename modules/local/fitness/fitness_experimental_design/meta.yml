@@ -1,0 +1,37 @@
+name: "expdesign_fitness"
+description: Transforms a standard nf-core samplesheet into a tab-separated experimental design file that defines replicates, selection conditions, and input/output relationships for fitness calculation.
+keywords:
+  - deep mutational scanning
+  - dms
+  - experimental design
+  - samplesheet
+  - dimsum
+  - mutscan
+tools:
+  - "r-base":
+      description: "R is a free software environment for statistical computing and graphics"
+      homepage: "https://www.r-project.org/"
+      documentation: "https://cran.r-project.org/manuals.html"
+      licence: ["GPL-2.0-or-later"]
+
+input:
+  - - samplesheet_csv:
+        type: file
+        description: The primary nf-core pipeline samplesheet containing metadata for all sequencing libraries
+        pattern: "*.{csv}"
+
+output:
+  - experimental_design:
+      - experimentalDesign.tsv:
+          type: file
+          description: A TSV file formatted specifically for DiMSum or mutscan experimental design requirements
+          pattern: "experimentalDesign.tsv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

@@ -34,7 +34,7 @@ process PREMERGE {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         premerge: \$(samtools --version |& sed '1!d ; s/samtools //')
-    END_VERSIONS
+END_VERSIONS
     """
 
     stub:
@@ -46,6 +46,6 @@ process PREMERGE {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         premerge: dummy_version
-    END_VERSIONS
+END_VERSIONS
     """
 }
