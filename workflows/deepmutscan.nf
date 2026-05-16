@@ -226,7 +226,7 @@ workflow DEEPMUTSCAN {
     // Execution of fitness subworkflow, if --fitness true
     if (params.fitness) {
 
-        CALCULATEFITNESS (
+        CALCULATE_FITNESS (
             GATK_GATKTOFITNESS.out.fitness_input, // Input from previous step
             ch_samplesheet_csv,                   // Path to samplesheet
             ch_fasta,                             // The original Fasta tuple
@@ -235,7 +235,7 @@ workflow DEEPMUTSCAN {
         )
 
         // Collect versions
-        ch_versions = ch_versions.mix(CALCULATEFITNESS.out.versions)
+        ch_versions = ch_versions.mix(CALCULATE_FITNESS.out.versions)
     }
 
     //

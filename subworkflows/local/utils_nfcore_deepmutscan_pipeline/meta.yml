@@ -1,8 +1,22 @@
 name: "utils_nfcore_deepmutscan_pipeline"
-description: Local utility functions and parameters validation validation wrappers for deepmutscan.
+description: Local utility functions and validation wrappers for deepmutscan.
 keywords:
-  - utility
-  - validation
+  - "utility"
+  - "validation"
+  - "manifest"
+authors:
+  - "@BenjaminWehnert1008"
+input:
+  - version:
+      type: boolean
+      description: Display version flag
+output:
+  - samplesheet:
+      type: channel
+      description: Processed samplesheet channel containing metadata and fastq paths
+  - versions:
+      type: channel
+      description: Software versions channel
 authors:
   - "@BenjaminWehnert1008"
   - "@MaximilianStammnitz"

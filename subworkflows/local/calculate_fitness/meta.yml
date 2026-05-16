@@ -1,8 +1,10 @@
 name: "calculate_fitness"
-description: Consolidates variant counts, generates experimental design metadata, and calculates fitness scores.
+description: Consolidates variant counts and calculates fitness scores.
 keywords:
-  - deep mutational scanning
-  - fitness
+  - "deep mutational scanning"
+  - "fitness estimation"
+  - "dms"
+  - "enrichment scores"
 components:
   - "merge/counts"
   - "fitness/calculation"
