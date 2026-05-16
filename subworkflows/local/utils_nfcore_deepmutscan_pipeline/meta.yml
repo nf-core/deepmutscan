@@ -1,17 +1,36 @@
 name: "utils_nfcore_deepmutscan_pipeline"
-description: Local utility functions and validation wrappers for deepmutscan.
+description: Local utility functions and parameter validation wrappers for deepmutscan.
 keywords:
   - "utility"
   - "validation"
   - "manifest"
+components:
+  - "utils_nfschema_plugin"
+  - "utils_nfcore_pipeline"
+  - "utils_nextflow_pipeline"
 input:
   - version:
       type: boolean
       description: Display version flag
+  - validate_params:
+      type: boolean
+      description: Boolean whether to validate parameters
+  - monochrome_logs:
+      type: boolean
+      description: Disable ANSI color codes
+  - nextflow_cli_args:
+      type: array
+      description: List of positional CLI args
+  - outdir:
+      type: string
+      description: Output directory path
+  - input:
+      type: string
+      description: Path to input samplesheet
 output:
   - samplesheet:
       type: channel
-      description: Processed samplesheet channel containing metadata and fastq paths
+      description: Processed samplesheet channel containing metadata maps and fastq paths
   - versions:
       type: channel
       description: Software versions channel
