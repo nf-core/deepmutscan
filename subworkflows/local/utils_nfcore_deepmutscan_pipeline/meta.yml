@@ -4,8 +4,6 @@ keywords:
   - "utility"
   - "validation"
   - "manifest"
-authors:
-  - "@BenjaminWehnert1008"
 input:
   - version:
       type: boolean
