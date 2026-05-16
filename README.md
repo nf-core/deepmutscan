@@ -52,7 +52,7 @@ The pipeline processes deep mutational scanning (DMS) sequencing data in several
 4. Mutation counting (`GATK AnalyzeSaturationMutagenesis`)
 5. DMS library quality control
 6. Data summarisation across samples
-7. Single nucleotide variant error correction _(in development)_
+7. Single nucleotide variant error correction
 8. Fitness estimation
 
 ## Usage
