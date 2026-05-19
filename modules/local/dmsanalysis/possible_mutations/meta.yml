@@ -1,7 +1,7 @@
 name: "dmsanalysis_possible_mutations"
 description: |
-  Generates a comprehensive table of all theoretically possible variants based on the 
-  mutagenesis strategy (e.g., NNK, NNS) and the reference sequence. This table acts 
+  Generates a comprehensive table of all theoretically possible variants based on the
+  mutagenesis strategy (e.g., NNK, NNS) and the reference sequence. This table acts
   as the ground truth for downstream filtering and analysis.
 keywords:
   - deep mutational scanning
@@ -34,12 +34,12 @@ input:
   - - mutagenesis_type:
         type: string
         description: |
-          Type of mutagenic primers used. 
+          Type of mutagenic primers used.
           Supported types: nnk, nns, nnh, nnn, nnk_nns, nnk_nns_nnh, or custom.
   - - custom_codon_library:
         type: file
         description: |
-          Optional CSV file defining a custom codon library. 
+          Optional CSV file defining a custom codon library.
           Only required if mutagenesis_type is set to 'custom'.
 
 output:
