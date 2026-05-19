@@ -2,11 +2,46 @@
     "-profile test": {
         "content": [
             {
+                "${task.process}": {
+                    "r-base": "4.5.1",
+                    "r-Biostrings": "2.78.0"
+                },
+                "BWA_INDEX": {
+                    "bwa": "0.7.19-r1273"
+                },
+                "BWA_MEM": {
+                    "bwa": "0.7.19-r1273",
+                    "samtools": "1.22.1"
+                },
+                "DMSANALYSIS_POSSIBLE_MUTATIONS": {
+                    "r-base": "4.5.1",
+                    "biostrings": "2.78.0"
+                },
+                "EXPDESIGN_FITNESS": {
+                    "r-base": "4.5.1"
+                },
                 "FASTQC": {
                     "fastqc": "0.12.1"
                 },
+                "FIND_SYNONYMOUS_MUTATION": {
+                    "r-base": "4.5.1",
+                    "r-Biostrings": "2.78.0"
+                },
+                "FITNESS_HEATMAP": {
+                    "r-base": "4.5.1",
+                    "r-dplyr": "1.1.4",
+                    "r-ggplot2": "4.0.2",
+                    "r-methods": "4.5.1",
+                    "r-grid": "4.5.1"
+                },
+                "FITNESS_QC": {
+                    "r-base": "4.5.1"
+                },
+                "MERGE_COUNTS": {
+                    "r-base": "4.5.1"
+                },
                 "Workflow": {
-                    "nf-core/deepmutscan": "v1.0.0"
+                    "nf-core/deepmutscan": "v1.0.0dev"
                 }
             },
             [
@@ -175,7 +210,9 @@
                 "multiqc/multiqc_data/fastqc_sequence_counts_plot.txt",
                 "multiqc/multiqc_data/fastqc_sequence_duplication_levels_plot.txt",
                 "multiqc/multiqc_data/fastqc_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/llms-full.txt",
                 "multiqc/multiqc_data/multiqc.log",
+                "multiqc/multiqc_data/multiqc.parquet",
                 "multiqc/multiqc_data/multiqc_citations.txt",
                 "multiqc/multiqc_data/multiqc_data.json",
                 "multiqc/multiqc_data/multiqc_fastqc.txt",
@@ -193,9 +230,9 @@
                 "GID1A_output_2_pe_fitness_input.tsv:md5,86ca879069467c7883919676659000d4",
                 "counts_merged.tsv:md5,8f8f810518a000cd4e8b7b076f50e121",
                 "fitness_estimation.tsv:md5,319d093abe93cf8bbe1f7a75dbb1c3b5",
-                "fitness_estimation_count_correlation.pdf:md5,53081371e00029c445163a9984aa1728",
-                "fitness_estimation_fitness_correlation.pdf:md5,6e492595333800bf094832f9372b308b",
-                "fitness_heatmap.pdf:md5,4f0bd27659bd112177300442230bbaf0",
+                "fitness_estimation_count_correlation.pdf:md5,c6053a1e372e1fc7c46e6dbece67b3a1",
+                "fitness_estimation_fitness_correlation.pdf:md5,6d460e8e441ce748d7d88edef348f85e",
+                "fitness_heatmap.pdf:md5,fe0ce9bc2947217eafaad4595b06967c",
                 "experimentalDesign.tsv:md5,f95dea4a3e6cf7e206e789a96e502604",
                 "synonymous_wt.txt:md5,bb94c5975185b80f8d63acebfbf4a0da",
                 "aa_seq.txt:md5,421287586f566191f7da4a7aad7d24a8",
@@ -204,14 +241,14 @@
                 "GID1A.bwt:md5,120149e0239465625c2dd20a171701fd",
                 "GID1A.pac:md5,104f743d81d39b2527b5ae52db26654c",
                 "GID1A.sa:md5,1f697dcb3fedd2f3f29642598bdd795b",
-                "GID1A_input_1_pe.bam:md5,da10689480844f4ba6085787b9a62911",
-                "GID1A_input_2_pe.bam:md5,3279ea950342c79de018529b5331a996",
-                "GID1A_output_1_pe.bam:md5,4eca44480be080697d0f629f93efb966",
-                "GID1A_output_2_pe.bam:md5,76d020796877eaef54507915d736666f",
-                "GID1A_input_1_pe_filtered.bam:md5,155296e421297aba67ee9432eb1c84a7",
-                "GID1A_input_2_pe_filtered.bam:md5,fd451b1780cae576233188ebe5410c58",
-                "GID1A_output_1_pe_filtered.bam:md5,454f7ee85cea052d860db8da0e0bcef3",
-                "GID1A_output_2_pe_filtered.bam:md5,3d2eeef2116a0d837b988a7de1c6dd7d",
+                "GID1A_input_1_pe.bam:md5,57f54fa2bad68dc8ff39d2bb79d94742",
+                "GID1A_input_2_pe.bam:md5,5da708382cddfaa90e7b53e3d79d8f8e",
+                "GID1A_output_1_pe.bam:md5,f888077ed2234b2b7b033ceea621b33f",
+                "GID1A_output_2_pe.bam:md5,5b147ba80d87ee3ff3be6c3f34d7f67d",
+                "GID1A_input_1_pe_filtered.bam:md5,3ca481d1fcdc0c5f3c1bca772b491d1e",
+                "GID1A_input_2_pe_filtered.bam:md5,9d4f9769ab087d37a3c7cb632ff4df73",
+                "GID1A_output_1_pe_filtered.bam:md5,4116f59370fc259900c3f4d6dd3f5dd4",
+                "GID1A_output_2_pe_filtered.bam:md5,6ae818bdb9e7ec5ea1c4c96de50d17ce",
                 "GID1A_input_1_pe_merged.bam:md5,97036832fa1aa512fd98899dd6d55adc",
                 "GID1A_input_2_pe_merged.bam:md5,4022c01b39e15881ae30999e18317ba2",
                 "GID1A_output_1_pe_merged.bam:md5,7304058a732059a7da38c325963be3b1",
@@ -265,38 +302,38 @@
                 "library_completed_variantCounts.csv:md5,34974d5568a315d78892139e71d2221e",
                 "variantCounts_filtered_by_library.csv:md5,0c38bb486fce548f2cce646a77307bb2",
                 "variantCounts_for_heatmaps.csv:md5,2e513e7bfe1d0ac8758af03e82685cf6",
-                "SeqDepth.pdf:md5,9452dcdcea632ad364e4f89c3e632512",
-                "counts_heatmap.pdf:md5,880676f5a038624b10bceb328ed3d8c9",
-                "counts_per_cov_heatmap.pdf:md5,9709dd300f843515133de787764fb64e",
-                "logdiff_plot.pdf:md5,e167c0d856b13e0edadd324a6c8a5c7e",
-                "logdiff_varying_bases.pdf:md5,ed70d16695bd202d3ea9d201a3e00f0c",
-                "rolling_counts.pdf:md5,f21c6053b83ffdb750628063e455d9b3",
-                "rolling_counts_per_cov.pdf:md5,5b84164f1bc247b6b9d75301674a3d00",
-                "rolling_coverage.pdf:md5,bb4deaca76cba932167742b4fa42078f",
-                "SeqDepth.pdf:md5,5cbbeedc7a47501046b203312768c96f",
-                "counts_heatmap.pdf:md5,428538af0c72c522f1cf207ed7c2d39e",
-                "counts_per_cov_heatmap.pdf:md5,13e3200176bef0172a1eae4dcea4bb7c",
-                "logdiff_plot.pdf:md5,fb223e78e99dbbdf24ddd70f729e23f2",
-                "logdiff_varying_bases.pdf:md5,d8eb0bff07e2ddfdd8b3ea315c05a44f",
-                "rolling_counts.pdf:md5,6b89656648599833830a646caedb8905",
-                "rolling_counts_per_cov.pdf:md5,1a40949662de6e67cf415b1a9265966c",
-                "rolling_coverage.pdf:md5,12c7f9e5004d5549a209404f02872670",
-                "SeqDepth.pdf:md5,c3f4016949dd3f14649d481667307e30",
-                "counts_heatmap.pdf:md5,e6043e3f96a6c0b87144ba1a61db17b7",
-                "counts_per_cov_heatmap.pdf:md5,ac130c15de05761837a6c91665b6d576",
-                "logdiff_plot.pdf:md5,b163965650272405b57c06637c1b3622",
-                "logdiff_varying_bases.pdf:md5,c172e0766b9a6cce255f7f2dd5efc36c",
-                "rolling_counts.pdf:md5,c88e16b6b0013593fede1321ee1326fd",
-                "rolling_counts_per_cov.pdf:md5,834105c446f257ec99090f403e8b1f21",
-                "rolling_coverage.pdf:md5,83f568a0b94db6197593307460db0ccc",
-                "SeqDepth.pdf:md5,4f3119acc067072ebbbb429daf98a410",
-                "counts_heatmap.pdf:md5,bbd1076c0e4be32814a7e56a4892d501",
-                "counts_per_cov_heatmap.pdf:md5,3b1b5614f61f907af51d8d79f7924123",
-                "logdiff_plot.pdf:md5,4066fc43d1f1f980582c84c6c432d6b8",
-                "logdiff_varying_bases.pdf:md5,86f6cd494995511635a4c21d02f9aff8",
-                "rolling_counts.pdf:md5,7537d33e1c918cd249b1eccd0c647d3f",
-                "rolling_counts_per_cov.pdf:md5,e727280564ce486297e1b5f21478d677",
-                "rolling_coverage.pdf:md5,4493127750ef51dbb63cd0e94b0ef49d",
+                "SeqDepth.pdf:md5,cb191382724e3f56f4a1a696da28e93a",
+                "counts_heatmap.pdf:md5,71439c70fd6906b6038e95a4bb5c44ef",
+                "counts_per_cov_heatmap.pdf:md5,dea2243be4f5344c1906e9f130cebbbf",
+                "logdiff_plot.pdf:md5,4277d4438a846a1f8ae395ae97ad86fe",
+                "logdiff_varying_bases.pdf:md5,431303195d7d65d263b3044f6dc682e1",
+                "rolling_counts.pdf:md5,cb813804150f8a2bcf47774b85d87dd8",
+                "rolling_counts_per_cov.pdf:md5,b65b627f896b3eed644bd78c37004630",
+                "rolling_coverage.pdf:md5,e6d389c95d17f4f98ef65afc1a927082",
+                "SeqDepth.pdf:md5,68872e6b53c79f9b12e7f4cecf03caf3",
+                "counts_heatmap.pdf:md5,7316cf3f2e6a4d209ad467b0c483545d",
+                "counts_per_cov_heatmap.pdf:md5,63249fa02a1646fe95b846c7e2b38356",
+                "logdiff_plot.pdf:md5,ec782e1c33ff127e9763c1ceedfd87c6",
+                "logdiff_varying_bases.pdf:md5,26562a69061dc704f9958bc7c0c14822",
+                "rolling_counts.pdf:md5,3574fdb5cf4375233c54878fddd6164d",
+                "rolling_counts_per_cov.pdf:md5,cfd39a8e4ef6b66e2c758d8f406a378c",
+                "rolling_coverage.pdf:md5,c4e4ecc012fc80e7105a4f2f93f117f8",
+                "SeqDepth.pdf:md5,9574113fc448ffa0ed3a1979c0f7b6c3",
+                "counts_heatmap.pdf:md5,ea128c94994a303a05b0d7047ead8fbb",
+                "counts_per_cov_heatmap.pdf:md5,94e3333c28713a3fde27d0748f824ec5",
+                "logdiff_plot.pdf:md5,881922a63a743255017acb3e53f05ef9",
+                "logdiff_varying_bases.pdf:md5,91f39ca979ed124669dd0297ea939f9c",
+                "rolling_counts.pdf:md5,53e645506acea7ba0167d0512055d7e6",
+                "rolling_counts_per_cov.pdf:md5,d8088b9e1c539f3bbaa665c1cd52c052",
+                "rolling_coverage.pdf:md5,7a3e76b23399c076944477e63ef3919e",
+                "SeqDepth.pdf:md5,c756065ef385b98c32d2e1d272be0947",
+                "counts_heatmap.pdf:md5,815fca43433c9c02da7794330194ef49",
+                "counts_per_cov_heatmap.pdf:md5,446dbbc1c40fb1f246d0f47918efa58f",
+                "logdiff_plot.pdf:md5,fc97f4b64047eb229642c8f01b62c666",
+                "logdiff_varying_bases.pdf:md5,b1dd6d8bcbc089abab37df66306e8a34",
+                "rolling_counts.pdf:md5,685944295d4d5ed0380601c8350fe86a",
+                "rolling_counts_per_cov.pdf:md5,e5991d79624d693ad0b4a3009ef7dade",
+                "rolling_coverage.pdf:md5,48ca07e5806e6e47756012ea073353df",
                 "fastqc-status-check-heatmap.txt:md5,58a9580c11af4210b1af65753383e120",
                 "fastqc_adapter_content_plot.txt:md5,2990ad34b6fa29151dd4b9a38828afbe",
                 "fastqc_overrepresented_sequences_plot.txt:md5,c703a9df0ea3a5c1c5f515a1fd88bbe8",
@@ -312,10 +349,10 @@
                 "multiqc_general_stats.txt:md5,7c2fd44ded06835128a208d3365aa23b"
             ]
         ],
-        "timestamp": "2026-03-21T15:43:26.081518",
+        "timestamp": "2026-05-19T16:22:51.51744",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nextflow": "26.04.1"
         }
     }
 }
