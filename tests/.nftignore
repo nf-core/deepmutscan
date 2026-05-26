@@ -14,3 +14,8 @@ library_QC/**/*.pdf
 fitness/DiMSum_results/**/*.pdf
 fitness/DiMSum_results/**/dimsum_results_workspace.RData
 fitness/DiMSum_results/**/report.html
+**/*.pdf
+**/*.RData
+fitness/DiMSum_results/**/report.html
+**/fitness_estimation_mutscan_edgeR.tsv
+**/fitness_estimation_mutscan_limma.tsv

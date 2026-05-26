@@ -278,13 +278,9 @@
                 "pipeline_info/nf_core_deepmutscan_software_mqc_versions.yml"
             ],
             [
-                "dimsum_results_fitness_intermediate.RData:md5,c7db0d624d173e4a9952a06d19099015",
-                "dimsum_results_fitness_replicates.RData:md5,f354ac655b7ae08665241c0eea6f37a5",
                 "dimsum_results_indel_variant_data_merge.tsv:md5,5f82d5e4ea2238efa12ac0012816f3d7",
                 "dimsum_results_nobarcode_variant_data_merge.tsv:md5,d76631f8a295e3d95d92444584395d70",
                 "dimsum_results_rejected_variant_data_merge.tsv:md5,339820b62a120f6dc4b559b02f0bd112",
-                "dimsum_results_sessionInfo.RData:md5,7eebba85f6c436b40a27b280e2d44297",
-                "dimsum_results_variant_data_merge.RData:md5,166121fb91caa1dd80d0c1a0e495a86c",
                 "dimsum_results_variant_data_merge.tsv:md5,1f65b4cd8797dffe8747c0290e6e604d",
                 "fitness_doubles.txt:md5,68b329da9893e34099c7d8ad5cb9c940",
                 "fitness_singles.txt:md5,466f96eb5c18bdf1440f168a45404ccc",
@@ -313,23 +309,13 @@
                 "dimsum_stage_fitness_report_1_errormodel_leaveoneout_qqplot.png:md5,68b329da9893e34099c7d8ad5cb9c940",
                 "dimsum_stage_fitness_report_1_errormodel_repspec.png:md5,68b329da9893e34099c7d8ad5cb9c940",
                 "report.Rmd:md5,a19acae87f16d0059c6699bc1e818d95",
-                "report_settings.RData:md5,70d836965fa012432649ec2f1c28ceb8",
-                "mutation_stats_dicts.RData:md5,7ba7ce3606a831cbfc72ab1b3693028c",
                 "GID1A_input_1_pe_fitness_input.tsv:md5,37f117c085aed5c047bfc4bdb877f6a5",
                 "GID1A_input_2_pe_fitness_input.tsv:md5,08c149f5af39243413d4fd3ac4a9cee6",
                 "GID1A_output_1_pe_fitness_input.tsv:md5,8255190abc161bc4f9146d11a6819e62",
                 "GID1A_output_2_pe_fitness_input.tsv:md5,86ca879069467c7883919676659000d4",
                 "counts_merged.tsv:md5,8f8f810518a000cd4e8b7b076f50e121",
                 "fitness_estimation.tsv:md5,319d093abe93cf8bbe1f7a75dbb1c3b5",
-                "fitness_estimation_count_correlation.pdf:md5,b2172e2d2df55fc514bc4cc43d5f6bbf",
-                "fitness_estimation_fitness_correlation.pdf:md5,6232511e6e2e5c41a6ef7db6ea5267c6",
-                "fitness_heatmap.pdf:md5,00e4e4e5d89621b5bcf4e7649dd9fdb1",
                 "experimentalDesign.tsv:md5,f95dea4a3e6cf7e206e789a96e502604",
-                "fitness_estimation_mutscan_edgeR.tsv:md5,3090550d863dc2625619cec5fefd332c",
-                "fitness_estimation_mutscan_limma.tsv:md5,1fb7db60db512de17812b47059de6759",
-                "mutscan_counts_corr.pdf:md5,d2d0bfe0ecaae76e35e22aa1043daffa",
-                "mutscan_edgeR_volcano.pdf:md5,c598e85cbc3573a17c8a614224645a21",
-                "mutscan_limma_volcano.pdf:md5,b0eb589b087e58ccb31628f6eab14499",
                 "synonymous_wt.txt:md5,bb94c5975185b80f8d63acebfbf4a0da",
                 "aa_seq.txt:md5,421287586f566191f7da4a7aad7d24a8",
                 "GID1A.amb:md5,383ef17f6abb846ab669ebac30f5659b",
@@ -413,7 +399,7 @@
                 "multiqc_general_stats.txt:md5,7c2fd44ded06835128a208d3365aa23b"
             ]
         ],
-        "timestamp": "2026-05-22T16:39:46.804332",
+        "timestamp": "2026-05-26T14:47:09.328893",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.1"
