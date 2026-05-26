@@ -13,6 +13,5 @@ null/
 test_results/
 work/
 .nextflow*
-.nf-test/
-.nf-test.log
+.nf-test*
 .Rhistory
