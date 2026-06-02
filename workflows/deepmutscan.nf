@@ -60,7 +60,7 @@ workflow DEEPMUTSCAN {
     def sliding_window_size_ch  = Channel.value(params.sliding_window_size)
     def aimed_cov_ch            = Channel.value(params.aimed_cov)
     def run_seqdepth_ch         = Channel.value(params.run_seqdepth)
-    
+
     // Raw samplesheet path channel for downstream subworkflows
     def ch_samplesheet_csv      = Channel.fromPath(params.input, checkIfExists: true)
 
@@ -279,7 +279,7 @@ workflow DEEPMUTSCAN {
         : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
     def ch_methods_description = channel.value(methodsDescriptionText(ch_multiqc_custom_methods_description))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml', sort: true))
-    
+
     MULTIQC(
         ch_multiqc_files.flatten().collect().map { files ->
             [
