@@ -397,9 +397,13 @@
                 "multiqc_citations.txt:md5,4c806e63a283ec1b7e78cdae3a923d4f",
                 "multiqc_fastqc.txt:md5,72cb1ee38d354d674ced1b4b21bbeff4",
                 "multiqc_general_stats.txt:md5,7c2fd44ded06835128a208d3365aa23b"
-            ]
+            ],
+            {
+                "edger_rowCount": 758,
+                "limma_rowCount": 758
+            }
         ],
-        "timestamp": "2026-05-26T14:47:09.328893",
+        "timestamp": "2026-06-02T15:07:20.150897",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.1"
