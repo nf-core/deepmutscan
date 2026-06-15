@@ -45,7 +45,7 @@
                     "r-base": "4.5.1"
                 },
                 "Workflow": {
-                    "nf-core/deepmutscan": "v1.0.0dev"
+                    "nf-core/deepmutscan": "v1.0.0"
                 }
             },
             [
@@ -403,7 +403,7 @@
                 "limma_rowCount": 758
             }
         ],
-        "timestamp": "2026-06-02T15:07:20.150897",
+        "timestamp": "2026-06-13T21:44:08.811231",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.1"
