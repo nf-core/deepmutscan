@@ -4,16 +4,22 @@
 
 The directories listed below will be created in the results directory after `nf-core/deepmutscan` has finished. All paths are relative to the top-level results directory:
 
+Every sample-specific output is grouped under a per-sample parent folder (`<sample>/`, the `sample` column of the samplesheet). Files derived from the reference (shared across all samples) live in `reference/`, and genuinely global reports at the top level:
+
 ```tree title="nf-core/deepmutscan results"
 results/
-├── fastqc/              # Individual raw sequencing QC reports for each specified fastq file, in `.html`
-├── fitness/             # Merged variant count tables, fitness and error estimates, replicate correlations and heatmaps
-├── intermediate_files/  # Raw alignments, raw and pre-filtered variant count tables, QC reports
-├── library_QC/          # Sample-specific PDF visualizations: position-wise sequencing coverage, count heatmaps, etc.
-├── multiqc/             # Shared raw sequencing QC report for all fastq files, in `.html`
-├── pipelineinfo/        # Nextflow helper files for timeline and summary report generation
-├── timeline.html        # Nextflow timeline for all tasks
-└── report.html          # Nextflow summary report incl. detailed CPU and memory usage per for all tasks
+├── <sample>/                    # everything belonging to one biological sample
+│   ├── fastqc/                  # raw sequencing QC reports for this sample's fastq files
+│   ├── intermediate_files/      # alignments, raw / pre-filtered / error-corrected variant count tables
+│   ├── library_QC/              # per-replicate QC visualisations + the error-correction report
+│   ├── fitness/                 # merged counts, fitness + error estimates, heatmaps, DiMSum / mutscan
+│   └── variant_effect_inspection_tool/   # interactive HTML tool (only with --pdb)
+├── reference/                   # reference-derived, shared: BWA index, aa_seq.txt, possible_mutations.csv
+├── experimental_design/         # run-level DiMSum experimental design (from the whole samplesheet)
+├── multiqc/                     # shared raw sequencing QC report for all fastq files
+├── pipeline_info/               # Nextflow helper files, timeline and summary report
+├── timeline.html
+└── report.html
 ```
 
 ### FastQC
@@ -60,10 +66,11 @@ This directory is created during the first series of steps of the pipeline, feat
   - `aa_seq.txt`: a string of the reconstructed wildtype amino acid sequence of the specified open reading frame
   - `possible_mutations.csv`: using the `--mutagenesis` argument, this file lists all the programmed mutations per position; these are used for variant count filtering and visualisation
   - `bam_files/bwa/`: sets of BWA referenes indices from the original alignment(s), with BAM files for each sample in the `mem/` subfolder
-  - `bam_files/filtered/`: filtered BAM files for each sample, without any wildtype or indel-matching reads
+  - `bam_files/filtered/`: filtered BAM files for each sample, without indel-matching reads (wildtype reads are retained for downstream sequencing-error correction)
   - `bam_files/premerged/`: filtered, read-merged and re-aligned BAM files for each sample, representing highest-quality alignments for subsequent variant counting
-  - `gatk/`: subfolders with resulting variant count table outputs from `AnalyzeSaturationMutagenesis`, stratified by sample
-  - `processed_gatk_files/`: subfolders with prefiltered GATK variant count tables, stratified by sample
+  - `bam_files/sorted/`: coordinate-sorted and indexed premerged BAM files (required by the variant counter)
+  - `variant_counts/`: subfolders with the resulting variant count table (`*.variant_counts.tsv`) plus a `variant_counts_columns.tsv` column-description sheet, stratified by sample
+  - `processed_variant_counts/`: subfolders with prefiltered variant count tables, stratified by sample
 
 </details>
 
@@ -93,6 +100,8 @@ This directory is created during the second series of steps of the pipeline, fea
   - `SeqDepth.pdf` (optional via the `--run_seqdepth` argument): rarefaction curve of the sequencing coverage and how it relates to the percentage of programmed variants detected
     ![Sequencing coverage rarefaction](images/library_QC_SeqDepth.png)
 
+  - `<sample>/<sample>_error_correction_report.html` (unless `--error_correction none`): a self-contained interactive report showing the effect of the sequencing-error correction — positional error bias along the ORF, the distribution of per-variant correction magnitude, a raw-vs-corrected scatter, and a searchable per-variant table.
+
 </details>
 
 ### Fitness (Core Pipeline Stages 6-8)
@@ -115,6 +124,8 @@ This directory is created during the final series of steps of the pipeline, feat
 
   - `default_results/fitness_estimation.tsv`: table file with all fitness and fitness error estimates calculated
   - `DiMSum_results/dimsum_results/` (optional): subfolder with the full set of [DiMSum](https://github.com/lehner-lab/DiMSum) outputs, including the associated `.HTML` report, `.Rdata` and `.tsv` files with fitness and fitness error estimates
+
+- `<sample>/variant_effect_inspection_tool.html` (only with `--pdb`): a single, portable, interactive HTML tool that projects per-residue metrics (fitness, coverage, counts, counts/coverage, and — when correction is on — positional error bias) onto the supplied wildtype 3D structure. Select a residue to inspect each substitution's effect; download high-resolution images/PyMOL sessions. Works offline and can be shared as a single file.
 
 </details>
 

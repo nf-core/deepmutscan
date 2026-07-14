@@ -40,8 +40,8 @@
             },
             "type": {
                 "type": "string",
-                "enum": ["input", "output", "quality"],
-                "errorMessage": "Type must be one of: input, output, or quality"
+                "enum": ["input", "output", "quality", "wildtype"],
+                "errorMessage": "Type must be one of: input, output, quality, or wildtype"
             },
             "replicate": {
                 "type": "integer",

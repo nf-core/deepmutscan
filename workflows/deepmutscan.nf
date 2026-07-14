@@ -9,17 +9,23 @@ include { BWA_INDEX              } from '../modules/nf-core/bwa/index/main'
 include { BWA_MEM                } from '../modules/nf-core/bwa/mem/main'
 include { BAMFILTER_DMS          } from '../modules/local/bamprocessing/bam_filter/main'
 include { PREMERGE               } from '../modules/local/bamprocessing/premerge/main'
-include { GATK_SATURATIONMUTAGENESIS          } from '../modules/local/gatk/saturationmutagenesis/main'
+include { SAMTOOLS_SORT              } from '../modules/nf-core/samtools/sort/main'
+include { SAMTOOLS_INDEX             } from '../modules/nf-core/samtools/index/main'
+include { VARIANTCOUNTING            } from '../modules/local/variantcounting/main'
 include { DMSANALYSIS_AASEQ      } from '../modules/local/dmsanalysis/aa_seq/main'
 include { DMSANALYSIS_POSSIBLE_MUTATIONS      } from '../modules/local/dmsanalysis/possible_mutations/main'
-include { DMSANALYSIS_PROCESS_GATK      } from '../modules/local/dmsanalysis/process_gatk/main'
+include { DMSANALYSIS_PROCESS_VARIANT_COUNTS      } from '../modules/local/dmsanalysis/process_variant_counts/main'
+include { DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES } from '../modules/local/dmsanalysis/error_correction_false_doubles/main'
+include { DMSANALYSIS_ERROR_CORRECTION_WILDTYPE      } from '../modules/local/dmsanalysis/error_correction_wildtype/main'
 include { VISUALIZATION_COUNTS_PER_COV      } from '../modules/local/visualization/counts_per_cov/main'
 include { VISUALIZATION_COUNTS_HEATMAP      } from '../modules/local/visualization/counts_heatmap/main'
 include { VISUALIZATION_GLOBAL_POS_BIASES_COUNTS      } from '../modules/local/visualization/global_pos_biases_counts/main'
 include { VISUALIZATION_GLOBAL_POS_BIASES_COV      } from '../modules/local/visualization/global_pos_biases_cov/main'
 include { VISUALIZATION_LOGDIFF      } from '../modules/local/visualization/logdiff/main'
 include { VISUALIZATION_SEQDEPTH      } from '../modules/local/visualization/seqdepth/main'
-include { GATK_GATKTOFITNESS          } from '../modules/local/gatk/gatk_to_fitness/main'
+include { VISUALIZATION_ERROR_CORRECTION_REPORT } from '../modules/local/visualization/error_correction_report/main'
+include { VARIANT_EFFECT_INSPECTION_TOOL } from '../modules/local/structure/structure_viewer/main'
+include { COUNTS_TO_FITNESS          } from '../modules/local/fitness/counts_to_fitness/main'
 
 include { CALCULATE_FITNESS } from '../subworkflows/local/calculate_fitness/main'
 
@@ -60,9 +66,50 @@ workflow DEEPMUTSCAN {
     def sliding_window_size_ch  = Channel.value(params.sliding_window_size)
     def aimed_cov_ch            = Channel.value(params.aimed_cov)
     def run_seqdepth_ch         = Channel.value(params.run_seqdepth)
+    def base_qual_ch            = Channel.value(params.base_qual)
+    def min_flank_ch            = Channel.value(params.min_flank)
 
     // Raw samplesheet path channel for downstream subworkflows
     def ch_samplesheet_csv      = Channel.fromPath(params.input, checkIfExists: true)
+
+    // '--dimsum' only has an effect together with '--fitness'
+    if (params.dimsum && !params.fitness) {
+        log.warn("'--dimsum true' only works together with '--fitness true'. DiMSum will be skipped.")
+    }
+
+    // '--error_correction wildtype' needs a 'wildtype' sample for every biological sample
+    if (params.error_correction == 'wildtype') {
+        ch_samplesheet
+            .map { meta, _reads -> tuple(meta.sample as String, meta.type as String) }
+            .toList()
+            .map { pairs ->
+                pairs.groupBy { it[0] }.each { sample, rows ->
+                    def types = rows.collect { it[1] }
+                    if (types.any { it != 'wildtype' } && !types.contains('wildtype')) {
+                        error(
+                            "[--error_correction wildtype] No 'wildtype' sample found for '${sample}' in the samplesheet.\n" +
+                            "  Add a samplesheet row with type 'wildtype' and sample '${sample}' (deep wildtype-only sequencing),\n" +
+                            "  or use the internal correction instead (default: --error_correction false_doubles),\n" +
+                            "  or disable error correction with --error_correction none."
+                        )
+                    }
+                }
+                pairs
+            }
+            .subscribe { }
+    }
+
+    // Nudge fitness users who did not supply a structure towards the interactive tool
+    if (params.fitness && !params.pdb) {
+        log.info(
+            "\n" +
+            "  ┌─ Optional: interactive variant effect inspection tool ───────────────────┐\n" +
+            "     Supply a wildtype structure with '--pdb <structure.pdb>' to also build an\n" +
+            "     interactive HTML tool that projects fitness, counts and error-correction\n" +
+            "     biases onto the 3D structure to support data interpretation.\n" +
+            "  └───────────────────────────────────────────────────────────────────────────┘\n"
+        )
+    }
 
     //
     // MODULE: Run FastQC
@@ -115,19 +162,33 @@ workflow DEEPMUTSCAN {
       ch_fasta_path_broadcast    // path(fasta)
     )
 
-    // FASTA path for GATK: broadcast to N
-    def ch_fasta_for_gatk  = ch_fasta.combine(PREMERGE.out.bam).map { it[1] }       // path -- N
-    // Reading frame for GATK: broadcast to N (it's a val string)
-    def ch_rf_for_gatk     = reading_frame_ch.combine(PREMERGE.out.bam).map { it[0] }   // val  -- N
-    // min_counts for GATK: broadcast to N (also a val)
-    def ch_min_for_gatk    = min_counts_ch.combine(PREMERGE.out.bam).map { it[0] }      // val  -- N
-
-    GATK_SATURATIONMUTAGENESIS(
-      PREMERGE.out.bam,   // merged reads - tuple(val(meta), path(bam))
-      ch_fasta_for_gatk,  // path(fasta)
-      ch_rf_for_gatk,     // val(reading_frame string)
-      ch_min_for_gatk     // val(min_counts)
+    // Coordinate-sort + index the premerged BAM (required by the read-based counter)
+    SAMTOOLS_SORT(
+      PREMERGE.out.bam,                                        // tuple(val(meta), path(bam))
+      PREMERGE.out.bam.map { _meta, _bam -> [ [:], [], [] ] }, // empty fasta tuple (BAM sort)
+      Channel.value('')                                        // index_format '' -> index separately
     )
+    SAMTOOLS_INDEX(SAMTOOLS_SORT.out.bam)
+
+    // Join sorted BAM with its index -> tuple(val(meta), path(bam), path(bai))
+    def ch_sorted_indexed = SAMTOOLS_SORT.out.bam.join(SAMTOOLS_INDEX.out.index)
+
+    // Broadcast singletons to N (one per sample), anchored on the sorted+indexed channel
+    def ch_fasta_for_counts = ch_fasta.combine(ch_sorted_indexed).map { it[1] }          // path -- N
+    def ch_rf_for_counts    = reading_frame_ch.combine(ch_sorted_indexed).map { it[0] }  // val  -- N
+    def ch_min_for_counts   = min_counts_ch.combine(ch_sorted_indexed).map { it[0] }     // val  -- N
+    def ch_bq_for_counts    = base_qual_ch.combine(ch_sorted_indexed).map { it[0] }      // val  -- N
+    def ch_flank_for_counts = min_flank_ch.combine(ch_sorted_indexed).map { it[0] }      // val  -- N
+
+    VARIANTCOUNTING(
+      ch_sorted_indexed,   // tuple(val(meta), path(bam), path(bai))
+      ch_fasta_for_counts, // path(fasta)
+      ch_rf_for_counts,    // val(reading_frame string, 1-based inclusive)
+      ch_min_for_counts,   // val(min_counts)
+      ch_bq_for_counts,    // val(base_qual)
+      ch_flank_for_counts  // val(min_flank)
+    )
+    ch_versions = ch_versions.mix(VARIANTCOUNTING.out.versions)
 
     DMSANALYSIS_AASEQ (
       ch_fasta,
@@ -144,7 +205,7 @@ workflow DEEPMUTSCAN {
     ch_versions = ch_versions.mix(DMSANALYSIS_POSSIBLE_MUTATIONS.out.versions)
 
     // Anchor (N items; one per sample)
-    def ch_vc = GATK_SATURATIONMUTAGENESIS.out.variantCounts   // tuple(val(meta), path)
+    def ch_vc = VARIANTCOUNTING.out.variant_counts   // tuple(val(meta), path)
 
     // Build per-sample inputs using inline combinations (replaces fanout)
     def ch_possible_mut_for_proc = DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map { it[1] }.combine(ch_vc).map { it[0] }
@@ -152,17 +213,61 @@ workflow DEEPMUTSCAN {
     def ch_min_counts_for_proc   = min_counts_ch.combine(ch_vc).map { it[0] }
 
     // Call with all inputs aligned (each has N items now)
-    DMSANALYSIS_PROCESS_GATK(
+    DMSANALYSIS_PROCESS_VARIANT_COUNTS(
       ch_vc,                        // tuple(val(meta), path(variantCounts))  -- N
       ch_possible_mut_for_proc,     // path(possible_mutations)               -- N
       ch_aa_seq_for_proc,           // path(aa_seq)                           -- N
       ch_min_counts_for_proc        // val(min_counts)                        -- N
     )
 
-    def annotated_variantCounts_ch           = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, a) }
-    def variantCounts_filtered_by_library_ch = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, b) }
-    def library_completed_variantCounts_ch   = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, c) }
-    def variantCounts_for_heatmaps_ch        = DMSANALYSIS_PROCESS_GATK.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, d) }
+    def annotated_variantCounts_ch           = DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, a) }
+    def variantCounts_filtered_by_library_ch = DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, b) }
+    def library_completed_variantCounts_ch   = DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, c) }
+    def variantCounts_for_heatmaps_ch        = DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, d) }
+
+    //
+    // Sequencing-error correction of single-codon counts (default: false_doubles).
+    // Replaces the filtered + heatmap channels with corrected versions; downstream fitness
+    // picks up correction via the `counts_corrected` column, count heatmaps via canonical names.
+    //
+    if (params.error_correction == 'false_doubles') {
+      // per sample: raw (pre-filter) counts + library-filtered counts + completed library table
+      def ch_fd_in       = ch_vc.join(variantCounts_filtered_by_library_ch).join(library_completed_variantCounts_ch)  // (meta, raw, filtered, completed)
+      def aa_seq_for_ec  = DMSANALYSIS_AASEQ.out.aa_seq.map { it[1] }.combine(ch_fd_in).map { it[0] }
+      def min_for_ec     = min_counts_ch.combine(ch_fd_in).map { it[0] }
+      DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES( ch_fd_in, aa_seq_for_ec, min_for_ec )
+      ch_versions = ch_versions.mix(DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.versions)
+      variantCounts_filtered_by_library_ch = DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.corrected.map { meta, filt, heat, comp -> tuple(meta, filt) }
+      variantCounts_for_heatmaps_ch        = DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.corrected.map { meta, filt, heat, comp -> tuple(meta, heat) }
+      library_completed_variantCounts_ch   = DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.corrected.map { meta, filt, heat, comp -> tuple(meta, comp) }
+    }
+    else if (params.error_correction == 'wildtype') {
+      // pair each non-wildtype sample with the wildtype sample of the same `sample` base
+      def filt_comp = variantCounts_filtered_by_library_ch.join(library_completed_variantCounts_ch)  // (meta, filtered, completed)
+      def wt_ch     = filt_comp.filter { meta, f, c -> meta.type == 'wildtype' }.map { meta, f, c -> tuple(meta.sample, f) }
+      def tgt_ch    = filt_comp.filter { meta, f, c -> meta.type != 'wildtype' }.map { meta, f, c -> tuple(meta.sample, meta, f, c) }
+      def ch_wt_in  = tgt_ch.combine(wt_ch, by: 0).map { _base, meta, filt, comp, wtf -> tuple(meta, filt, wtf, comp) }  // (meta, filtered, wt_filtered, completed)
+      def aa_seq_for_ec = DMSANALYSIS_AASEQ.out.aa_seq.map { it[1] }.combine(ch_wt_in).map { it[0] }
+      def min_for_ec    = min_counts_ch.combine(ch_wt_in).map { it[0] }
+      DMSANALYSIS_ERROR_CORRECTION_WILDTYPE( ch_wt_in, aa_seq_for_ec, min_for_ec )
+      ch_versions = ch_versions.mix(DMSANALYSIS_ERROR_CORRECTION_WILDTYPE.out.versions)
+      variantCounts_filtered_by_library_ch = DMSANALYSIS_ERROR_CORRECTION_WILDTYPE.out.corrected.map { meta, filt, heat, comp -> tuple(meta, filt) }
+      variantCounts_for_heatmaps_ch        = DMSANALYSIS_ERROR_CORRECTION_WILDTYPE.out.corrected.map { meta, filt, heat, comp -> tuple(meta, heat) }
+      library_completed_variantCounts_ch   = DMSANALYSIS_ERROR_CORRECTION_WILDTYPE.out.corrected.map { meta, filt, heat, comp -> tuple(meta, comp) }
+    }
+    // else 'none': keep the uncorrected channels
+
+    //
+    // MODULE: per-sample error-correction report (only when correction was applied)
+    //
+    if (params.error_correction != 'none') {
+      VISUALIZATION_ERROR_CORRECTION_REPORT(
+        variantCounts_filtered_by_library_ch,
+        params.error_correction,
+        file("${projectDir}/assets/error_correction_report/ec_report_template.html", checkIfExists: true)
+      )
+      ch_versions = ch_versions.mix(VISUALIZATION_ERROR_CORRECTION_REPORT.out.versions)
+    }
 
     // --- For VISUALIZATION_COUNTS_PER_COV & HEATMAP (replaces fanoutTo)
     def min_counts_for_cov_ch          = min_counts_ch.combine(variantCounts_for_heatmaps_ch).map { it[0] }
@@ -217,7 +322,7 @@ workflow DEEPMUTSCAN {
     def ch_rf_for_fitness       = reading_frame_ch.combine(variantCounts_filtered_by_library_ch).map { it[0] }  // val(range) -- N
 
     // Call with aligned inputs
-    GATK_GATKTOFITNESS(
+    COUNTS_TO_FITNESS(
       variantCounts_filtered_by_library_ch, // tuple(val(meta), path)
       ch_fasta_for_fitness,         // path(fasta)
       ch_rf_for_fitness             // val(reading_frame)
@@ -227,7 +332,7 @@ workflow DEEPMUTSCAN {
     if (params.fitness) {
 
         CALCULATE_FITNESS (
-            GATK_GATKTOFITNESS.out.fitness_input, // Input from previous step
+            COUNTS_TO_FITNESS.out.fitness_input, // Input from previous step
             ch_samplesheet_csv,                   // Path to samplesheet
             ch_fasta,                             // The original Fasta tuple
             reading_frame_ch,                     // Reading frame value channel
@@ -236,6 +341,28 @@ workflow DEEPMUTSCAN {
 
         // Collect versions
         ch_versions = ch_versions.mix(CALCULATE_FITNESS.out.versions)
+
+        //
+        // MODULE: interactive variant effect inspection tool (one self-contained HTML per sample).
+        // Runs only when a wildtype structure is supplied via --pdb. Projects fitness, counts and
+        // error-correction biases onto the 3D structure. (Structure prediction is not wired here.)
+        //
+        if (params.pdb) {
+            def ch_structure = Channel
+                .fromPath(params.pdb, checkIfExists: true)
+                .map { pdb -> tuple([id: 'wildtype'], pdb) }
+            def ch_viewer_input = CALCULATE_FITNESS.out.fitness_estimation
+                .combine(ch_structure)
+                .map { smeta, fitness_tsv, _stmeta, pdb -> tuple(smeta, pdb, fitness_tsv) }
+            VARIANT_EFFECT_INSPECTION_TOOL(
+                ch_viewer_input,
+                variantCounts_filtered_by_library_ch.map { _meta, file -> file }.collect(),
+                DMSANALYSIS_AASEQ.out.aa_seq.map { _meta, file -> file }.first(),
+                file("${projectDir}/assets/structure_viewer/3Dmol-min.js",         checkIfExists: true),
+                file("${projectDir}/assets/structure_viewer/viewer_template.html", checkIfExists: true),
+            )
+            ch_versions = ch_versions.mix(VARIANT_EFFECT_INSPECTION_TOOL.out.versions)
+        }
     }
 
     //

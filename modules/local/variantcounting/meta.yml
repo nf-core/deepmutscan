@@ -1,0 +1,74 @@
+name: "variantcounting"
+description: Count single- and multi-nucleotide variants per read against a reference ORF, producing a GATK-AnalyzeSaturationMutagenesis-compatible variant count table.
+keywords:
+  - deep mutational scanning
+  - variant calling
+  - saturation mutagenesis
+  - counting
+tools:
+  - pysam:
+      description: Python interface for reading/manipulating SAM/BAM alignment files (htslib).
+      homepage: https://pysam.readthedocs.io
+      licence: ["MIT"]
+  - polars:
+      description: Fast DataFrame library.
+      homepage: https://pola.rs
+      licence: ["MIT"]
+  - biopython:
+      description: Tools for biological computation (sequence translation).
+      homepage: https://biopython.org
+      licence: ["BSD-3-Clause"]
+
+input:
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information, e.g. `[ id:'sample1' ]`
+    - bam:
+        type: file
+        description: Coordinate-sorted, indexed BAM of premerged reads aligned to the reference.
+        pattern: "*.bam"
+    - bai:
+        type: file
+        description: BAM index (staged alongside the BAM).
+        pattern: "*.{bai,csi}"
+  - - fasta:
+        type: file
+        description: Reference FASTA containing the ORF.
+        pattern: "*.{fa,fasta}"
+  - - reading_frame:
+        type: string
+        description: ORF range as 1-based inclusive `start-stop` (GATK `--orf` convention), e.g. `352-1383`.
+  - - min_counts:
+        type: integer
+        description: Minimum number of observations for a variant to be reported (GATK `--min-variant-obs`).
+  - - base_qual:
+        type: integer
+        description: Minimum base quality for a mutation to be counted.
+  - - min_flank:
+        type: integer
+        description: Minimum distance (nt) of a mutation/covered base from a read edge; 0 disables edge trimming.
+
+output:
+  - variant_counts:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.variant_counts.tsv":
+          type: file
+          description: Tab-separated variant count table (no header), GATK-compatible 9 columns.
+          pattern: "*.variant_counts.tsv"
+  - columns:
+      - variant_counts_columns.tsv:
+          type: file
+          description: Concise explanation of each output column.
+          pattern: "variant_counts_columns.tsv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+maintainers:
+  - "@BenjaminWehnert1008"

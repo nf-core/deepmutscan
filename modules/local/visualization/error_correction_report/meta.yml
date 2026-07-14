@@ -1,0 +1,50 @@
+name: "visualization_error_correction_report"
+description: Build a self-contained, per-sample HTML report visualising the effect of the sequencing-error correction (positional error bias, correction magnitude, and per-variant raw-vs-corrected counts).
+keywords:
+  - deep mutational scanning
+  - error correction
+  - report
+  - visualisation
+tools:
+  - "pandas":
+      description: "Fast, powerful data structures for data analysis in Python."
+      homepage: "https://pandas.pydata.org/"
+      licence: ["BSD-3-Clause"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', sample:'ORF1' ]`
+    - corrected:
+        type: file
+        description: Error-corrected, library-filtered counts (with `counts` corrected and `counts_raw` preserved).
+        pattern: "*.csv"
+  - - method:
+        type: string
+        description: Error-correction method label (e.g. `false_doubles`, `wildtype`).
+  - - template_html:
+        type: file
+        description: HTML template into which the report data is injected.
+        pattern: "*.html"
+
+output:
+  - report:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*_error_correction_report.html":
+          type: file
+          description: Self-contained error-correction report.
+          pattern: "*_error_correction_report.html"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+maintainers:
+  - "@BenjaminWehnert1008"

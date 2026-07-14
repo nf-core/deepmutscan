@@ -3,6 +3,7 @@ process RUN_DIMSUM {
   label 'process_single'
 
   conda "${moduleDir}/environment.yml"
+
   container "${ workflow.containerEngine == 'singularity'
       ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/92/9298c391f285d7f2c1155f6a519a96c4f7591971780ba4f10569558282f40b6f/data'
       : 'community.wave.seqera.io/library/bioconductor-biostrings_r-dimsum_r-base_r-data.table_pruned:cca13eed371a9d84' }"

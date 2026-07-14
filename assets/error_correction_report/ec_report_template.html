@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nf-core/deepmutscan · error-correction report · __SAMPLE__</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f7f8fa; --ink:#1a1f2b; --ink2:#5b6470; --muted:#98a2b3;
+    --line:#e6e9ef; --grid:#eef1f5; --accent:#2f6bd8; --accent-soft:#d7e2f7;
+    --pos:#2f9e6b; --neg:#d1495b; --ring:#ffffff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0f1219; --panel:#161b24; --ink:#e8ecf3; --ink2:#a8b2c1; --muted:#6b7688;
+      --line:#232a36; --grid:#1c222d; --accent:#5b90ee; --accent-soft:#22304a;
+      --pos:#3fb883; --neg:#e06377; --ring:#0f1219;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1219; --panel:#161b24; --ink:#e8ecf3; --ink2:#a8b2c1; --muted:#6b7688;
+    --line:#232a36; --grid:#1c222d; --accent:#5b90ee; --accent-soft:#22304a;
+    --pos:#3fb883; --neg:#e06377; --ring:#0f1219;
+  }
+  :root[data-theme="light"]{
+    --bg:#ffffff; --panel:#f7f8fa; --ink:#1a1f2b; --ink2:#5b6470; --muted:#98a2b3;
+    --line:#e6e9ef; --grid:#eef1f5; --accent:#2f6bd8; --accent-soft:#d7e2f7;
+    --pos:#2f9e6b; --neg:#d1495b; --ring:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 22px 60px}
+  header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+  h1{font-size:20px;font-weight:650;margin:0;letter-spacing:-.01em}
+  .sub{color:var(--ink2);font-size:13px}
+  .badge{display:inline-block;padding:2px 9px;border-radius:999px;background:var(--accent-soft);
+    color:var(--accent);font-size:12px;font-weight:600;border:1px solid transparent}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:20px 0 26px}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .tile .k{color:var(--ink2);font-size:12px;font-weight:500}
+  .tile .v{font-size:22px;font-weight:650;letter-spacing:-.02em;margin-top:3px}
+  .tile .v small{font-size:13px;font-weight:500;color:var(--muted)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:20px}
+  .panel h2{font-size:14px;font-weight:600;margin:0 0 2px}
+  .panel .desc{color:var(--ink2);font-size:12.5px;margin:0 0 12px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media (max-width:720px){.grid2{grid-template-columns:1fr}}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  .axis{stroke:var(--line);stroke-width:1}
+  .grid{stroke:var(--grid);stroke-width:1}
+  .tick{fill:var(--muted);font-size:10px}
+  .albl{fill:var(--ink2);font-size:11px}
+  .tt{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;
+    padding:5px 8px;border-radius:7px;opacity:0;transition:opacity .08s;white-space:nowrap;z-index:9;
+    box-shadow:0 4px 14px rgba(0,0,0,.18)}
+  .controls{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  input[type=search]{flex:1;min-width:160px;background:var(--bg);border:1px solid var(--line);
+    border-radius:9px;padding:7px 11px;color:var(--ink);font-size:13px}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  .tblwrap{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+  th,td{padding:7px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{position:sticky;top:0;background:var(--panel);cursor:pointer;user-select:none;
+    font-size:12px;color:var(--ink2);font-weight:600;z-index:1}
+  thead th:hover{color:var(--ink)}
+  th .ar{color:var(--muted);font-size:10px}
+  td.pos{color:var(--pos)} td.neg{color:var(--neg)}
+  tbody tr:hover{background:var(--bg)}
+  .foot{color:var(--muted);font-size:11.5px;margin-top:26px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Error-correction report</h1>
+    <span class="sub">sample <b id="h-sample"></b></span>
+    <span class="badge" id="h-method"></span>
+  </header>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="panel">
+    <h2>Positional error bias</h2>
+    <p class="desc">Fraction of counts removed by correction at each ORF residue position — where sequencing errors concentrate.</p>
+    <div id="c-bias"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>Correction magnitude</h2>
+      <p class="desc">Distribution of the per-variant change in counts (%).</p>
+      <div id="c-hist"></div>
+    </div>
+    <div class="panel">
+      <h2>Raw vs corrected counts</h2>
+      <p class="desc">Each point is one variant; the line is y = x (no change).</p>
+      <div id="c-scatter"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Per-variant correction</h2>
+    <div class="controls">
+      <input type="search" id="q" placeholder="Filter variants (e.g. A12, D34G)…" aria-label="Filter variants">
+      <span class="sub" id="tcount"></span>
+    </div>
+    <div class="tblwrap">
+      <table id="tbl">
+        <thead><tr>
+          <th data-k="pos_mut">Variant</th>
+          <th data-k="raw">Raw</th>
+          <th data-k="corrected">Corrected</th>
+          <th data-k="delta">Δ</th>
+          <th data-k="pct">% change</th>
+          <th data-k="cov">Coverage</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="foot">nf-core/deepmutscan · error-correction report</div>
+</div>
+
+<div class="tt" id="tt"></div>
+
+<script id="ec-data" type="application/json">__EC_DATA__</script>
+<script>
+const DATA = JSON.parse(document.getElementById('ec-data').textContent);
+const tt = document.getElementById('tt');
+const fmt = (x,d=0)=> x==null||isNaN(x) ? '–' : Number(x).toLocaleString(undefined,{maximumFractionDigits:d});
+const showTT=(e,html)=>{tt.innerHTML=html;tt.style.opacity=1;
+  tt.style.left=Math.min(e.clientX+12,innerWidth-tt.offsetWidth-8)+'px';
+  tt.style.top=(e.clientY-tt.offsetHeight-10)+'px';};
+const hideTT=()=>tt.style.opacity=0;
+const SVGNS='http://www.w3.org/2000/svg';
+const el=(n,a={})=>{const e=document.createElementNS(SVGNS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+
+document.getElementById('h-sample').textContent = DATA.sample;
+const methodLabel = {false_doubles:'False-doubles correction', wildtype:'Wildtype-based correction'}[DATA.method] || DATA.method;
+document.getElementById('h-method').textContent = methodLabel;
+
+// ---- summary tiles ----
+const s = DATA.summary;
+const tiles = [
+  ['Library variants', fmt(s.n_variants)],
+  ['Variants adjusted', fmt(s.n_corrected)],
+  ['Total counts', fmt(s.total_raw)+' → '+fmt(s.total_corrected)],
+  ['Counts removed', (s.pct_removed>=0?'':'+')+fmt(s.pct_removed,1)+' %'],
+];
+document.getElementById('tiles').innerHTML = tiles.map(([k,v])=>
+  `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+
+// ---- generic axes helper ----
+function frame(host,w,h,pad){
+  const svg=el('svg',{viewBox:`0 0 ${w} ${h}`}); host.appendChild(svg);
+  return svg;
+}
+
+// ---- positional error bias (area + line) ----
+(function(){
+  const P=DATA.positions; const host=document.getElementById('c-bias');
+  const W=1000,H=230, m={l:44,r:12,t:10,b:26};
+  const svg=frame(host,W,H); const iw=W-m.l-m.r, ih=H-m.t-m.b;
+  const maxP = P.length?Math.max(...P.map(d=>d.pos)):1;
+  const maxY = Math.max(0.001, ...P.map(d=>d.removed_frac||0));
+  const x=p=> m.l + (p-1)/Math.max(1,maxP-1)*iw;
+  const y=v=> m.t + ih - (v/maxY)*ih;
+  // gridlines + y ticks
+  for(let i=0;i<=4;i++){const gv=maxY*i/4, gy=y(gv);
+    svg.appendChild(el('line',{class:'grid',x1:m.l,x2:m.l+iw,y1:gy,y2:gy}));
+    const t=el('text',{class:'tick',x:m.l-7,y:gy+3,'text-anchor':'end'});t.textContent=(gv*100).toFixed(0)+'%';svg.appendChild(t);}
+  // x ticks
+  const step=Math.max(1,Math.round(maxP/8));
+  for(let p=1;p<=maxP;p+=step){const t=el('text',{class:'tick',x:x(p),y:H-8,'text-anchor':'middle'});t.textContent=p;svg.appendChild(t);}
+  svg.appendChild(el('line',{class:'axis',x1:m.l,x2:m.l+iw,y1:m.t+ih,y2:m.t+ih}));
+  const ylab=el('text',{class:'albl',x:-(m.t+ih/2),y:12,transform:'rotate(-90)','text-anchor':'middle'});ylab.textContent='counts removed';svg.appendChild(ylab);
+  // area
+  const pts=P.filter(d=>d.removed_frac!=null);
+  if(pts.length){
+    let d='M '+x(pts[0].pos)+' '+y(0);
+    pts.forEach(p=> d+=' L '+x(p.pos)+' '+y(p.removed_frac));
+    d+=' L '+x(pts[pts.length-1].pos)+' '+y(0)+' Z';
+    svg.appendChild(el('path',{d,fill:'var(--accent)','fill-opacity':.16}));
+    let dl='M '+x(pts[0].pos)+' '+y(pts[0].removed_frac);
+    pts.forEach(p=> dl+=' L '+x(p.pos)+' '+y(p.removed_frac));
+    svg.appendChild(el('path',{d:dl,fill:'none',stroke:'var(--accent)','stroke-width':2,'stroke-linejoin':'round'}));
+  }
+  // hover overlay
+  const ov=el('rect',{x:m.l,y:m.t,width:iw,height:ih,fill:'transparent'});svg.appendChild(ov);
+  const cur=el('circle',{r:4,fill:'var(--accent)',stroke:'var(--ring)','stroke-width':2,opacity:0});svg.appendChild(cur);
+  ov.addEventListener('mousemove',e=>{
+    const r=svg.getBoundingClientRect(), px=(e.clientX-r.left)/r.width*W;
+    const pp=Math.round((px-m.l)/iw*(maxP-1))+1;
+    const d=P.find(z=>z.pos===pp); if(!d){hideTT();cur.setAttribute('opacity',0);return;}
+    cur.setAttribute('cx',x(d.pos));cur.setAttribute('cy',y(d.removed_frac||0));cur.setAttribute('opacity',1);
+    showTT(e,`<b>${d.wt_aa||''}${d.pos}</b> · ${(d.removed_frac*100).toFixed(1)}% removed · ${d.n} variant(s)`);
+  });
+  ov.addEventListener('mouseleave',()=>{hideTT();cur.setAttribute('opacity',0);});
+})();
+
+// ---- histogram of per-variant % change ----
+(function(){
+  const host=document.getElementById('c-hist'); const B=DATA.hist;
+  const W=480,H=210,m={l:40,r:10,t:10,b:30}; const svg=frame(host,W,H);
+  const iw=W-m.l-m.r, ih=H-m.t-m.b;
+  const maxC=Math.max(1,...B.map(b=>b.count));
+  const n=B.length; const bw=iw/n;
+  const y=v=> m.t+ih-(v/maxC)*ih;
+  for(let i=0;i<=3;i++){const gv=Math.round(maxC*i/3),gy=y(gv);
+    svg.appendChild(el('line',{class:'grid',x1:m.l,x2:m.l+iw,y1:gy,y2:gy}));
+    const t=el('text',{class:'tick',x:m.l-6,y:gy+3,'text-anchor':'end'});t.textContent=gv;svg.appendChild(t);}
+  B.forEach((b,i)=>{
+    const h=(b.count/maxC)*ih, bx=m.l+i*bw;
+    const r=el('rect',{x:bx+1,y:m.t+ih-h,width:Math.max(0,bw-2),height:h,rx:2,fill:'var(--accent)'});
+    r.addEventListener('mousemove',e=>showTT(e,`${b.x0.toFixed(0)}…${b.x1.toFixed(0)}% · <b>${b.count}</b> variants`));
+    r.addEventListener('mouseleave',hideTT); svg.appendChild(r);
+  });
+  svg.appendChild(el('line',{class:'axis',x1:m.l,x2:m.l+iw,y1:m.t+ih,y2:m.t+ih}));
+  [0,Math.floor(n/2),n-1].forEach(i=>{const b=B[i];if(!b)return;
+    const t=el('text',{class:'tick',x:m.l+(i+.5)*bw,y:H-14,'text-anchor':'middle'});t.textContent=Math.round((b.x0+b.x1)/2)+'%';svg.appendChild(t);});
+  const xl=el('text',{class:'albl',x:m.l+iw/2,y:H-1,'text-anchor':'middle'});xl.textContent='per-variant change (%)';svg.appendChild(xl);
+})();
+
+// ---- raw vs corrected scatter (sqrt scale) ----
+(function(){
+  const host=document.getElementById('c-scatter'); const V=DATA.variants;
+  const W=480,H=210,m={l:44,r:10,t:10,b:30}; const svg=frame(host,W,H);
+  const iw=W-m.l-m.r, ih=H-m.t-m.b;
+  const mx=Math.max(1,...V.map(v=>Math.max(v.raw,v.corrected)));
+  const sc=v=> Math.sqrt(Math.max(0,v))/Math.sqrt(mx);
+  const x=v=> m.l+sc(v)*iw, y=v=> m.t+ih-sc(v)*ih;
+  [0,mx/4,mx].forEach(gv=>{const gy=y(gv),gx=x(gv);
+    svg.appendChild(el('line',{class:'grid',x1:m.l,x2:m.l+iw,y1:gy,y2:gy}));
+    const t=el('text',{class:'tick',x:m.l-6,y:gy+3,'text-anchor':'end'});t.textContent=fmt(gv);svg.appendChild(t);
+    const t2=el('text',{class:'tick',x:gx,y:H-14,'text-anchor':'middle'});t2.textContent=fmt(gv);svg.appendChild(t2);});
+  svg.appendChild(el('line',{x1:x(0),y1:y(0),x2:x(mx),y2:y(mx),stroke:'var(--muted)','stroke-width':1,'stroke-dasharray':'3 3'}));
+  svg.appendChild(el('line',{class:'axis',x1:m.l,x2:m.l+iw,y1:m.t+ih,y2:m.t+ih}));
+  const xl=el('text',{class:'albl',x:m.l+iw/2,y:H-1,'text-anchor':'middle'});xl.textContent='raw counts';svg.appendChild(xl);
+  const yl=el('text',{class:'albl',x:-(m.t+ih/2),y:11,transform:'rotate(-90)','text-anchor':'middle'});yl.textContent='corrected';svg.appendChild(yl);
+  V.forEach(v=>{
+    const c=el('circle',{cx:x(v.raw),cy:y(v.corrected),r:3,fill:'var(--accent)','fill-opacity':.55,stroke:'var(--ring)','stroke-width':.5});
+    c.addEventListener('mousemove',e=>showTT(e,`<b>${v.pos_mut}</b> · ${fmt(v.raw)} → ${fmt(v.corrected)}`));
+    c.addEventListener('mouseleave',hideTT); svg.appendChild(c);
+  });
+})();
+
+// ---- variant table ----
+(function(){
+  const tb=document.querySelector('#tbl tbody'); const q=document.getElementById('q');
+  const tc=document.getElementById('tcount');
+  let rows=DATA.variants.slice(); let sortK='pct', sortDir=1;
+  function render(){
+    const term=q.value.trim().toUpperCase();
+    let r=term? rows.filter(v=>v.pos_mut.toUpperCase().includes(term)):rows;
+    r=r.slice().sort((a,b)=> (a[sortK]>b[sortK]?1:a[sortK]<b[sortK]?-1:0)*sortDir);
+    tb.innerHTML=r.slice(0,2000).map(v=>{
+      const cls=v.delta<0?'neg':v.delta>0?'pos':'';
+      return `<tr><td>${v.pos_mut}</td><td>${fmt(v.raw)}</td><td>${fmt(v.corrected)}</td>`+
+        `<td class="${cls}">${v.delta>0?'+':''}${fmt(v.delta)}</td>`+
+        `<td class="${cls}">${v.pct==null?'–':(v.pct>0?'+':'')+fmt(v.pct,1)+'%'}</td>`+
+        `<td>${fmt(v.cov)}</td></tr>`;}).join('');
+    tc.textContent=r.length+' variants'+(r.length>2000?' (showing 2000)':'');
+  }
+  document.querySelectorAll('#tbl thead th').forEach(th=>{
+    th.addEventListener('click',()=>{const k=th.dataset.k;
+      if(sortK===k)sortDir*=-1; else {sortK=k;sortDir=(k==='pos_mut')?1:1;}
+      document.querySelectorAll('#tbl thead th .ar').forEach(a=>a.remove());
+      const ar=document.createElement('span');ar.className='ar';ar.textContent=sortDir>0?' ▲':' ▼';th.appendChild(ar);
+      render();});
+  });
+  q.addEventListener('input',render); render();
+})();
+
+// theme toggle support from host
+try{const mq=matchMedia('(prefers-color-scheme: dark)');}catch(e){}
+</script>
+</body>
+</html>
