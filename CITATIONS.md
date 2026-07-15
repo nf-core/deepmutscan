@@ -18,6 +18,26 @@
 
 > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
 
+- [SAMtools](https://pubmed.ncbi.nlm.nih.gov/33590861/)
+
+> Danecek P, Bonfield JK, Liddle J, Marshall J, Ohan V, Pollard MO, Whitwham A, Keane T, McCarthy SA, Davies RM, Li H. Twelve years of SAMtools and BCFtools. Gigascience. 2021 Feb 16;10(2):giab008. doi: 10.1093/gigascience/giab008. PubMed PMID: 33590861; PubMed Central PMCID: PMC7931819.
+
+- [pysam](https://github.com/pysam-developers/pysam)
+
+> Heger A, et al. pysam: a Python module for reading, manipulating and writing genomic data sets. (htslib bindings).
+
+- [Polars](https://github.com/pola-rs/polars)
+
+> Vink R, et al. Polars: Lightning-fast DataFrame library for Rust and Python.
+
+- [Biopython](https://pubmed.ncbi.nlm.nih.gov/19304878/)
+
+> Cock PJ, Antao T, Chang JT, Chapman BA, Cox CJ, Dalke A, Friedberg I, Hamelryck T, Kauff F, Wilczynski B, de Hoon MJ. Biopython: freely available Python tools for computational molecular biology and bioinformatics. Bioinformatics. 2009 Jun 1;25(11):1422-3. doi: 10.1093/bioinformatics/btp163. PubMed PMID: 19304878; PubMed Central PMCID: PMC2682512.
+
+- [3Dmol.js](https://pubmed.ncbi.nlm.nih.gov/25505090/)
+
+> Rego N, Koes D. 3Dmol.js: molecular visualization with WebGL. Bioinformatics. 2015 Apr 15;31(8):1322-4. doi: 10.1093/bioinformatics/btu829. PubMed PMID: 25505090; PubMed Central PMCID: PMC4393523. (Bundled in the interactive variant effect inspection tool; BSD-3-Clause.)
+
 ## Software packaging/containerisation tools
 
 - [Anaconda](https://anaconda.com)

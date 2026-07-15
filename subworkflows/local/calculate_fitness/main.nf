@@ -21,7 +21,7 @@ include { RUN_MUTSCAN }              from '../../../modules/local/fitness/run_mu
 workflow CALCULATE_FITNESS {
 
     take:
-    ch_fitness_input    // channel: output from GATK_GATKTOFITNESS (grouped by sample/replicate logic)
+    ch_fitness_input    // channel: output from COUNTS_TO_FITNESS (grouped by sample/replicate logic)
     ch_samplesheet_csv  // channel: path to samplesheet csv
     ch_fasta            // channel: tuple([meta], path(fasta))
     val_reading_frame   // value: reading frame param
@@ -41,12 +41,12 @@ workflow CALCULATE_FITNESS {
         }
         .groupTuple()
         .map { base, pairs ->
-            def metas   = pairs.collect { it[0] }
+            // sort by replicate so the staged file order is deterministic (cacheable)
             def inputs  = pairs.findAll { it[0].type == 'input'  }.sort { it[0].replicate }.collect { it[1] }
             def outputs = pairs.findAll { it[0].type == 'output' }.sort { it[0].replicate }.collect { it[1] }
-            tuple([sample: base], metas, inputs, outputs)
+            tuple([sample: base], inputs, outputs)
         }
-        .filter { smeta, metas, ins, outs -> ins && outs }
+        .filter { smeta, ins, outs -> ins && outs }
         .set { ch_fitness_bundled }
 
     // 2. Merge Counts
@@ -114,12 +114,6 @@ workflow CALCULATE_FITNESS {
     // Since subworkflows inherit params, we can check params.dimsum here.
 
     if (params.dimsum) {
-        log.warn("""
-        '--dimsum true' only works together with '--fitness true'
-        and is currently (30 Oct 2025) NOT supported on ARM processors.
-        Use AMD/x86_64 systems for DiMSum execution.
-        """)
-
         RUN_DIMSUM(
             ch_run_counts_d,
             ch_run_wt_d,

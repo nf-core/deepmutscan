@@ -52,6 +52,32 @@
                     "minimum": 1,
                     "default": 10
                 },
+                "base_qual": {
+                    "type": "integer",
+                    "description": "Minimum base quality (Phred) for a mutation to be counted by the variant counter.",
+                    "minimum": 0,
+                    "default": 30
+                },
+                "min_flank": {
+                    "type": "integer",
+                    "description": "Minimum distance (nt) a mutation or covered base must be from a read edge; also excludes those bases from coverage. Set to 0 to disable edge trimming.",
+                    "minimum": 0,
+                    "default": 2
+                },
+                "error_correction": {
+                    "type": "string",
+                    "description": "Sequencing-error correction of single-codon variant counts. 'false_doubles' (default) treats observed multi-codon variants as errors to estimate the per-nucleotide error rate; 'none' disables correction; 'wildtype' subtracts the position-specific error profile measured from an additional deep wildtype-only sample (requires samplesheet rows with type 'wildtype').",
+                    "enum": ["false_doubles", "none", "wildtype"],
+                    "default": "false_doubles"
+                },
+                "pdb": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "chemical/x-pdb",
+                    "description": "Optional wildtype 3D structure (PDB). When supplied together with `--fitness`, an interactive variant effect inspection tool (self-contained HTML) is built that projects fitness, counts and error-correction biases onto the structure.",
+                    "help_text": "Use a crystal structure, an AlphaFold DB model, or any precomputed PDB whose sequence matches the wildtype ORF. Structure prediction (nf-core/proteinfold) is not wired in this release."
+                },
                 "sliding_window_size": {
                     "type": "integer",
                     "description": "To flatten graphs in plots (e.g. `GLOBAL_POS_BIASES_COUNTS` function)",

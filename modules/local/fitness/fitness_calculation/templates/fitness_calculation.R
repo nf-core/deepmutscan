@@ -173,45 +173,40 @@ rescale_and_summarize <- function(merged.counts, reps) {
     merged.counts <- cbind(merged.counts, rep(NA, nrow(merged.counts)))
     colnames(merged.counts)[ncol(merged.counts)] <- paste0("rescaled_fitness_rep", i)
 
-    ### fetch the key counts
-    tmp.wt.fitness <- merged.counts[which(merged.counts\$aa_ham == 0),ncol(merged.counts) - reps]
-    tmp.stop.fitness <- merged.counts[which(merged.counts\$stop == TRUE),ncol(merged.counts) - reps]
+    ### anchors: median fitness of synonymous (aa_ham == 0) -> 0, of stops -> -1
+    raw_col <- ncol(merged.counts) - reps
+    tmp.raw <- merged.counts[,raw_col]
+    tmp.wt.fitness.med   <- median(tmp.raw[which(merged.counts\$aa_ham == 0)], na.rm = TRUE)
+    tmp.stop.fitness.med <- median(tmp.raw[which(merged.counts\$stop == TRUE)], na.rm = TRUE)
 
-    ### rescale
-    tmp.wt.fitness.med <- median(tmp.wt.fitness, na.rm = TRUE)
-    tmp.stop.fitness.med <- median(tmp.stop.fitness, na.rm = TRUE)
-        ## if both WT and STOP mutants are available
-    if(!is.na(tmp.wt.fitness.med) & !is.na(tmp.stop.fitness.med)){
-      lm.rescale <- lm(c(0, -1) ~ c(tmp.wt.fitness.med, tmp.stop.fitness.med))
-      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale\$coefficients[[2]] + lm.rescale\$coefficients[[1]]
-      rm(tmp.wt.fitness, tmp.stop.fitness,
-         tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale)
-
-    ## if only WT mutants are available: lower peak determined by bimodal distribution fitting
-    }else if(!is.na(tmp.wt.fitness.med) & is.na(tmp.stop.fitness.med)){
-      tmp.peaks <- sort(density_peaks(x = merged.counts[,ncol(merged.counts) - reps]))
-      lm.rescale <- lm(c(0, -1) ~ c(tmp.wt.fitness.med, tmp.peaks[1]))
-      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale\$coefficients[[2]] + lm.rescale\$coefficients[[1]]
-      rm(tmp.wt.fitness, tmp.stop.fitness,
-         tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale, tmp.peaks)
-
-    ## if only STOP mutants are available: higher peak determined by bimodal distribution fitting
-    }else if(is.na(tmp.wt.fitness.med) & !is.na(tmp.stop.fitness.med)){
-      tmp.peaks <- sort(density_peaks(x = merged.counts[,ncol(merged.counts) - reps]))
-      lm.rescale <- lm(c(0, -1) ~ c(tmp.peaks[2], tmp.stop.fitness.med))
-      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale\$coefficients[[2]] + lm.rescale\$coefficients[[1]]
-      rm(tmp.wt.fitness, tmp.stop.fitness,
-         tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale, tmp.peaks)
-
-    ## if neither WT nor STOP mutants are available: both peak determined by bimodal distribution fitting
-    }else if(is.na(tmp.wt.fitness.med) & is.na(tmp.stop.fitness.med)){
-      tmp.peaks <- sort(density_peaks(x = merged.counts[,ncol(merged.counts) - reps]))
-      lm.rescale <- lm(c(0, -1) ~ c(tmp.peaks[2], tmp.peaks[1]))
-      merged.counts[,ncol(merged.counts)] <- merged.counts[,ncol(merged.counts) - reps] * lm.rescale\$coefficients[[2]] + lm.rescale\$coefficients[[1]]
-      rm(tmp.wt.fitness, tmp.stop.fitness,
-         tmp.wt.fitness.med, tmp.stop.fitness.med, lm.rescale, tmp.peaks)
-
+    ### if an anchor is missing, or the two anchors coincide (e.g. on sparse data,
+    ### where lm() would return an NA slope), fall back to the modes of the
+    ### (bimodal) fitness distribution to define the missing/degenerate anchor
+    if(is.na(tmp.wt.fitness.med) | is.na(tmp.stop.fitness.med) |
+       (!is.na(tmp.wt.fitness.med) & !is.na(tmp.stop.fitness.med) & tmp.wt.fitness.med == tmp.stop.fitness.med)){
+      tmp.peaks <- sort(density_peaks(x = tmp.raw))
+      tmp.hi <- if(!is.na(tmp.wt.fitness.med)) tmp.wt.fitness.med else if(length(tmp.peaks) >= 1) tmp.peaks[length(tmp.peaks)] else NA
+      if(!is.na(tmp.stop.fitness.med) & (is.na(tmp.hi) || tmp.stop.fitness.med != tmp.hi)){
+        tmp.lo <- tmp.stop.fitness.med
+      }else{
+        tmp.cand <- tmp.peaks[!is.na(tmp.peaks) & tmp.peaks != tmp.hi]
+        tmp.lo <- if(length(tmp.cand) >= 1) tmp.cand[1] else NA
+      }
+      tmp.wt.fitness.med <- tmp.hi
+      tmp.stop.fitness.med <- tmp.lo
+      rm(tmp.peaks, tmp.hi)
     }
+
+    ### two distinct anchors -> linear rescale; a single usable anchor -> WT-centre only
+    if(!is.na(tmp.wt.fitness.med) & !is.na(tmp.stop.fitness.med) & tmp.wt.fitness.med != tmp.stop.fitness.med){
+      lm.rescale <- lm(c(0, -1) ~ c(tmp.wt.fitness.med, tmp.stop.fitness.med))
+      merged.counts[,ncol(merged.counts)] <- tmp.raw * lm.rescale\$coefficients[[2]] + lm.rescale\$coefficients[[1]]
+      rm(lm.rescale)
+    }else if(!is.na(tmp.wt.fitness.med)){
+      merged.counts[,ncol(merged.counts)] <- tmp.raw - tmp.wt.fitness.med
+    }
+
+    rm(raw_col, tmp.raw, tmp.wt.fitness.med, tmp.stop.fitness.med)
   }
 
   ## calculate fitness mean and standard deviation across replicates

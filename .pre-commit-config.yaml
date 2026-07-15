@@ -15,7 +15,9 @@ repos:
               .*ro-crate-metadata.json$|
               modules/(?!local/).*|
               subworkflows/(?!local/).*|
-              .*\.snap$
+              .*\.snap$|
+              assets/test_structure/.*\.pdb$|
+              assets/structure_viewer/3Dmol-min\.js.*
           )$
       - id: end-of-file-fixer
         exclude: |
@@ -23,7 +25,9 @@ repos:
               .*ro-crate-metadata.json$|
               modules/(?!local/).*|
               subworkflows/(?!local/).*|
-              .*\.snap$
+              .*\.snap$|
+              assets/test_structure/.*\.pdb$|
+              assets/structure_viewer/3Dmol-min\.js.*
           )$
   - repo: https://github.com/seqeralabs/nf-lint-pre-commit
     rev: v0.3.0

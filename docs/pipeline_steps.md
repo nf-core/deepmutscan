@@ -14,7 +14,7 @@ The pipeline processes deep mutational scanning (DMS) sequencing data in several
 4. Mutation counting
 5. DMS library quality control
 6. Data summarisation across samples
-7. Single nucleotide variant error correction _(in development)_
+7. Single nucleotide variant error correction
 8. Fitness estimation _(in development)_
 
 ![pipeline](/docs/pipeline.png)
@@ -33,7 +33,7 @@ In future versions of nf-core/deepmutscan, we consider the use of [**bwa-mem2**]
 
 ## 2. Filtering
 
-For long ORF site-saturation mutagenesis libraries, most aligned shotgun sequencing reads contain exact matches against the reference. It is not possible to infer which of these stem from mutant versus wildtype DNA molecules prior to fragmentation, hence they are filtered out. Similarly, erroneous reads with unexpected indels are also removed.
+For long ORF site-saturation mutagenesis libraries, most aligned shotgun sequencing reads contain exact matches against the reference. Erroneous reads with unexpected indels are removed, while exact-match (wildtype) reads are retained — they are ignored by the variant counter and kept available for downstream sequencing-error correction.
 
 To this end, we use [**samtools view**](https://www.htslib.org/doc/samtools.html).
 
@@ -52,9 +52,9 @@ Future versions may offer additional options depending on sequencing type and er
 
 ## 4. Variant Counting
 
-Aligned, non-wildtype consensus reads are screened for exact, base-level mismatches. nf-core/deepmutscan currently uses the popular [**GATK AnalyzeSaturationMutagenesis**](https://gatk.broadinstitute.org/hc/en-us/articles/360037594771-AnalyzeSaturationMutagenesis-BETA) function to count occurrences of all single, double, triple, and higher-order nucleotide changes between each read and the reference ORF.
+Aligned consensus reads are screened for exact, base-level mismatches. nf-core/deepmutscan uses a lightweight, dependency-free Python counter (built on [**pysam**](https://pysam.readthedocs.io) and [**polars**](https://pola.rs)) to count occurrences of all single, double, triple, and higher-order nucleotide changes between each read and the reference ORF, from a coordinate-sorted, indexed BAM. The counter replaces GATK `AnalyzeSaturationMutagenesis` (keeping the container light) while producing a column-compatible count table.
 
-We are currently working on the nf-core/deepmutscan implementation of a much lighter, alternative Python implementation for mutation counting. In this script, users will be allowed to specify a minimum base quality cutoff for mutations to be included in the final count table (default: Q30) – an option not available in GATK.
+Two options tune the counter: `--base_qual` sets the minimum base quality for a mutation to be counted (default Q30; not available in GATK), and `--min_flank` sets the minimum distance (nt) a mutation or covered base must lie from a read edge (default 2, matching GATK's `--min-flanking-length`; 0 disables). The `--min_flank` window is applied to both variant calls and coverage.
 
 ---
 
@@ -72,12 +72,15 @@ Steps 1-5 are iteratively run across all samples defined in the `.csv` spreadshe
 
 ---
 
-## 7. Single Nucleotide Variant Error Correction _(in development)_
+## 7. Single Nucleotide Variant Error Correction
 
-This module will implement strategies to distinguish true single nucleotide variants from sequencing artefacts. There are two options to perform this:
+With very deep sequencing, single-codon counts show position-dependent bias from sequencing errors. `nf-core/deepmutscan` distinguishes true single-nucleotide variants from artefacts via the `--error_correction` parameter, with three options:
 
-- Empirical error rate modelling based on wildtype sequencing
-- Empirical error rate modelling based on false double mutants _(in development)_
+- `false_doubles` (**default**): because the library only contains single-codon changes, any observed multi-codon variant must arise from sequencing error. Their counts give a maximum-likelihood estimate of the per-nucleotide error rate, which is subtracted from the single-codon counts. Needs no extra data.
+- `none`: no correction.
+- `wildtype`: empirical error-rate modelling from **additional deep wildtype-only sequencing**. Add the wildtype sample(s) to the samplesheet with `type: wildtype`; their position-specific error profile is subtracted from each library sample of the same `sample`. This replaces the false-doubles correction.
+
+The corrected counts feed the fitness estimation and the mutation-count heatmaps; the corrected count tables are written next to the uncorrected ones under `intermediate_files/processed_variant_counts/`.
 
 ---
 

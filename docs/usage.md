@@ -112,7 +112,7 @@ In future versions of `nf-core/deepmutscan`, we consider the use of [**bwa-mem2*
 
 ### 2. Filtering
 
-For long ORF site-saturation mutagenesis libraries, most aligned shotgun sequencing reads contain exact matches against the reference. It is not possible to infer which of these stem from actual wildtype vs (upstream or downstream) mutant DNA molecules prior to fragmentation, hence they are filtered out. Currently, reads with likely artefactual indel-containing alignments are also removed.
+For long ORF site-saturation mutagenesis libraries, most aligned shotgun sequencing reads contain exact matches against the reference. Reads with likely artefactual indel-containing alignments are removed, while exact-match (wildtype) reads are retained — they are ignored by the variant counter and kept available for downstream sequencing-error correction.
 
 To this end, we use [**samtools view**](https://www.htslib.org/doc/samtools.html).
 
@@ -127,9 +127,9 @@ Future versions may offer additional options depending on sequencing type and er
 
 ### 4. Variant Counting
 
-Aligned, non-wildtype consensus reads are screened for exact, base-level mismatches. `nf-core/deepmutscan` currently uses the popular [**GATK AnalyzeSaturationMutagenesis**](https://gatk.broadinstitute.org/hc/en-us/articles/360037594771-AnalyzeSaturationMutagenesis-BETA) function to count occurrences of all single, double, triple, and higher-order nucleotide changes between each read and the reference ORF.
+Aligned consensus reads are screened for exact, base-level mismatches. `nf-core/deepmutscan` uses a lightweight, dependency-free Python counter (built on [**pysam**](https://pysam.readthedocs.io) and [**polars**](https://pola.rs)) to count occurrences of all single, double, triple, and higher-order nucleotide changes between each read and the reference ORF, from a coordinate-sorted, indexed BAM. It produces a variant count table that is column-compatible with the previously used GATK `AnalyzeSaturationMutagenesis` output.
 
-We are currently working on the implementation of an alternative, lightweight Python implementation for mutation counting. Users will thereby also be allowed to specify a minimum base quality cutoff for mutations to be included in the final count table – an option which is unfortunately not available in GATK.
+Two options tune the counter: `--base_qual` sets the minimum base quality for a mutation to be counted (default `30`; not available in GATK), and `--min_flank` sets the minimum distance (in nt) a mutation or covered base must be from a read edge (default `2`, matching GATK's `--min-flanking-length`; set to `0` to disable). The `--min_flank` window is applied consistently to both variant calls and the coverage calculation.
 
 ### 5. DMS Library Quality Control
 
@@ -141,12 +141,19 @@ Custom visualisations allow for inspection of (1) mutation efficiency along the 
 
 Steps 1-5 are run in parallel across all individual samples defined in the `.csv` spreadsheet. Once read alignment, filtering, merging, variant counting, and DMS library QC have been completed for the full list of samples – if input/output sample pairs are available – users can opt to proceed towards fitness estimation. To this end, the pipeline generates all the necessary preparatory files by generating a merged mutation count table across samples.
 
-### 7. Single Nucleotide Variant Error Correction _(in development)_
+### 7. Single Nucleotide Variant Error Correction
 
-This module will feature strategies to distinguish true single nucleotide variants from sequencing artefacts. There are two options to perform this:
+Very deep sequencing introduces position-dependent false counts. Select a strategy with `--error_correction`:
 
-- Empirical error rate modelling based on additional wildtype sequencing
-- Empirical error rate modelling based on false double mutants in the programmed single mutant library
+- `false_doubles` (**default**): the library only contains single-codon changes, so observed multi-codon variants are sequencing errors; they provide a maximum-likelihood estimate of the per-nucleotide error rate, which is subtracted from the single-codon counts. No extra data required.
+- `none`: disables error correction (counts pass through unchanged).
+- `wildtype`: subtracts a position-specific error profile measured from an **additional deep wildtype-only sequencing** sample. Provide it in the samplesheet with `type: wildtype`, sharing the same `sample` name as the input/output samples it should correct. This replaces the false-doubles correction.
+
+The corrected counts are used for every count-dependent step (fitness, count heatmaps, positional-bias and coverage QC). Whenever correction is applied, a self-contained `*_error_correction_report.html` is written per sample so its effect can be inspected interactively.
+
+### Interactive variant effect inspection tool (`--pdb`)
+
+When `--fitness` is set and a wildtype 3D structure is supplied via `--pdb <structure.pdb>` (a crystal structure, an AlphaFold DB model, or any PDB matching the wildtype ORF), the pipeline additionally builds a single, portable, interactive HTML tool per sample. It projects per-residue fitness, coverage, counts, counts/coverage and — when error correction is on — the positional error bias onto the structure; clicking a residue shows each substitution's effect. Structure prediction (nf-core/proteinfold) is not wired in this release, so `--pdb` is required to enable the tool.
 
 ### 8. Fitness Estimation
 
@@ -162,7 +169,7 @@ Future expansions may include:
 
 ## Notes for Developers
 
-- Custom R scripts used in filtering and QC visualisation are available in the `modules/local/dmsanalysis/bin/` directory of the repository.
+- Custom R and Python scripts used in variant counting, filtering, error correction and QC visualisation live in each module's own `templates/` directory (e.g. `modules/local/dmsanalysis/*/templates/`).
 - Modules are implemented in Nextflow DSL2 and follow the nf-core community guidelines.
 - Contributions, optimisations, and additional analysis modules are welcome: please open a Github [issue](https://github.com/nf-core/deepmutscan/issues/new) or [pull request](https://github.com/nf-core/deepmutscan/compare) to discuss or suggest ideas.
 

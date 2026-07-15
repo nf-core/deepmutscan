@@ -22,11 +22,12 @@ process BAMFILTER_DMS {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
+    # Keep primary, mapped, MAPQ>=30 reads and drop indel/splice alignments.
+    # Wildtype (NM:i:0) reads are intentionally retained (needed for downstream
+    # sequencing-error correction); the variant counter ignores them for calling.
     samtools view -h -F 4 -F 256 -q 30 $bam | \
     samtools view -h | \
     awk '{if(\$6 !~ /I/ && \$6 !~ /D/ && \$6 !~ /N/) print \$0}' | \
-    samtools view -h | \
-    awk '{for(i=1;i<=NF;i++) if(\$i ~ /^NM:i:/ && \$i != "NM:i:0") {print \$0; next}} \$1 ~ /^@/' | \
     samtools view -bS > ${meta.id}_filtered.bam
 
     cat <<-END_VERSIONS > versions.yml

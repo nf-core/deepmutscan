@@ -1,0 +1,75 @@
+name: "structure_viewer"
+description: Build a single, self-contained interactive variant effect inspection tool (HTML) that projects per-residue fitness, counts, coverage and error-correction bias onto the wildtype 3D structure using 3Dmol.js.
+keywords:
+  - deep mutational scanning
+  - variant effect
+  - 3D structure
+  - visualisation
+tools:
+  - "3Dmol.js":
+      description: "Object-oriented, WebGL-based JavaScript library for molecular visualisation."
+      homepage: "https://3dmol.csb.pitt.edu/"
+      documentation: "https://3dmol.csb.pitt.edu/doc/"
+      licence: ["BSD-3-Clause"]
+  - "pandas":
+      description: "Fast, powerful data structures for data analysis in Python."
+      homepage: "https://pandas.pydata.org/"
+      licence: ["BSD-3-Clause"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', sample:'ORF1' ]`
+    - pdb:
+        type: file
+        description: Wildtype 3D structure (PDB); per-residue confidence read from the B-factor column.
+        pattern: "*.pdb"
+    - fitness_tsv:
+        type: file
+        description: Per-sample default fitness estimation table.
+        pattern: "*.tsv"
+  - - variant_counts:
+        type: file
+        description: Per-sample (error-corrected) library-filtered variant count tables.
+        pattern: "*.csv"
+  - - aa_seq:
+        type: file
+        description: Reference amino-acid sequence (one line).
+  - - threedmol_js:
+        type: file
+        description: Bundled 3Dmol.js library (inlined into the HTML).
+        pattern: "*.js"
+  - - template_html:
+        type: file
+        description: HTML template into which the structure, data and 3Dmol.js are injected.
+        pattern: "*.html"
+
+output:
+  - viewer:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - variant_effect_inspection_tool.html:
+          type: file
+          description: Self-contained interactive variant effect inspection tool.
+          pattern: "variant_effect_inspection_tool.html"
+  - data:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - structure_data.json:
+          type: file
+          description: Sidecar with the per-residue/per-variant data projected onto the structure.
+          pattern: "structure_data.json"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+maintainers:
+  - "@BenjaminWehnert1008"

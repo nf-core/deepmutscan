@@ -17,7 +17,7 @@ components:
 input:
   - ch_fitness_input:
       type: channel
-      description: GATK variant count channels
+      description: Variant count channels
   - ch_samplesheet_csv:
       type: channel
       description: Pipeline samplesheet
