@@ -28,7 +28,7 @@ process VARIANT_EFFECT_INSPECTION_TOOL {
     task.ext.when == null || task.ext.when
 
     script:
-    template 'build_viewer.py'
+    template 'build_variant_effect_inspection_tool.py'
 
     stub:
     """
