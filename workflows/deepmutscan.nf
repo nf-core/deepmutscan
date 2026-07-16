@@ -24,7 +24,7 @@ include { VISUALIZATION_GLOBAL_POS_BIASES_COV      } from '../modules/local/visu
 include { VISUALIZATION_LOGDIFF      } from '../modules/local/visualization/logdiff/main'
 include { VISUALIZATION_SEQDEPTH      } from '../modules/local/visualization/seqdepth/main'
 include { VISUALIZATION_ERROR_CORRECTION_REPORT } from '../modules/local/visualization/error_correction_report/main'
-include { VARIANT_EFFECT_INSPECTION_TOOL } from '../modules/local/structure/structure_viewer/main'
+include { VARIANT_EFFECT_INSPECTION_TOOL } from '../modules/local/structure/variant_effect_inspection_tool/main'
 include { COUNTS_TO_FITNESS          } from '../modules/local/fitness/counts_to_fitness/main'
 
 include { CALCULATE_FITNESS } from '../subworkflows/local/calculate_fitness/main'
@@ -358,8 +358,8 @@ workflow DEEPMUTSCAN {
                 ch_viewer_input,
                 variantCounts_filtered_by_library_ch.map { _meta, file -> file }.collect(),
                 DMSANALYSIS_AASEQ.out.aa_seq.map { _meta, file -> file }.first(),
-                file("${projectDir}/assets/structure_viewer/3Dmol-min.js",         checkIfExists: true),
-                file("${projectDir}/assets/structure_viewer/viewer_template.html", checkIfExists: true),
+                file("${projectDir}/assets/variant_effect_inspection_tool/3Dmol-min.js",         checkIfExists: true),
+                file("${projectDir}/assets/variant_effect_inspection_tool/viewer_template.html", checkIfExists: true),
             )
             ch_versions = ch_versions.mix(VARIANT_EFFECT_INSPECTION_TOOL.out.versions)
         }

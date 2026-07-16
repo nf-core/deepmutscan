@@ -1,4 +1,4 @@
-name: "structure_viewer"
+name: "variant_effect_inspection_tool"
 description: Build a single, self-contained interactive variant effect inspection tool (HTML) that projects per-residue fitness, counts, coverage and error-correction bias onto the wildtype 3D structure using 3Dmol.js.
 keywords:
   - deep mutational scanning

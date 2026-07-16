@@ -2,7 +2,7 @@
 """
 Build a single self-contained, interactive variant effect inspection tool (HTML) for nf-core/deepmutscan.
 
-Nextflow ``template`` script for the STRUCTURE_VIEWER module (staged from this module's
+Nextflow ``template`` script for the VARIANT_EFFECT_INSPECTION_TOOL module (staged from this module's
 ``templates/`` folder). Reads the wildtype structure (PDB), the fitness estimation table and the
 per-sample variant-count tables, aggregates per-residue/per-variant metrics, and writes one portable
 HTML file with 3Dmol.js, the PDB coordinates and all data inlined (no external/CDN/sidecar
@@ -166,7 +166,7 @@ def load_counts(paths):
 
 
 class args:
-    # Filled in by Nextflow when this template is staged and run by the STRUCTURE_VIEWER process.
+    # Filled in by Nextflow when this template is staged and run by the VARIANT_EFFECT_INSPECTION_TOOL process.
     pdb = "$pdb"
     fitness = "$fitness_tsv"
     aa_seq = "$aa_seq"
