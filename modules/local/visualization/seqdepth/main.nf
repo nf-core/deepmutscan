@@ -1,6 +1,7 @@
 process VISUALIZATION_SEQDEPTH {
     tag "$meta.id"
-    label 'process_high'
+    // Closed-form hypergeometric rarefaction - fast, so no longer a heavy process.
+    label 'process_single'
 
     conda "${moduleDir}/environment.yml"
 
@@ -15,6 +16,7 @@ process VISUALIZATION_SEQDEPTH {
 
     output:
     tuple val(meta), path("SeqDepth.pdf"), emit: SeqDepth
+    tuple val(meta), path("seqdepth_curve.csv"), emit: curve
     path "versions.yml", emit: versions
 
     when:
@@ -26,5 +28,11 @@ process VISUALIZATION_SEQDEPTH {
     stub:
     """
     touch SeqDepth.pdf
+    touch seqdepth_curve.csv
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        r-base: "0.0.0"
+        r-ggplot2: "0.0.0"
+    END_VERSIONS
     """
 }

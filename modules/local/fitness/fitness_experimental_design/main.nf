@@ -17,4 +17,13 @@ process EXPDESIGN_FITNESS {
 
   script:
   template 'dimsum_experimentalDesign.R'
+
+  stub:
+  """
+  touch experimentalDesign.tsv
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+      r-base: "0.0.0"
+  END_VERSIONS
+  """
 }

@@ -2,11 +2,6 @@
     "-profile test": {
         "content": [
             {
-                "${task.process}": {
-                    "r-base": "4.5.3",
-                    "r-mutscan": "1.0.0",
-                    "r-Biostrings": "2.78.0"
-                },
                 "BWA_INDEX": {
                     "bwa": "0.7.19-r1273"
                 },
@@ -17,35 +12,50 @@
                 "DIMSUM_RUN": {
                     "r-base": "4.4.2"
                 },
+                "DMSANALYSIS_AASEQ": {
+                    "r-base": "4.5.1",
+                    "r-Biostrings": "2.78.0"
+                },
                 "DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES": {
-                    "r-base": "4.5.1"
+                    "r-base": "4.5.1",
+                    "r-stringr": "1.6.0",
+                    "r-Biostrings": "2.78.0"
                 },
                 "DMSANALYSIS_POSSIBLE_MUTATIONS": {
-                    "r-base": "4.5.3",
+                    "r-base": "4.5.1",
                     "biostrings": "2.78.0"
                 },
                 "EXPDESIGN_FITNESS": {
-                    "r-base": "4.5.3"
+                    "r-base": "4.5.1"
                 },
                 "FASTQC": {
                     "fastqc": "0.12.1"
                 },
                 "FIND_SYNONYMOUS_MUTATION": {
-                    "r-base": "4.5.3",
+                    "r-base": "4.5.1",
+                    "r-Biostrings": "2.78.0"
+                },
+                "FITNESS_CALCULATION": {
+                    "r-base": "4.5.1",
                     "r-Biostrings": "2.78.0"
                 },
                 "FITNESS_HEATMAP": {
-                    "r-base": "4.5.3",
-                    "r-dplyr": "1.2.1",
-                    "r-ggplot2": "4.0.3",
-                    "r-methods": "4.5.3",
-                    "r-grid": "4.5.3"
+                    "r-base": "4.5.1",
+                    "r-dplyr": "1.1.4",
+                    "r-ggplot2": "4.0.2",
+                    "r-methods": "4.5.1",
+                    "r-grid": "4.5.1"
                 },
                 "FITNESS_QC": {
-                    "r-base": "4.5.3"
+                    "r-base": "4.5.1"
                 },
                 "MERGE_COUNTS": {
-                    "r-base": "4.5.3"
+                    "r-base": "4.5.1"
+                },
+                "RUN_MUTSCAN": {
+                    "r-base": "4.5.1",
+                    "r-mutscan": "1.0.0",
+                    "r-Biostrings": "2.78.0"
                 },
                 "SAMTOOLS_INDEX": {
                     "samtools": "1.23.1"
@@ -71,11 +81,16 @@
                     "pandas": "2.2.1",
                     "numpy": "1.26.4"
                 },
+                "VISUALIZATION_SEQDEPTH": {
+                    "r-base": "4.5.1",
+                    "r-ggplot2": "4.0.2"
+                },
                 "Workflow": {
                     "nf-core/deepmutscan": "v1.0.0"
                 }
             },
             [
+                "deepmutscan_report.html",
                 "fastqc",
                 "fastqc/GID1A_input_1_pe_1_fastqc.html",
                 "fastqc/GID1A_input_1_pe_1_fastqc.zip",
@@ -198,6 +213,7 @@
                 "intermediate_files/processed_variant_counts/GID1A_input_1_pe/annotated_variantCounts.csv",
                 "intermediate_files/processed_variant_counts/GID1A_input_1_pe/library_completed_variantCounts.csv",
                 "intermediate_files/processed_variant_counts/GID1A_input_1_pe/library_completed_variantCounts_error_corrected.csv",
+                "intermediate_files/processed_variant_counts/GID1A_input_1_pe/seq_error_rate.csv",
                 "intermediate_files/processed_variant_counts/GID1A_input_1_pe/variantCounts_filtered_by_library.csv",
                 "intermediate_files/processed_variant_counts/GID1A_input_1_pe/variantCounts_filtered_by_library_error_corrected.csv",
                 "intermediate_files/processed_variant_counts/GID1A_input_1_pe/variantCounts_for_heatmaps.csv",
@@ -206,6 +222,7 @@
                 "intermediate_files/processed_variant_counts/GID1A_input_2_pe/annotated_variantCounts.csv",
                 "intermediate_files/processed_variant_counts/GID1A_input_2_pe/library_completed_variantCounts.csv",
                 "intermediate_files/processed_variant_counts/GID1A_input_2_pe/library_completed_variantCounts_error_corrected.csv",
+                "intermediate_files/processed_variant_counts/GID1A_input_2_pe/seq_error_rate.csv",
                 "intermediate_files/processed_variant_counts/GID1A_input_2_pe/variantCounts_filtered_by_library.csv",
                 "intermediate_files/processed_variant_counts/GID1A_input_2_pe/variantCounts_filtered_by_library_error_corrected.csv",
                 "intermediate_files/processed_variant_counts/GID1A_input_2_pe/variantCounts_for_heatmaps.csv",
@@ -214,6 +231,7 @@
                 "intermediate_files/processed_variant_counts/GID1A_output_1_pe/annotated_variantCounts.csv",
                 "intermediate_files/processed_variant_counts/GID1A_output_1_pe/library_completed_variantCounts.csv",
                 "intermediate_files/processed_variant_counts/GID1A_output_1_pe/library_completed_variantCounts_error_corrected.csv",
+                "intermediate_files/processed_variant_counts/GID1A_output_1_pe/seq_error_rate.csv",
                 "intermediate_files/processed_variant_counts/GID1A_output_1_pe/variantCounts_filtered_by_library.csv",
                 "intermediate_files/processed_variant_counts/GID1A_output_1_pe/variantCounts_filtered_by_library_error_corrected.csv",
                 "intermediate_files/processed_variant_counts/GID1A_output_1_pe/variantCounts_for_heatmaps.csv",
@@ -222,6 +240,7 @@
                 "intermediate_files/processed_variant_counts/GID1A_output_2_pe/annotated_variantCounts.csv",
                 "intermediate_files/processed_variant_counts/GID1A_output_2_pe/library_completed_variantCounts.csv",
                 "intermediate_files/processed_variant_counts/GID1A_output_2_pe/library_completed_variantCounts_error_corrected.csv",
+                "intermediate_files/processed_variant_counts/GID1A_output_2_pe/seq_error_rate.csv",
                 "intermediate_files/processed_variant_counts/GID1A_output_2_pe/variantCounts_filtered_by_library.csv",
                 "intermediate_files/processed_variant_counts/GID1A_output_2_pe/variantCounts_filtered_by_library_error_corrected.csv",
                 "intermediate_files/processed_variant_counts/GID1A_output_2_pe/variantCounts_for_heatmaps.csv",
@@ -241,7 +260,6 @@
                 "intermediate_files/variant_counts/GID1A_output_2_pe/variant_counts_columns.tsv",
                 "library_QC",
                 "library_QC/GID1A_input_1_pe",
-                "library_QC/GID1A_input_1_pe/GID1A_input_1_pe_error_correction_report.html",
                 "library_QC/GID1A_input_1_pe/SeqDepth.pdf",
                 "library_QC/GID1A_input_1_pe/counts_heatmap.pdf",
                 "library_QC/GID1A_input_1_pe/counts_per_cov_heatmap.pdf",
@@ -250,8 +268,8 @@
                 "library_QC/GID1A_input_1_pe/rolling_counts.pdf",
                 "library_QC/GID1A_input_1_pe/rolling_counts_per_cov.pdf",
                 "library_QC/GID1A_input_1_pe/rolling_coverage.pdf",
+                "library_QC/GID1A_input_1_pe/seqdepth_curve.csv",
                 "library_QC/GID1A_input_2_pe",
-                "library_QC/GID1A_input_2_pe/GID1A_input_2_pe_error_correction_report.html",
                 "library_QC/GID1A_input_2_pe/SeqDepth.pdf",
                 "library_QC/GID1A_input_2_pe/counts_heatmap.pdf",
                 "library_QC/GID1A_input_2_pe/counts_per_cov_heatmap.pdf",
@@ -260,8 +278,8 @@
                 "library_QC/GID1A_input_2_pe/rolling_counts.pdf",
                 "library_QC/GID1A_input_2_pe/rolling_counts_per_cov.pdf",
                 "library_QC/GID1A_input_2_pe/rolling_coverage.pdf",
+                "library_QC/GID1A_input_2_pe/seqdepth_curve.csv",
                 "library_QC/GID1A_output_1_pe",
-                "library_QC/GID1A_output_1_pe/GID1A_output_1_pe_error_correction_report.html",
                 "library_QC/GID1A_output_1_pe/SeqDepth.pdf",
                 "library_QC/GID1A_output_1_pe/counts_heatmap.pdf",
                 "library_QC/GID1A_output_1_pe/counts_per_cov_heatmap.pdf",
@@ -270,8 +288,8 @@
                 "library_QC/GID1A_output_1_pe/rolling_counts.pdf",
                 "library_QC/GID1A_output_1_pe/rolling_counts_per_cov.pdf",
                 "library_QC/GID1A_output_1_pe/rolling_coverage.pdf",
+                "library_QC/GID1A_output_1_pe/seqdepth_curve.csv",
                 "library_QC/GID1A_output_2_pe",
-                "library_QC/GID1A_output_2_pe/GID1A_output_2_pe_error_correction_report.html",
                 "library_QC/GID1A_output_2_pe/SeqDepth.pdf",
                 "library_QC/GID1A_output_2_pe/counts_heatmap.pdf",
                 "library_QC/GID1A_output_2_pe/counts_per_cov_heatmap.pdf",
@@ -280,6 +298,8 @@
                 "library_QC/GID1A_output_2_pe/rolling_counts.pdf",
                 "library_QC/GID1A_output_2_pe/rolling_counts_per_cov.pdf",
                 "library_QC/GID1A_output_2_pe/rolling_coverage.pdf",
+                "library_QC/GID1A_output_2_pe/seqdepth_curve.csv",
+                "library_QC/error_correction_report.html",
                 "multiqc",
                 "multiqc/multiqc_data",
                 "multiqc/multiqc_data/fastqc-status-check-heatmap.txt",
@@ -344,18 +364,27 @@
                 "GID1A.pac:md5,104f743d81d39b2527b5ae52db26654c",
                 "GID1A.sa:md5,1f697dcb3fedd2f3f29642598bdd795b",
                 "possible_mutations.csv:md5,9ce59fe91b726b1d88587a13fa899567",
+                "seq_error_rate.csv:md5,350a018c981eca2506ac6291a6e9e161",
                 "variantCounts_for_heatmaps.csv:md5,842bd5c00760d594e2a450aec929e4aa",
                 "variantCounts_for_heatmaps_error_corrected.csv:md5,842bd5c00760d594e2a450aec929e4aa",
+                "seq_error_rate.csv:md5,350a018c981eca2506ac6291a6e9e161",
                 "variantCounts_for_heatmaps.csv:md5,44069d5abca76323ccaed3c182447104",
                 "variantCounts_for_heatmaps_error_corrected.csv:md5,44069d5abca76323ccaed3c182447104",
+                "seq_error_rate.csv:md5,350a018c981eca2506ac6291a6e9e161",
                 "variantCounts_for_heatmaps.csv:md5,3a9ce900a567cb663bc71033d3771d8a",
                 "variantCounts_for_heatmaps_error_corrected.csv:md5,3a9ce900a567cb663bc71033d3771d8a",
+                "seq_error_rate.csv:md5,350a018c981eca2506ac6291a6e9e161",
                 "variantCounts_for_heatmaps.csv:md5,f263448ec0d7ec68f6e23aa050b961e6",
                 "variantCounts_for_heatmaps_error_corrected.csv:md5,f263448ec0d7ec68f6e23aa050b961e6",
                 "variant_counts_columns.tsv:md5,c94801255a553ce5ff4a00d3170f6768",
                 "variant_counts_columns.tsv:md5,c94801255a553ce5ff4a00d3170f6768",
                 "variant_counts_columns.tsv:md5,c94801255a553ce5ff4a00d3170f6768",
                 "variant_counts_columns.tsv:md5,c94801255a553ce5ff4a00d3170f6768",
+                "seqdepth_curve.csv:md5,eceecf3eff21b17b1d818c6ccefa72d9",
+                "seqdepth_curve.csv:md5,04649f2dd97ae3f7f4d7a94efb299d78",
+                "seqdepth_curve.csv:md5,5bde4b2a2b0cce57f4696913f4cdf8e7",
+                "seqdepth_curve.csv:md5,0deb002959055376128c81bcfba8e0e2",
+                "error_correction_report.html:md5,7380b2aed1b4b1047e5b9668a98d73fb",
                 "fastqc-status-check-heatmap.txt:md5,58a9580c11af4210b1af65753383e120",
                 "fastqc_adapter_content_plot.txt:md5,2990ad34b6fa29151dd4b9a38828afbe",
                 "fastqc_overrepresented_sequences_plot.txt:md5,c703a9df0ea3a5c1c5f515a1fd88bbe8",
@@ -375,7 +404,7 @@
                 "limma_rowCount": 1231
             }
         ],
-        "timestamp": "2026-07-14T14:01:04.868095",
+        "timestamp": "2026-07-19T16:07:54.128501",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.1"

@@ -353,6 +353,26 @@
         font-size: 11px;
         margin-top: 6px;
       }
+      .reps {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .reps label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12.5px;
+        color: var(--ink2);
+        cursor: pointer;
+      }
+      .reps label:hover {
+        color: var(--ink);
+      }
+      .reps input {
+        accent-color: var(--accent);
+        margin: 0;
+      }
       .seqwrap {
         border-top: 1px solid var(--line);
         height: 92px;
@@ -440,6 +460,20 @@
             <button id="clearsel">Clear selection</button>
           </div>
         </div>
+        <div class="group" id="repgroup" style="display: none">
+          <h3>
+            Replicates
+            <button
+              class="ibtn"
+              type="button"
+              data-desc="Include or exclude individual sequencing replicates to see how much each one drives the fitness estimate. Mean fitness and its SD are recomputed over the selected replicates only. This is exact, not an approximation: each replicate's fitness is derived from its own input/output counts and its own synonymous/stop anchors, so its value does not depend on which other replicates were in the run. The colour scale stays fixed so values remain comparable across selections. DiMSum and mutscan fit their own models across replicates and are not affected by this control."
+            >
+              i
+            </button>
+          </h3>
+          <div class="reps" id="reps"></div>
+          <div class="hint" id="rephint"></div>
+        </div>
         <div class="group">
           <h3>Legend</h3>
           <div class="legend">
@@ -522,6 +556,58 @@
       let initialView=null;
       const byResnum={}, byPos={};
       DATA.residues.forEach(r=>{byPos[r.pos]=r; if(r.resnum!=null)byResnum[r.resnum]=r;});
+
+      /* ---------- replicate selection ----------
+         The default fitness estimation never pools replicates: rescaled_fitness_rep<N> comes from
+         that replicate's own counts and its own synonymous/stop anchors, and `mean fitness`/`fitness sd`
+         are just the row-wise mean/SD across those columns. So recomputing them over a subset here is
+         exactly what a pipeline rerun without the excluded replicates would produce. */
+      const REPS=DATA.replicates||[];
+      const selReps=new Set(REPS.map((_,i)=>i));
+
+      // mirrors R's mean(x, na.rm=TRUE) / sd(x, na.rm=TRUE): NA dropped, sample SD, SD undefined for n<2
+      function meanSd(vals){
+        const v=vals.filter(x=>x!=null&&!isNaN(x));
+        if(!v.length) return {mean:null, sd:null};
+        const m=v.reduce((a,b)=>a+b,0)/v.length;
+        if(v.length<2) return {mean:m, sd:null};
+        const s=Math.sqrt(v.reduce((a,b)=>a+(b-m)*(b-m),0)/(v.length-1));
+        return {mean:m, sd:s};
+      }
+
+      // re-derive every fitness-dependent metric for the current replicate subset
+      function recomputeFitness(){
+        if(!REPS.length) return;
+        const sel=[...selReps];
+        DATA.residues.forEach(r=>{
+          const fits=[], sds=[];
+          r.variants.forEach(v=>{
+            if(!v.reps) return;
+            const ms=meanSd(sel.map(i=>v.reps[i]));
+            if('fitness' in v.metrics) v.metrics.fitness=ms.mean;
+            if('fitness_sd' in v.metrics) v.metrics.fitness_sd=ms.sd;
+            if(!v.syn && !v.stop && ms.mean!=null){ fits.push(ms.mean); if(ms.sd!=null) sds.push(ms.sd); }
+          });
+          const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+          if('fitness' in r.metrics) r.metrics.fitness=mean(fits);
+          if('fitness_sd' in r.metrics) r.metrics.fitness_sd=mean(sds);
+          if('n_substitutions' in r.metrics) r.metrics.n_substitutions=fits.length||null;
+        });
+      }
+
+      function renderReps(){
+        if(REPS.length<2) return;                       // nothing to choose from
+        const host=document.getElementById('reps');
+        host.innerHTML=REPS.map((id,i)=>
+          `<label><input type="checkbox" data-i="${i}"${selReps.has(i)?' checked':''}>replicate ${id}</label>`
+        ).join('');
+        const n=selReps.size;
+        document.getElementById('rephint').textContent =
+          n===0 ? 'no replicates selected — fitness has no data, the structure is grey'
+          : n===REPS.length ? `all ${n} replicates — mean fitness as computed by the pipeline`
+          : n===1 ? 'single replicate — SD is undefined and shown as no data'
+          : `${n} of ${REPS.length} replicates — mean and SD recomputed`;
+      }
 
       function buildColorMap(){
         resiColor={};
@@ -776,6 +862,23 @@
         const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
         a.download='deepmutscan_'+obj+'_'+METRIC+'.pml'; document.body.appendChild(a); a.click(); a.remove();
         URL.revokeObjectURL(a.href);
+      }
+
+      /* ---------- replicate toggles ---------- */
+      if(REPS.length>1){
+        document.getElementById('repgroup').style.display='';
+        document.getElementById('reps').addEventListener('change',e=>{
+          const cb=e.target.closest('input[type=checkbox]'); if(!cb)return;
+          const i=+cb.dataset.i;
+          if(cb.checked) selReps.add(i); else selReps.delete(i);
+          // an empty selection is a legitimate state: no replicates -> no fitness -> everything grey (NA)
+          recomputeFitness();
+          renderReps();
+          refresh();                                   // legend + sequence + structure colouring
+          renderDetail();                              // detail panel numbers
+          if(activeVariant) renderSwarm();             // bee-swarms
+        });
+        renderReps();
       }
 
       /* ---------- boot ---------- */

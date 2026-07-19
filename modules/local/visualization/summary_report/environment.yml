@@ -1,0 +1,7 @@
+name: visualization_summary_report
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - pandas=2.2.1
+  - numpy=1.26.4

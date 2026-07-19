@@ -41,4 +41,14 @@ process RUN_DIMSUM {
     r-base: \$R_VERSION
 END_VERSIONS
   """
+
+  stub:
+  """
+  mkdir -p dimsum_results
+  touch dimsum_results/report.html
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+      r-base: "0.0.0"
+  END_VERSIONS
+  """
 }

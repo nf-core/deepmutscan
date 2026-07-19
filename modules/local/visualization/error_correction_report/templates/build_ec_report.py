@@ -1,98 +1,154 @@
 #!/usr/bin/env python
 
-# Build the self-contained error-correction HTML report for one sample.
+# Build the self-contained error-correction HTML report for a whole run.
+#
+# One report covers every sequencing file: the page carries each file's numbers separately and
+# recomputes every panel in the browser from whichever files are selected, so deselecting down to a
+# single file reproduces exactly what a per-file report used to show.
+#
 # Nextflow template: values below are interpolated; backslashes meant for Python are doubled.
 
+import base64
 import json
+import platform
 import re
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
-sample = "${meta.sample ?: meta.id}"
+sample = "$sample"
 method = "$method"
+# Each entry is {id, type, replicate} - type/replicate come straight from the samplesheet (general
+# for any protein, not hard-coded here) and drive the input-vs-output split in the report.
+files = json.loads(base64.b64decode("$ids_b64").decode("utf-8"))
+paths = "$corrected".split()
 
-df = pd.read_csv("$corrected")
-
-raw = pd.to_numeric(df["counts_raw"], errors="coerce")
-cor = pd.to_numeric(df["counts"], errors="coerce")
-cov = pd.to_numeric(df["cov"], errors="coerce") if "cov" in df.columns else pd.Series([np.nan] * len(df))
-posmut = df["pos_mut"].astype(str)
+if len(files) != len(paths):
+    raise SystemExit(f"{len(files)} ids but {len(paths)} files staged")
 
 MUT = re.compile(r"^([A-Za-z*]+)(\\d+)([A-Za-z*]+)")
 
-def parse_pos(s):
-    m = MUT.match(s)
-    if not m:
-        return (None, None, None)
-    return (m.group(1), int(m.group(2)), m.group(3))
+# `base_mut` holds the nucleotide change(s) of a variant as "<pos>:<ref>><alt>", comma-separated when
+# the codon carries 2-3 changes (the NNK case). Positions are reference coordinates.
+SNV = re.compile(r"^(\\d+):([ACGTacgt])>([ACGTacgt])\$")
 
-variants = []
-pos_agg = {}
-pcts = []
-for i in range(len(df)):
-    s = posmut.iloc[i]
-    wt, pos, _mut = parse_pos(s)
-    r = raw.iloc[i]
-    if pd.isna(r):
-        continue
-    r = float(r)
-    c = 0.0 if pd.isna(cor.iloc[i]) else float(cor.iloc[i])
-    delta = round(c - r, 3)
-    pct = round((c - r) / r * 100.0, 2) if r > 0 else None
-    cv = None if pd.isna(cov.iloc[i]) else int(cov.iloc[i])
-    variants.append({"pos_mut": s, "pos": pos, "raw": round(r, 3), "corrected": round(c, 3),
-                     "delta": delta, "pct": pct, "cov": cv})
-    if pct is not None:
-        pcts.append(pct)
-    if pos is not None:
-        a = pos_agg.setdefault(pos, {"pos": pos, "wt_aa": wt, "raw": 0.0, "cor": 0.0, "n": 0})
-        a["raw"] += r
-        a["cor"] += c
-        a["n"] += 1
+COMPLEMENT = {"A": "T", "C": "G", "G": "C", "T": "A"}
 
-positions = []
-for pos in sorted(pos_agg):
-    a = pos_agg[pos]
-    frac = (1.0 - a["cor"] / a["raw"]) if a["raw"] > 0 else None
-    positions.append({"pos": pos, "wt_aa": a["wt_aa"],
-                      "removed_frac": (round(frac, 6) if frac is not None else None),
-                      "n": a["n"]})
-
-# per-variant % change histogram (dynamic, symmetric-ish range)
-hist = []
-if pcts:
-    arr = np.array(pcts, dtype=float)
-    lo = float(np.floor(min(arr.min(), -1)))
-    hi = float(np.ceil(max(arr.max(), 1)))
-    counts, edges = np.histogram(arr, bins=18, range=(lo, hi))
-    for k in range(len(counts)):
-        hist.append({"x0": round(float(edges[k]), 3), "x1": round(float(edges[k + 1]), 3),
-                     "count": int(counts[k])})
-
-total_raw = float(np.nansum(raw.values))
-total_cor = float(np.nansum(cor.values))
-n_corrected = int(sum(1 for v in variants if v["delta"] != 0))
-summary = {
-    "n_variants": len(variants),
-    "n_corrected": n_corrected,
-    "total_raw": round(total_raw, 1),
-    "total_corrected": round(total_cor, 1),
-    "pct_removed": round((total_raw - total_cor) / total_raw * 100.0, 2) if total_raw > 0 else 0.0,
+# The six strand-symmetric substitution classes, pyrimidine-centric: a purine reference is
+# reverse-complemented, so C>A and G>T are one and the same event. Order is canonical (as used for
+# mutational signatures) and fixed - the colour of a class never depends on the data.
+SNV_CLASSES = ["C>A", "C>G", "C>T", "T>A", "T>C", "T>G"]
+SNV_LABELS = {
+    "C>A": "C>A / G>T", "C>G": "C>G / G>C", "C>T": "C>T / G>A",
+    "T>A": "T>A / A>T", "T>C": "T>C / A>G", "T>G": "T>G / A>C",
 }
 
-data = {"sample": sample, "method": method, "summary": summary,
-        "positions": positions, "hist": hist, "variants": variants}
+
+def parse_pos(s):
+    m = MUT.match(str(s))
+    return (m.group(1), int(m.group(2)), m.group(3)) if m else (None, None, None)
+
+
+def parse_snvs(base_mut):
+    """"1220:T>G, 1221:T>G" -> [(1220,'T','G'), (1221,'T','G')]"""
+    out = []
+    for part in str(base_mut).split(","):
+        m = SNV.match(part.strip())
+        if m:
+            out.append((int(m.group(1)), m.group(2).upper(), m.group(3).upper()))
+    return out
+
+
+def classify_snv(ref, alt):
+    """Collapse a substitution onto its pyrimidine-centric class key."""
+    if ref not in COMPLEMENT or alt not in COMPLEMENT or ref == alt:
+        return None
+    if ref in ("A", "G"):
+        ref, alt = COMPLEMENT[ref], COMPLEMENT[alt]
+    key = ref + ">" + alt
+    return key if key in SNV_LABELS else None
+
+
+def numcol(df, name):
+    return (pd.to_numeric(df[name], errors="coerce") if name in df.columns
+            else pd.Series([np.nan] * len(df)))
+
+
+def f(x, nd):
+    return None if x is None or x != x else round(float(x), nd)
+
+
+# Variants are keyed on `codon_mut`, not `pos_mut`. `pos_mut` is NOT unique - one amino-acid
+# substitution is reachable through up to three codons (6898 unique pos_mut across 10254 rows on the
+# GID1A run), so keying on it would silently merge distinct nucleotide variants. `codon_mut` is
+# unique (10254/10254).
+#
+# The files do not share a variant set either (union 10771 vs intersection 6886 on GID1A), so this is
+# a union: a variant absent from a file gets None there, never 0. Absent means "not observed above
+# threshold in that file", which is missing data, not a measured zero - averaging it in as 0 would
+# drag every frequency down. The browser skips Nones and reports how many files contributed.
+variants = {}
+n_files = len(files)
+
+for fi, (fid, path) in enumerate(zip(files, paths)):
+    df = pd.read_csv(path)
+    raw = numcol(df, "counts_raw")
+    cor = numcol(df, "counts")
+    cpc_raw = numcol(df, "counts_per_cov_raw")
+    cpc_cor = numcol(df, "counts_per_cov")
+    posmut = df["pos_mut"].astype(str)
+    basemut = df["base_mut"].astype(str) if "base_mut" in df.columns else pd.Series([""] * len(df))
+    codonmut = df["codon_mut"].astype(str) if "codon_mut" in df.columns else posmut
+
+    for i in range(len(df)):
+        r = raw.iloc[i]
+        if pd.isna(r):
+            continue
+        key = codonmut.iloc[i].strip()
+        v = variants.get(key)
+        if v is None:
+            wt, pos, _mut = parse_pos(posmut.iloc[i])
+            nt = basemut.iloc[i].strip()
+            snvs = parse_snvs(nt)
+            # A class is only meaningful when a single nucleotide changed; NNK codon variants
+            # (2-3 changes) mix classes and stay unclassified by design.
+            kls = classify_snv(snvs[0][1], snvs[0][2]) if len(snvs) == 1 else None
+            v = variants[key] = {
+                "key": key, "pos_mut": posmut.iloc[i], "pos": pos, "wt_aa": wt,
+                "nt": nt, "cls": kls,
+                "ntpos": (snvs[0][0] if len(snvs) == 1 else None),
+                "raw": [None] * n_files, "cor": [None] * n_files,
+                "f_raw": [None] * n_files, "f_cor": [None] * n_files,
+            }
+        c = cor.iloc[i]
+        v["raw"][fi] = f(r, 3)
+        v["cor"][fi] = 0.0 if pd.isna(c) else f(c, 3)
+        v["f_raw"][fi] = f(cpc_raw.iloc[i], 10)
+        v["f_cor"][fi] = 0.0 if pd.isna(cpc_cor.iloc[i]) else f(cpc_cor.iloc[i], 10)
+
+data = {
+    "sample": sample,
+    "method": method,
+    "files": files,
+    "classes": [{"cls": k, "label": SNV_LABELS[k]} for k in SNV_CLASSES],
+    "variants": sorted(variants.values(), key=lambda v: (v["pos"] if v["pos"] is not None else 0, v["key"])),
+}
 
 data_json = json.dumps(data, separators=(",", ":")).replace("</", "<\\\\/")
 
 html = open("$template_html", encoding="utf-8").read()
 html = html.replace("__EC_DATA__", data_json).replace("__SAMPLE__", sample)
-with open("${meta.id}_error_correction_report.html", "w", encoding="utf-8") as fh:
+with open("error_correction_report.html", "w", encoding="utf-8") as fh:
     fh.write(html)
 
-import platform
 with open("versions.yml", "w") as vf:
     vf.write('"${task.process}":\\n')
     vf.write("    python: " + platform.python_version() + "\\n")
     vf.write("    pandas: " + pd.__version__ + "\\n")
     vf.write("    numpy: " + np.__version__ + "\\n")
+
+import os
+mb = os.path.getsize("error_correction_report.html") / 1e6
+n_snv = sum(1 for v in data["variants"] if v["cls"])
+print(f"Wrote error_correction_report.html ({mb:.1f} MB) - {len(files)} files, "
+      f"{len(data['variants'])} variants ({n_snv} single-nucleotide)")

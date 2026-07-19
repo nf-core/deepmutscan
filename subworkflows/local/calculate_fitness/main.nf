@@ -113,6 +113,11 @@ workflow CALCULATE_FITNESS {
     // Note: Logic checking for 'params.dimsum' needs to be handled.
     // Since subworkflows inherit params, we can check params.dimsum here.
 
+    // DiMSum and mutscan are optional, so their artefact channels start empty and are only filled
+    // when the tool actually ran - the summary report then simply omits the section.
+    def ch_dimsum_dir    = Channel.empty()
+    def ch_mutscan_plots = Channel.empty()
+
     if (params.dimsum) {
         RUN_DIMSUM(
             ch_run_counts_d,
@@ -120,6 +125,7 @@ workflow CALCULATE_FITNESS {
             ch_run_exp_d
         )
         ch_versions = ch_versions.mix(RUN_DIMSUM.out.versions)
+        ch_dimsum_dir = RUN_DIMSUM.out.results_dir
     }
 
     // 8. Run Mutscan
@@ -130,9 +136,16 @@ workflow CALCULATE_FITNESS {
             ch_run_exp_d
         )
         ch_versions = ch_versions.mix(RUN_MUTSCAN.out.versions)
+        ch_mutscan_plots = RUN_MUTSCAN.out.qc_plots
     }
 
     emit:
     fitness_estimation = FITNESS_CALCULATION.out.fitness_estimation
+    // artefacts the all-in-one report embeds
+    fitness_plots      = FITNESS_QC.out.counts_corr_pdf
+                            .mix(FITNESS_QC.out.fitness_corr_pdf)
+                            .mix(FITNESS_HEATMAP.out.fitness_heatmap)
+    mutscan_plots      = ch_mutscan_plots
+    dimsum_dir         = ch_dimsum_dir
     versions           = ch_versions
 }

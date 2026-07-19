@@ -24,6 +24,7 @@ include { VISUALIZATION_GLOBAL_POS_BIASES_COV      } from '../modules/local/visu
 include { VISUALIZATION_LOGDIFF      } from '../modules/local/visualization/logdiff/main'
 include { VISUALIZATION_SEQDEPTH      } from '../modules/local/visualization/seqdepth/main'
 include { VISUALIZATION_ERROR_CORRECTION_REPORT } from '../modules/local/visualization/error_correction_report/main'
+include { VISUALIZATION_SUMMARY_REPORT } from '../modules/local/visualization/summary_report/main'
 include { VARIANT_EFFECT_INSPECTION_TOOL } from '../modules/local/structure/variant_effect_inspection_tool/main'
 include { COUNTS_TO_FITNESS          } from '../modules/local/fitness/counts_to_fitness/main'
 
@@ -235,7 +236,14 @@ workflow DEEPMUTSCAN {
       def ch_fd_in       = ch_vc.join(variantCounts_filtered_by_library_ch).join(library_completed_variantCounts_ch)  // (meta, raw, filtered, completed)
       def aa_seq_for_ec  = DMSANALYSIS_AASEQ.out.aa_seq.map { it[1] }.combine(ch_fd_in).map { it[0] }
       def min_for_ec     = min_counts_ch.combine(ch_fd_in).map { it[0] }
-      DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES( ch_fd_in, aa_seq_for_ec, min_for_ec )
+      // the reference the reads were aligned to (base_mut is in this fasta's coordinate frame),
+      // broadcast one-per-sample; the estimator and the mode/window are run-level constants.
+      // ch_fasta is tuple(meta, fasta), so the path is it[1] - it[0] is the [id:ref] meta map.
+      def fasta_for_ec   = ch_fasta.combine(ch_fd_in).map { it[1] }
+      DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES(
+        ch_fd_in, fasta_for_ec, aa_seq_for_ec, min_for_ec,
+        params.false_doubles_method, params.false_doubles_codon_window
+      )
       ch_versions = ch_versions.mix(DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.versions)
       variantCounts_filtered_by_library_ch = DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.corrected.map { meta, filt, heat, comp -> tuple(meta, filt) }
       variantCounts_for_heatmaps_ch        = DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.corrected.map { meta, filt, heat, comp -> tuple(meta, heat) }
@@ -257,16 +265,29 @@ workflow DEEPMUTSCAN {
     }
     // else 'none': keep the uncorrected channels
 
+    // Artefacts the all-in-one report embeds, collected as [[kind, group, name], file]. Optional
+    // parts simply never mix anything in, and the report drops the corresponding section.
+    def ch_report_assets = Channel.empty()
+
     //
     // MODULE: per-sample error-correction report (only when correction was applied)
     //
     if (params.error_correction != 'none') {
+      // One run-level report over every file. Sorting first keeps the id list and the staged files in
+      // the same order, which is the only thing tying a column of numbers to the file it came from.
+      def ch_ec = variantCounts_filtered_by_library_ch.toSortedList { a, b -> a[0].id <=> b[0].id }
+
       VISUALIZATION_ERROR_CORRECTION_REPORT(
-        variantCounts_filtered_by_library_ch,
+        ch_ec.map { rows -> rows[0][0].sample ?: 'run' },
+        ch_ec.map { rows -> groovy.json.JsonOutput.toJson(rows.collect { [id: it[0].id, type: it[0].type, replicate: it[0].replicate] }).bytes.encodeBase64().toString() },
+        ch_ec.map { rows -> rows.collect { it[1] } },
         params.error_correction,
         file("${projectDir}/assets/error_correction_report/ec_report_template.html", checkIfExists: true)
       )
       ch_versions = ch_versions.mix(VISUALIZATION_ERROR_CORRECTION_REPORT.out.versions)
+      ch_report_assets = ch_report_assets.mix(
+        VISUALIZATION_ERROR_CORRECTION_REPORT.out.report.map { f -> [['report', 'ec', 'Error correction'], f] }
+      )
     }
 
     // --- For VISUALIZATION_COUNTS_PER_COV & HEATMAP (replaces fanoutTo)
@@ -309,11 +330,35 @@ workflow DEEPMUTSCAN {
       library_completed_variantCounts_ch
     )
 
+    // library QC plots (original R PDFs) + the tables the report re-plots interactively
+    ch_report_assets = ch_report_assets
+      .mix(VISUALIZATION_GLOBAL_POS_BIASES_COV.out.rolling_coverage.map          { meta, f -> [['qc', meta.id, 'rolling_coverage.pdf'], f] })
+      .mix(VISUALIZATION_GLOBAL_POS_BIASES_COUNTS.out.rolling_counts.map         { meta, f -> [['qc', meta.id, 'rolling_counts.pdf'], f] })
+      .mix(VISUALIZATION_GLOBAL_POS_BIASES_COUNTS.out.rolling_counts_per_cov.map { meta, f -> [['qc', meta.id, 'rolling_counts_per_cov.pdf'], f] })
+      .mix(VISUALIZATION_COUNTS_HEATMAP.out.counts_heatmap.map                   { meta, f -> [['qc', meta.id, 'counts_heatmap.pdf'], f] })
+      .mix(VISUALIZATION_COUNTS_PER_COV.out.counts_per_cov_heatmap.map           { meta, f -> [['qc', meta.id, 'counts_per_cov_heatmap.pdf'], f] })
+      .mix(VISUALIZATION_LOGDIFF.out.logdiff_plot.map                            { meta, f -> [['qc', meta.id, 'logdiff_plot.pdf'], f] })
+      .mix(VISUALIZATION_LOGDIFF.out.logdiff_varying_bases.map                   { meta, f -> [['qc', meta.id, 'logdiff_varying_bases.pdf'], f] })
+      .mix(variantCounts_filtered_by_library_ch.map                              { meta, f -> [['filtered', meta.id, 'counts.csv'], f] })
+      .mix(variantCounts_for_heatmaps_ch.map                                     { meta, f -> [['heatmap', meta.id, 'heatmap.csv'], f] })
+      // Fixes the ORF axis at the wildtype length: positions with no library coverage still have to
+      // occupy a slot, or every rolling window downstream is computed over the wrong neighbourhood.
+      .mix(DMSANALYSIS_AASEQ.out.aa_seq.map                                      { _meta, f -> [['aa_seq', 'run', 'aa_seq.txt'], f] })
+      // Needed to name the exact nucleotide change behind each heatmap cell: the fitness table gives
+      // the variant ORFs, and the wildtype to diff them against only exists in the reference.
+      .mix(ch_fasta.map                                                          { _meta, f -> [['fasta', 'run', 'reference.fasta'], f] })
+
     if (params.run_seqdepth) {
       VISUALIZATION_SEQDEPTH(
         variantCounts_filtered_by_library_ch,
         possible_mutations_N,
         min_counts_for_seqdepth_ch
+      )
+      ch_versions = ch_versions.mix(VISUALIZATION_SEQDEPTH.out.versions)
+      // The rarefaction curve travels to the summary report, which re-plots it per file under
+      // Sequencing QC (the PDF is still written to the results folder for the record).
+      ch_report_assets = ch_report_assets.mix(
+        VISUALIZATION_SEQDEPTH.out.curve.map { meta, f -> [['seqdepth', meta.id, 'seqdepth.csv'], f] }
       )
     }
 
@@ -342,6 +387,13 @@ workflow DEEPMUTSCAN {
         // Collect versions
         ch_versions = ch_versions.mix(CALCULATE_FITNESS.out.versions)
 
+        ch_report_assets = ch_report_assets
+          .mix(CALCULATE_FITNESS.out.fitness_estimation.first().map { _m, f -> [['fitness_table', 'default', 'fitness_estimation.tsv'], f] })
+          .mix(CALCULATE_FITNESS.out.fitness_plots.map { _m, f -> [['fitness_pdf', 'default', f.name], f] })
+          // mutscan emits all of its plots as one list, so flatten to a file per entry
+          .mix(CALCULATE_FITNESS.out.mutscan_plots.transpose().map { _m, f -> [['mutscan_pdf', 'mutscan', f.name], f] })
+          .mix(CALCULATE_FITNESS.out.dimsum_dir.flatten().filter { it.name == 'report.html' }.map { f -> [['report', 'dimsum', 'DiMSum'], f] })
+
         //
         // MODULE: interactive variant effect inspection tool (one self-contained HTML per sample).
         // Runs only when a wildtype structure is supplied via --pdb. Projects fitness, counts and
@@ -362,6 +414,14 @@ workflow DEEPMUTSCAN {
                 file("${projectDir}/assets/variant_effect_inspection_tool/viewer_template.html", checkIfExists: true),
             )
             ch_versions = ch_versions.mix(VARIANT_EFFECT_INSPECTION_TOOL.out.versions)
+            ch_report_assets = ch_report_assets.mix(
+                VARIANT_EFFECT_INSPECTION_TOOL.out.viewer.map { _meta, f -> [['report', 'viewer', 'Variant effect inspection tool'], f] }
+            )
+            // The raw structure also travels to the summary report, which builds its own slow-spinning
+            // fitness-coloured viewer on the Variant effects page from it.
+            ch_report_assets = ch_report_assets.mix(
+                ch_structure.map { _meta, pdb -> [['pdb', 'structure', 'structure.pdb'], pdb] }
+            )
         }
     }
 
@@ -421,6 +481,69 @@ workflow DEEPMUTSCAN {
             ]
         }
     )
+
+    //
+    // MODULE: the single all-in-one report. Runs last, because it embeds every other artefact -
+    // the MultiQC report included - as a base64 data URI, so the file stands alone when shared.
+    //
+    ch_report_assets = ch_report_assets.mix(
+        MULTIQC.out.report.map { _meta, f -> [['report', 'multiqc', 'MultiQC'], f] }
+    )
+    // The collated software versions drive the Citation page: it cites only the tools this run used.
+    ch_report_assets = ch_report_assets.mix(
+        ch_collated_versions.map { f -> [['versions', 'run', 'versions.yml'], f] }
+    )
+    // Nextflow's own execution trace drives the Overview run-statistics table. It is still being
+    // appended to as the report is built, so it captures every compute-heavy task (all but the report
+    // task itself) - the page labels it as of report generation. checkIfExists is off because the file
+    // is engine-managed, not a process output.
+    ch_report_assets = ch_report_assets.mix(
+        Channel.fromPath("${outdir}/pipeline_info/execution_trace_${params.trace_report_suffix}.txt", checkIfExists: false)
+            .map { f -> [['trace', 'run', 'execution_trace.txt'], f] }
+    )
+
+    // Sorting keeps the manifest and the staged files in one deterministic, matching order.
+    def ch_summary_input = ch_report_assets
+        .toSortedList { a, b -> a[0].join('|') <=> b[0].join('|') }
+        .map { rows ->
+            def manifest = rows.collect { [kind: it[0][0], group: it[0][1], name: it[0][2]] }
+            tuple(
+                groovy.json.JsonOutput.toJson(manifest).bytes.encodeBase64().toString(),
+                rows.collect { it[1] },
+            )
+        }
+
+    def ch_run_meta = variantCounts_filtered_by_library_ch
+        .first()
+        .map { meta, _f ->
+            tuple(
+                [id: 'run', sample: meta.sample],
+                groovy.json.JsonOutput.toJson([
+                    sample: meta.sample,
+                    reading_frame: params.reading_frame,
+                    mutagenesis_type: params.mutagenesis_type,
+                    error_correction: params.error_correction,
+                    version: workflow.manifest.version,
+                    // The report smooths client-side with the same window the R plots use, and draws
+                    // the same required-coverage reference line, so both must travel with the run.
+                    sliding_window_size: params.sliding_window_size,
+                    aimed_cov: params.aimed_cov,
+                    fitness: params.fitness,
+                    dimsum: params.dimsum,
+                    mutscan: params.mutscan,
+                    outdir: params.outdir,
+                ]).bytes.encodeBase64().toString(),
+            )
+        }
+
+    VISUALIZATION_SUMMARY_REPORT(
+        ch_run_meta,
+        ch_summary_input.map { manifest, _files -> manifest },
+        ch_summary_input.map { _manifest, files -> files },
+        file("${projectDir}/assets/summary_report/summary_report_template.html", checkIfExists: true),
+        file("${projectDir}/assets/variant_effect_inspection_tool/3Dmol-min.js", checkIfExists: true),
+    )
+    ch_versions = ch_versions.mix(VISUALIZATION_SUMMARY_REPORT.out.versions)
 
     emit:
     multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html

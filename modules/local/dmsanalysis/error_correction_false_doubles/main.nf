@@ -10,8 +10,11 @@ process DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES {
 
     input:
     tuple val(meta), path(raw_counts), path(filtered), path(completed)
+    path wt_fasta
     path aa_seq
     val min_counts
+    val method
+    val codon_window
 
     output:
     tuple val(meta),
@@ -19,6 +22,7 @@ process DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES {
         path("variantCounts_for_heatmaps_error_corrected.csv"),
         path("library_completed_variantCounts_error_corrected.csv"),
         emit: corrected
+    tuple val(meta), path("seq_error_rate.csv"), emit: seq_error_rate
     path "versions.yml", emit: versions
 
     when:
@@ -32,6 +36,7 @@ process DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES {
     touch variantCounts_filtered_by_library_error_corrected.csv
     touch variantCounts_for_heatmaps_error_corrected.csv
     touch library_completed_variantCounts_error_corrected.csv
+    touch seq_error_rate.csv
     echo "DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES:" > versions.yml
     echo "  stub-version: 0.0.0" >> versions.yml
     """

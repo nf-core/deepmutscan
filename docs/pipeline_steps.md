@@ -76,7 +76,7 @@ Steps 1-5 are iteratively run across all samples defined in the `.csv` spreadshe
 
 With very deep sequencing, single-codon counts show position-dependent bias from sequencing errors. `nf-core/deepmutscan` distinguishes true single-nucleotide variants from artefacts via the `--error_correction` parameter, with three options:
 
-- `false_doubles` (**default**): because the library only contains single-codon changes, any observed multi-codon variant must arise from sequencing error. Their counts give a maximum-likelihood estimate of the per-nucleotide error rate, which is subtracted from the single-codon counts. Needs no extra data.
+- `false_doubles` (**default**): because the library only contains single-codon changes, any observed multi-codon variant ("false double") must arise from sequencing error. Their counts, with a distance-dependent coverage model, estimate the per-nucleotide error rate that is subtracted from the single-codon counts. Needs no extra data. `--false_doubles_method` picks the estimator: `mle` (default, per-variant maximum likelihood) or `eb` (empirical Bayes, pooled and shrunk per substitution class — steadier for sparse variants). `--false_doubles_codon_window` (default 40) sets the codon matching window.
 - `none`: no correction.
 - `wildtype`: empirical error-rate modelling from **additional deep wildtype-only sequencing**. Add the wildtype sample(s) to the samplesheet with `type: wildtype`; their position-specific error profile is subtracted from each library sample of the same `sample`. This replaces the false-doubles correction.
 
