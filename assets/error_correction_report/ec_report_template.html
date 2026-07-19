@@ -522,9 +522,8 @@
         </h2>
       </div>
       <p class="secsub">
-        Where do the same errors recur? Each cell is how strongly two files agree on which variants are
-        error-prone. The more the files agree, the more the correction reflects the sequencing chemistry
-        rather than chance.
+        Where do the same errors recur? Each cell is how strongly two files agree on which variants are error-prone. The
+        more the files agree, the more the correction reflects the sequencing chemistry rather than chance.
       </p>
       <div class="panel">
         <div id="c-corr"></div>
@@ -545,9 +544,8 @@
         </h2>
       </div>
       <p class="secsub">
-        The effect of correction on the measured variants, kept separate for input and output libraries.
-        Toggle individual files within each group; where two or more are shown, the horizontal bar is the
-        spread across them.
+        The effect of correction on the measured variants, kept separate for input and output libraries. Toggle
+        individual files within each group; where two or more are shown, the horizontal bar is the spread across them.
       </p>
       <div class="grid2" id="scatter-groups"></div>
 
@@ -736,8 +734,7 @@
       // The error frequency the correction removed from a variant in one file. Equal to the estimated
       // per-nucleotide error rate at that site (coverage cancels): counts and coverage are what the
       // report already carries, so nothing extra has to be threaded through the pipeline for this.
-      const removed = (v, fi) =>
-        v.f_raw[fi] != null && v.f_cor[fi] != null ? v.f_raw[fi] - v.f_cor[fi] : null;
+      const removed = (v, fi) => (v.f_raw[fi] != null && v.f_cor[fi] != null ? v.f_raw[fi] - v.f_cor[fi] : null);
 
       /* ---------- axis helpers ---------- */
       function textW(svg, s, cls) {
@@ -892,7 +889,12 @@
           svg.appendChild(el("rect", { x: kx + s, y: ky, width: 1, height: 8, fill: rColor(s / kw) }));
         }
         ["0", "0.5", "1"].forEach((lab, i) => {
-          const t = el("text", { class: "tick", x: kx + (kw * i) / 2, y: ky + 20, "text-anchor": i === 0 ? "start" : i === 2 ? "end" : "middle" });
+          const t = el("text", {
+            class: "tick",
+            x: kx + (kw * i) / 2,
+            y: ky + 20,
+            "text-anchor": i === 0 ? "start" : i === 2 ? "end" : "middle",
+          });
           t.textContent = lab;
           svg.appendChild(t);
         });
@@ -923,7 +925,9 @@
       GROUPS.forEach((g) => (groupSel[g.type] = new Set(g.idx)));
 
       function groupTitle(t) {
-        return { input: "Input libraries", output: "Output libraries", quality: "Quality controls" }[t] || t + " libraries";
+        return (
+          { input: "Input libraries", output: "Output libraries", quality: "Quality controls" }[t] || t + " libraries"
+        );
       }
 
       function buildGroups() {
@@ -1023,18 +1027,40 @@
           tx.textContent = gv.toExponential(0);
           svg.appendChild(tx);
         });
-        svg.appendChild(el("line", { x1: m.l, x2: m.l + iw, y1: yZero, y2: yZero, stroke: "var(--line)", "stroke-dasharray": "3 3" }));
+        svg.appendChild(
+          el("line", { x1: m.l, x2: m.l + iw, y1: yZero, y2: yZero, stroke: "var(--line)", "stroke-dasharray": "3 3" }),
+        );
         const lz = el("text", { class: "tick", x: m.l - 8, y: yZero + 3, "text-anchor": "end" });
         lz.textContent = "removed";
         svg.appendChild(lz);
-        svg.appendChild(el("line", { x1: x(lo), y1: y(lo), x2: x(hi), y2: y(hi), stroke: "var(--ink2)", "stroke-dasharray": "4 4", "stroke-width": 1 }));
+        svg.appendChild(
+          el("line", {
+            x1: x(lo),
+            y1: y(lo),
+            x2: x(hi),
+            y2: y(hi),
+            stroke: "var(--ink2)",
+            "stroke-dasharray": "4 4",
+            "stroke-width": 1,
+          }),
+        );
         pts.forEach((p) => {
           const px = x(p.fr),
             py = p.fc > 0 ? y(p.fc) : yZero;
           const col = clsColor(p.v.cls);
           if (p.frsd != null) {
             const x0 = Math.max(p.fr - p.frsd, lo / 2);
-            svg.appendChild(el("line", { x1: x(x0), x2: x(p.fr + p.frsd), y1: py, y2: py, stroke: col, "stroke-width": 1, "stroke-opacity": 0.35 }));
+            svg.appendChild(
+              el("line", {
+                x1: x(x0),
+                x2: x(p.fr + p.frsd),
+                y1: py,
+                y2: py,
+                stroke: col,
+                "stroke-width": 1,
+                "stroke-opacity": 0.35,
+              }),
+            );
           }
           const pct = p.fr > 0 ? ((p.fc - p.fr) / p.fr) * 100 : null;
           const c = el("circle", {
@@ -1051,7 +1077,13 @@
           });
           svg.appendChild(c);
         });
-        const yl = el("text", { class: "albl", x: -(m.t + ih / 2), y: LBL_PX, transform: "rotate(-90)", "text-anchor": "middle" });
+        const yl = el("text", {
+          class: "albl",
+          x: -(m.t + ih / 2),
+          y: LBL_PX,
+          transform: "rotate(-90)",
+          "text-anchor": "middle",
+        });
         yl.textContent = "Corrected frequency";
         svg.appendChild(yl);
         const xl = el("text", { class: "albl", x: m.l + iw / 2, y: H - 4, "text-anchor": "middle" });
@@ -1142,7 +1174,13 @@
           svg.appendChild(t);
         }
         svg.appendChild(el("line", { class: "axis", x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih }));
-        const yl = el("text", { class: "albl", x: -(m.t + ih / 2), y: LBL_PX, transform: "rotate(-90)", "text-anchor": "middle" });
+        const yl = el("text", {
+          class: "albl",
+          x: -(m.t + ih / 2),
+          y: LBL_PX,
+          transform: "rotate(-90)",
+          "text-anchor": "middle",
+        });
         yl.textContent = "Counts removed";
         svg.appendChild(yl);
         const xl = el("text", { class: "albl", x: m.l + iw / 2, y: H - 4, "text-anchor": "middle" });
@@ -1219,7 +1257,8 @@
           }
           return { cls: c.cls, label: c.label, raw, cor };
         }).filter((s) => s.raw.length || s.cor.length);
-        if (!perClass.length) return (host.innerHTML = '<div class="empty">No single-nucleotide variants in this file.</div>');
+        if (!perClass.length)
+          return (host.innerHTML = '<div class="empty">No single-nucleotide variants in this file.</div>');
         const all = perClass.flatMap((s) => [...s.raw, ...s.cor]).map((p) => p.y);
         const lo = Math.min(...all),
           hi = Math.max(...all);
@@ -1308,15 +1347,48 @@
           const mr = med(s.raw.map((p) => p.y)),
             mc = med(s.cor.map((p) => p.y));
           if (mr != null)
-            svg.appendChild(el("line", { x1: s.rawX - half, x2: s.rawX + half, y1: y(mr), y2: y(mr), stroke: s.col, "stroke-width": 1.5, "stroke-opacity": s.op }));
+            svg.appendChild(
+              el("line", {
+                x1: s.rawX - half,
+                x2: s.rawX + half,
+                y1: y(mr),
+                y2: y(mr),
+                stroke: s.col,
+                "stroke-width": 1.5,
+                "stroke-opacity": s.op,
+              }),
+            );
           if (mc != null)
-            svg.appendChild(el("line", { x1: s.corX - half, x2: s.corX + half, y1: y(mc), y2: y(mc), stroke: s.col, "stroke-width": 1.5, "stroke-dasharray": "2 2", "stroke-opacity": s.op }));
-          const t = el("text", { class: "tick", x: s.cx, y: m.t + ih + TICK_PX + 4, "text-anchor": "middle", "fill-opacity": s.op });
+            svg.appendChild(
+              el("line", {
+                x1: s.corX - half,
+                x2: s.corX + half,
+                y1: y(mc),
+                y2: y(mc),
+                stroke: s.col,
+                "stroke-width": 1.5,
+                "stroke-dasharray": "2 2",
+                "stroke-opacity": s.op,
+              }),
+            );
+          const t = el("text", {
+            class: "tick",
+            x: s.cx,
+            y: m.t + ih + TICK_PX + 4,
+            "text-anchor": "middle",
+            "fill-opacity": s.op,
+          });
           t.textContent = s.cls;
           svg.appendChild(t);
         });
         svg.appendChild(el("line", { class: "axis", x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih }));
-        const yl = el("text", { class: "albl", x: -(m.t + ih / 2), y: LBL_PX, transform: "rotate(-90)", "text-anchor": "middle" });
+        const yl = el("text", {
+          class: "albl",
+          x: -(m.t + ih / 2),
+          y: LBL_PX,
+          transform: "rotate(-90)",
+          "text-anchor": "middle",
+        });
         yl.textContent = "Frequency";
         svg.appendChild(yl);
         const xl = el("text", { class: "albl", x: m.l + iw / 2, y: H - 4, "text-anchor": "middle" });
@@ -1340,8 +1412,7 @@
           const pct = ((r - c) / r) * 100; // fraction of the raw counts removed, 0..100
           if (pct > 0) pcts.push(Math.min(100, pct)); // adjusted variants only - untouched ones are excluded
         }
-        if (!pcts.length)
-          return (host.innerHTML = '<div class="empty">No variants were adjusted in this file.</div>');
+        if (!pcts.length) return (host.innerHTML = '<div class="empty">No variants were adjusted in this file.</div>');
         const NB = 40,
           bw = 100 / NB;
         const bins = new Array(NB).fill(0);
@@ -1394,7 +1465,13 @@
           svg.appendChild(t);
         }
         svg.appendChild(el("line", { class: "axis", x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih }));
-        const yl = el("text", { class: "albl", x: -(m.t + ih / 2), y: LBL_PX, transform: "rotate(-90)", "text-anchor": "middle" });
+        const yl = el("text", {
+          class: "albl",
+          x: -(m.t + ih / 2),
+          y: LBL_PX,
+          transform: "rotate(-90)",
+          "text-anchor": "middle",
+        });
         yl.textContent = "Variants";
         svg.appendChild(yl);
         const xl = el("text", { class: "albl", x: m.l + iw / 2, y: H - 4, "text-anchor": "middle" });
@@ -1426,11 +1503,20 @@
               (a.v.cls || "").toLowerCase().includes(q),
           );
         const get = (a) =>
-          ({ ntpos: a.v.ntpos, nt: a.v.nt, pos_mut: a.v.pos_mut, cls: a.v.cls, f_raw: a.f_raw, f_cor: a.f_cor, pct: a.pct })[sortK];
+          ({
+            ntpos: a.v.ntpos,
+            nt: a.v.nt,
+            pos_mut: a.v.pos_mut,
+            cls: a.v.cls,
+            f_raw: a.f_raw,
+            f_cor: a.f_cor,
+            pct: a.pct,
+          })[sortK];
         rows.sort((p, q2) => {
           const A = get(p),
             B = get(q2);
-          const c = typeof A === "number" && typeof B === "number" ? A - B : String(A ?? "").localeCompare(String(B ?? ""));
+          const c =
+            typeof A === "number" && typeof B === "number" ? A - B : String(A ?? "").localeCompare(String(B ?? ""));
           return sortAsc ? c : -c;
         });
         document.getElementById("snvcount").textContent = `${fmt(rows.length)} substitutions`;
@@ -1513,7 +1599,8 @@
         document.body.appendChild(pop);
         const r = b.getBoundingClientRect();
         pop.style.left = Math.max(8, Math.min(r.left, innerWidth - pop.offsetWidth - 8)) + "px";
-        pop.style.top = (r.bottom + 6 + pop.offsetHeight > innerHeight ? r.top - pop.offsetHeight - 6 : r.bottom + 6) + "px";
+        pop.style.top =
+          (r.bottom + 6 + pop.offsetHeight > innerHeight ? r.top - pop.offsetHeight - 6 : r.bottom + 6) + "px";
       });
 
       /* ---------- go ---------- */

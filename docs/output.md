@@ -82,6 +82,7 @@ This directory is created during the second series of steps of the pipeline, fea
 <summary>Output files</summary>
 
 - `library_QC/`
+
   - `counts_heatmap.pdf`: a complete heatmap of absolute mutant counts, stratified by mutant amino acid (Y-axis) per position (X-axis)
     ![Count heatmap](images/library_QC_counts_heatmap.png)
 
@@ -112,6 +113,7 @@ This directory is created during the final series of steps of the pipeline, feat
 <summary>Output files</summary>
 
 - `fitness/`
+
   - `counts_merged.tsv`: summarised gene variant counts across all input and output samples
   - `default_results/fitness_estimation_count_correlation.pdf`: pair-wise replicate variant count scatterplots and correlations between all specified samples
     ![Variant count correlation(s)](images/fitness_estimation_count_correlation.png)

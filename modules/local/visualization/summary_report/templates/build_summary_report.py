@@ -569,6 +569,11 @@ def citations(versions, extra=()):
 
 def biblatex(entries):
     """A biblatex source block for the given entries."""
+    # The braces are assembled from these two names instead of being written literally: nf-core's
+    # `template_strings` lint reads any doubled-brace pair in the source as a leftover Jinja
+    # placeholder, and biblatex needs exactly such a pair around the title to protect its
+    # capitalisation.
+    ob, cb = "{", "}"
     lines = []
     for c in entries:
         kind = "@article"
@@ -576,16 +581,16 @@ def biblatex(entries):
             kind = "@misc"
         elif not c.get("journal"):
             kind = "@misc"
-        lines.append(f"{kind}{{{c['key']},")
-        lines.append("  author       = {" + c["authors"].replace(", ", " and ") + "},")
-        lines.append("  title        = {{" + c["title"] + "}},")
+        lines.append(kind + ob + c["key"] + ",")
+        lines.append("  author       = " + ob + c["authors"].replace(", ", " and ") + cb + ",")
+        lines.append("  title        = " + ob + ob + c["title"] + cb + cb + ",")
         for fld, key in (("journaltitle", "journal"), ("year", "year"), ("volume", "volume"),
                          ("number", "number"), ("pages", "pages"), ("doi", "doi"),
                          ("eprint", "eprint"), ("eprintclass", "primaryclass"), ("url", "url")):
             if c.get(key):
-                lines.append(f"  {fld:<12} = {{{c[key]}}},")
+                lines.append(f"  {fld:<12} = " + ob + str(c[key]) + cb + ",")
         if c.get("note"):
-            lines.append("  note         = {" + c["note"] + "},")
+            lines.append("  note         = " + ob + c["note"] + cb + ",")
         lines.append("}")
         lines.append("")
     return "\\n".join(lines)

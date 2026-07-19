@@ -124,7 +124,7 @@
                     "description": "Enable basic fitness calculation and preceded data preparation."
                 },
                 "run_seqdepth": {
-                    "type": ["boolean", "string"],
+                    "type": "boolean",
                     "default": true,
                     "description": "Estimate sequencing-depth saturation by closed-form hypergeometric rarefaction (fast; on by default)."
                 }

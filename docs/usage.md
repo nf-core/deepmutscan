@@ -77,14 +77,14 @@ Secondly, users need to specify the gene or gene region of interest using a refe
 
 Several optional parameters are available for `nf-core/deepmutscan`, some of which are currently _(in development)_.
 
-| Parameter            | Default         | Description                                                   |
-| -------------------- | --------------- | ------------------------------------------------------------- |
+| Parameter            | Default         | Description                                                                    |
+| -------------------- | --------------- | ------------------------------------------------------------------------------ |
 | `--run_seqdepth`     | `true`          | Estimate sequencing-depth saturation by closed-form hypergeometric rarefaction |
-| `--fitness`          | `false`         | Default fitness inference module                              |
-| `--dimsum`           | `false`         | Optional fitness inference module _(AMD/x86_64 systems only)_ |
-| `--mutagenesis`      | `nnk`           | Deep mutational scanning strategy used                        |
-| `--error-estimation` | `wt_sequencing` | Error model used to correct 1nt counts _(in development)_     |
-| `--read-align`       | `bwa-mem`       | Customised read aligner _(in development)_                    |
+| `--fitness`          | `false`         | Default fitness inference module                                               |
+| `--dimsum`           | `false`         | Optional fitness inference module _(AMD/x86_64 systems only)_                  |
+| `--mutagenesis`      | `nnk`           | Deep mutational scanning strategy used                                         |
+| `--error-estimation` | `wt_sequencing` | Error model used to correct 1nt counts _(in development)_                      |
+| `--read-align`       | `bwa-mem`       | Customised read aligner _(in development)_                                     |
 
 ## Pipeline output
 
@@ -146,10 +146,12 @@ Steps 1-5 are run in parallel across all individual samples defined in the `.csv
 Very deep sequencing introduces position-dependent false counts. Select a strategy with `--error_correction`:
 
 - `false_doubles` (**default**): the library only contains single-codon changes, so observed multi-codon variants ("false doubles") are sequencing errors. Their counts, together with a distance-dependent coverage model, estimate the per-nucleotide error rate, which is subtracted from the single-codon counts. No extra data required. Two estimators are available via `--false_doubles_method`:
+
   - `mle` (**default**): a per-variant maximum-likelihood error rate.
   - `eb`: an empirical-Bayes estimate that pools across variants and shrinks per substitution class, which is steadier for sparsely observed variants.
 
   The matching window (in codons) is set by `--false_doubles_codon_window` (default 40).
+
 - `none`: disables error correction (counts pass through unchanged).
 - `wildtype`: subtracts a position-specific error profile measured from an **additional deep wildtype-only sequencing** sample. Provide it in the samplesheet with `type: wildtype`, sharing the same `sample` name as the input/output samples it should correct. This replaces the false-doubles correction.
 
