@@ -1318,7 +1318,7 @@
               if (!b) return "–";
               const u = ["B", "KB", "MB", "GB", "TB"];
               let i = 0;
-              while (b >= 1000 && i < u.length - 1) (b /= 1000), i++;
+              while (b >= 1000 && i < u.length - 1) ((b /= 1000), i++);
               return (b < 10 ? b.toFixed(1) : Math.round(b)) + " " + u[i];
             };
             const t = RS.total;

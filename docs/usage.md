@@ -146,7 +146,6 @@ Steps 1-5 are run in parallel across all individual samples defined in the `.csv
 Very deep sequencing introduces position-dependent false counts. Select a strategy with `--error_correction`:
 
 - `false_doubles` (**default**): the library only contains single-codon changes, so observed multi-codon variants ("false doubles") are sequencing errors. Their counts, together with a distance-dependent coverage model, estimate the per-nucleotide error rate, which is subtracted from the single-codon counts. No extra data required. Two estimators are available via `--false_doubles_method`:
-
   - `mle` (**default**): a per-variant maximum-likelihood error rate.
   - `eb`: an empirical-Bayes estimate that pools across variants and shrinks per substitution class, which is steadier for sparsely observed variants.
 
