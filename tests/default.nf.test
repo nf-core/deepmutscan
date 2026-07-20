@@ -14,7 +14,10 @@ nextflow_pipeline {
 
         then {
             // stable_path: All files + folders in ${params.outdir}/ with a stable path (including file name)
-            def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}', 'multiqc/multiqc_plots', 'multiqc/multiqc_plots/**'])
+            // DiMSum's diagnostic plots are excluded from the path list as well as from the content
+            // hashes (tests/.nftignore): which of them DiMSum emits depends on its graphics stack, so
+            // their mere presence is not a stable contract to assert on.
+            def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}', 'multiqc/multiqc_plots', 'multiqc/multiqc_plots/**', 'fitness/DiMSum_results/**/reports/*.{pdf,png}'])
             // stable_content: All files in ${params.outdir}/ with stable content
             def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
             // Parse the unstable TSVs to snapshot their structure instead of their hashes
