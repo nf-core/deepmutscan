@@ -1,0 +1,54 @@
+name: "dmsanalysis_aaseq"
+description: Translates a wild-type DNA sequence into an amino acid sequence based on a provided coding region (ORF) range.
+keywords:
+  - translation
+  - amino acid
+  - dna
+  - dms
+  - biostrings
+tools:
+  - "bioconductor-biostrings":
+      description: "Memory efficient string containers, string matching algorithms, and other utilities, for fast manipulation of large biological sequences or sets of sequences"
+      homepage: "https://bioconductor.org/packages/Biostrings"
+      documentation: "https://bioconductor.org/packages/release/bioc/manuals/Biostrings/man/Biostrings.pdf"
+      licence: ["Artistic-2.0"]
+  - "mutscan":
+      description: "R package for analysis of deep mutational scanning data"
+      homepage: "https://bioconductor.org/packages/mutscan"
+      tool_dev_url: "https://github.com/csoneson/mutscan"
+      doi: "10.1186/s12859-023-05187-y"
+      licence: ["GPL-3.0-or-later"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'ref' ]`
+    - wt_seq:
+        type: file
+        description: FASTA file containing the wild-type DNA reference sequence
+        pattern: "*.{fasta,fa}"
+  - - pos_range:
+        type: string
+        description: Start and stop codon positions in the format 'start-stop', e.g., '352-1383'
+
+output:
+  - aa_seq:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - aa_seq.txt:
+          type: file
+          description: Text file containing the translated amino acid sequence
+          pattern: "aa_seq.txt"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

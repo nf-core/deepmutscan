@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/nf-core/deepmutscan/master/nextflow_schema.json",
     "title": "nf-core/deepmutscan pipeline parameters",
-    "description": "Until now, most Deep Mutational Scanning (DMS) experiments relied on variant-specific barcoded libraries for sequencing. This method enabled DMS on large proteins and led to many great publications. Recently, efforts have increased to make use of the classic and more simple random fragmentation-based short-read sequencing (“shotgun-sequencing”). This saves time and money and due to its simpler experimental design is less prone to mistakes. dmscore handles the essential computational steps, processing the raw FASTQ files and generating a count table of variants. Along the way, it provides multiple QC metrics, enabling users to quickly evaluate the success of their experimental setup.",
+    "description": "Until now, most Deep Mutational Scanning (DMS) experiments relied on variant-specific barcoded libraries for sequencing. This method enabled DMS on large proteins and led to many great publications. Recently, efforts have increased to make use of the classic and more simple random fragmentation-based short-read sequencing (\u201cshotgun-sequencing\u201d). This saves time and money and due to its simpler experimental design is less prone to mistakes. dmscore handles the essential computational steps, processing the raw FASTQ files and generating a count table of variants. Along the way, it provides multiple QC metrics, enabling users to quickly evaluate the success of their experimental setup.",
     "type": "object",
     "$defs": {
         "input_output_options": {
@@ -10,7 +10,7 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": ["input", "outdir", "fasta", "reading_frame"],
             "properties": {
                 "input": {
                     "type": "string",
@@ -40,6 +40,93 @@
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
                     "fa_icon": "fas fa-file-signature"
+                },
+                "reading_frame": {
+                    "type": "string",
+                    "description": "Start and stop codon positions in the format 'start-stop', e.g., '352-1383'.",
+                    "pattern": "^\\d+-\\d+$"
+                },
+                "min_counts": {
+                    "type": "integer",
+                    "description": "minimum counts for variant to be recognized. All variants below min_counts will be set to 0",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "base_qual": {
+                    "type": "integer",
+                    "description": "Minimum base quality (Phred) for a mutation to be counted by the variant counter.",
+                    "minimum": 0,
+                    "default": 30
+                },
+                "min_flank": {
+                    "type": "integer",
+                    "description": "Minimum distance (nt) a mutation or covered base must be from a read edge; also excludes those bases from coverage. Set to 0 to disable edge trimming.",
+                    "minimum": 0,
+                    "default": 2
+                },
+                "error_correction": {
+                    "type": "string",
+                    "description": "Sequencing-error correction of single-codon variant counts. 'false_doubles' (default) treats observed multi-codon variants as errors to estimate the per-nucleotide error rate; 'none' disables correction; 'wildtype' subtracts the position-specific error profile measured from an additional deep wildtype-only sample (requires samplesheet rows with type 'wildtype').",
+                    "enum": ["false_doubles", "none", "wildtype"],
+                    "default": "false_doubles"
+                },
+                "false_doubles_method": {
+                    "type": "string",
+                    "description": "Estimator used by the false-doubles correction. 'mle' (default) is a per-variant maximum-likelihood error rate; 'eb' is an empirical-Bayes estimate that pools across variants and shrinks per substitution class (steadier for sparse variants). Only applies when error_correction = 'false_doubles'.",
+                    "enum": ["mle", "eb"],
+                    "default": "mle"
+                },
+                "false_doubles_codon_window": {
+                    "type": "integer",
+                    "description": "Window (in codons, upstream and downstream) within which false double mutants are matched to a single-nucleotide variant during false-doubles correction.",
+                    "minimum": 1,
+                    "default": 40
+                },
+                "pdb": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "chemical/x-pdb",
+                    "description": "Optional wildtype 3D structure (PDB). When supplied together with `--fitness`, an interactive variant effect inspection tool (self-contained HTML) is built that projects fitness, counts and error-correction biases onto the structure.",
+                    "help_text": "Use a crystal structure, an AlphaFold DB model, or any precomputed PDB whose sequence matches the wildtype ORF. Structure prediction (nf-core/proteinfold) is not wired in this release."
+                },
+                "sliding_window_size": {
+                    "type": "integer",
+                    "description": "To flatten graphs in plots (e.g. `GLOBAL_POS_BIASES_COUNTS` function)",
+                    "default": 10
+                },
+                "aimed_cov": {
+                    "type": "integer",
+                    "description": "aimed coverage (assuming equal spread) to visualize threshold in plots",
+                    "default": 100
+                },
+                "mutagenesis_type": {
+                    "type": "string",
+                    "description": "Type of mutagenic primers. Choose from nnk, nns, nnh, nnn, nnk_nns, nnk_nns_nnh, custom. When using 'custom', also provide the parameter 'custom_codon_library'.",
+                    "default": "nnk"
+                },
+                "custom_codon_library": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to a file defining a custom codon library. Required when mutagenesis_type is set to `custom`. The script auto-detects the format: provide either a global comma-separated list of codons (e.g., 'AAA,AAC,AAG') OR a position-specific, headerless list where each row specifies the target sequence position followed by its allowed codons (e.g., '1,ACG,AAA,ACA' and '2,AAA,TTT,ACA' on separate lines). Both as .csv.",
+                    "default": "/NULL"
+                },
+                "dimsum": {
+                    "type": ["boolean", "string"],
+                    "description": "Run DiMSum for fitness/functionality scores from growth-based selection input & output samples"
+                },
+                "mutscan": {
+                    "type": ["boolean", "string"],
+                    "description": "Run mutscan (Soneson et al., 2023) to estimate fitness/functionality scores from input & output samples"
+                },
+                "fitness": {
+                    "type": ["boolean", "string"],
+                    "description": "Enable basic fitness calculation and preceded data preparation."
+                },
+                "run_seqdepth": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Estimate sequencing-depth saturation by closed-form hypergeometric rarefaction (fast; on by default)."
                 }
             }
         },
@@ -216,10 +303,6 @@
                     "fa_icon": "far calendar",
                     "description": "Suffix to add to the trace report filename. Default is the date and time in the format yyyy-MM-dd_HH-mm-ss.",
                     "hidden": true
-                },
-                "help": {
-                    "type": ["boolean", "string"],
-                    "description": "Display the help message."
                 },
                 "help_full": {
                     "type": "boolean",

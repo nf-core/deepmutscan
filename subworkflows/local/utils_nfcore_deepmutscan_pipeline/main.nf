@@ -10,8 +10,6 @@
 
 include { UTILS_NFSCHEMA_PLUGIN     } from '../../nf-core/utils_nfschema_plugin'
 include { paramsSummaryMap          } from 'plugin/nf-schema'
-include { samplesheetToList         } from 'plugin/nf-schema'
-include { paramsHelp                } from 'plugin/nf-schema'
 include { completionEmail           } from '../../nf-core/utils_nfcore_pipeline'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
@@ -32,13 +30,10 @@ workflow PIPELINE_INITIALISATION {
     nextflow_cli_args //   array: List of positional nextflow CLI args
     outdir            //  string: The output directory where the results will be saved
     input             //  string: Path to input samplesheet
-    help              // boolean: Display help message and exit
-    help_full         // boolean: Show the full help message
-    show_hidden       // boolean: Show hidden parameters in the help message
 
     main:
 
-    ch_versions = channel.empty()
+    ch_versions = Channel.empty()
 
     //
     // Print version and exit if required and dump pipeline parameters to JSON file
@@ -82,13 +77,14 @@ workflow PIPELINE_INITIALISATION {
     UTILS_NFSCHEMA_PLUGIN (
         workflow,
         validate_params,
+        params.help,
+        params.help_full,
+        params.show_hidden,
         null,
-        help,
-        help_full,
-        show_hidden,
         before_text,
         after_text,
-        command
+        command,
+        "${projectDir}/nextflow_schema.json"
     )
 
     //
@@ -107,26 +103,40 @@ workflow PIPELINE_INITIALISATION {
     // Create channel from input file provided through params.input
     //
 
-    channel
-        .fromList(samplesheetToList(input, "${projectDir}/assets/schema_input.json"))
-        .map {
-            meta, fastq_1, fastq_2 ->
-                if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
-                } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
-                }
-        }
-        .groupTuple()
-        .map { samplesheet ->
-            validateInputSamplesheet(samplesheet)
-        }
-        .map {
-            meta, fastqs ->
-                return [ meta, fastqs.flatten() ]
-        }
-        .set { ch_samplesheet }
+    Channel
+    .fromPath(params.input)
+    .splitCsv(header: true)
+    .filter { row ->
+        // Skip rows where file1 or file2 are BAM files
+        !(row.file1.endsWith('.bam') || (row.file2 && row.file2.endsWith('.bam')))
+    }
+    .map { row ->
+        // Determine suffix based on the presence of file2
+        def suffix = row.file2 ? "_pe" : "_se"
 
+        // Construct metadata object with updated ID
+        def meta = [
+            id        : "${row.sample}_${row.type}_${row.replicate}${suffix}", // Base ID with suffix
+            sample    : row.sample,
+            type      : row.type,
+            replicate : row.replicate as int
+        ]
+
+        // Generate file paths based on the presence of file1 and file2
+        def reads = []
+        if (row.file1) {
+            reads << row.file1 // Add file1 path
+        }
+        if (row.file2) {
+            reads << row.file2 // Add file2 path
+        }
+
+        // Return metadata and file paths as a tuple
+        return [meta, reads]
+    }
+    .set { ch_samplesheet }
+
+    // Emit the samplesheet channel and an empty version channel for use in the workflow
     emit:
     samplesheet = ch_samplesheet
     versions    = ch_versions
@@ -232,7 +242,6 @@ def genomeExistsError() {
 // Generate methods description for MultiQC
 //
 def toolCitationText() {
-    // TODO nf-core: Optionally add in-text citation tools to this list.
     // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "Tool (Foo et al. 2023)" : "",
     // Uncomment function in methodsDescriptionText to render in MultiQC report
     def citation_text = [
@@ -246,7 +255,6 @@ def toolCitationText() {
 }
 
 def toolBibliographyText() {
-    // TODO nf-core: Optionally add bibliographic entries to this list.
     // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "<li>Author (2023) Pub name, Journal, DOI</li>" : "",
     // Uncomment function in methodsDescriptionText to render in MultiQC report
     def reference_text = [
@@ -281,9 +289,8 @@ def methodsDescriptionText(mqc_methods_yaml) {
     meta["tool_citations"] = ""
     meta["tool_bibliography"] = ""
 
-    // TODO nf-core: Only uncomment below if logic in toolCitationText/toolBibliographyText has been filled!
-    // meta["tool_citations"] = toolCitationText().replaceAll(", \\.", ".").replaceAll("\\. \\.", ".").replaceAll(", \\.", ".")
-    // meta["tool_bibliography"] = toolBibliographyText()
+    meta["tool_citations"] = toolCitationText().replaceAll(", \\.", ".").replaceAll("\\. \\.", ".").replaceAll(", \\.", ".")
+    meta["tool_bibliography"] = toolBibliographyText()
 
 
     def methods_text = mqc_methods_yaml.text

@@ -1,0 +1,31 @@
+process FIND_SYNONYMOUS_MUTATION {
+  tag { sample.sample }
+  label 'process_single'
+
+  conda "${moduleDir}/environment.yml"
+
+  container "${ workflow.containerEngine == 'singularity'
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/73/73a72ec77725aeb67678a74228938fdd6827b669d01a8c96951b1a8ef96eeb0f/data'
+        : 'community.wave.seqera.io/library/bioconductor-biostrings_bioconductor-mutscan_r-base_r-biocmanager_pruned:c65036d76406f342' }"
+
+  input:
+    tuple val(sample), path(counts_merged)   // from MERGE_COUNTS.out.merged_counts
+    path wt_fasta                            // broadcast singleton
+    val pos_range                            // "start-end", broadcast singleton
+
+  output:
+    tuple val(sample), path("synonymous_wt.txt"), emit: synonymous_wt
+    path "versions.yml", emit: versions
+
+  script:
+  template 'find_syn_mutation.R'
+
+  stub:
+  """
+  touch synonymous_wt.txt
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+      r-base: "0.0.0"
+  END_VERSIONS
+  """
+}
