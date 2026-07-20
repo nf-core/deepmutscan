@@ -19,22 +19,47 @@ make_dimsum_experimental_design <- function(samplesheet_csv, out_path = "experim
   # coerce types
   ss\$replicate <- as.integer(ss\$replicate)
 
-  # ---- derive sample_name strategy ----
-  # If only one biological sample present (e.g. one protein), use "input1", "output2", ...
-  # If multiple biological samples present, prefix with 'sample' to avoid collisions:
-  # "ORF1_input1", "ORF2_output2", ...
-  multi_base <- length(unique(ss\$sample)) > 1
-  if (multi_base) {
-    sample_name <- paste(ss\$sample, ss\$type, ss\$replicate, sep = "")
-  } else {
-    sample_name <- paste0(ss\$type, ss\$replicate)
+  # ---- keep only the samples DiMSum scores ----
+  # A samplesheet legitimately carries other row types: `wildtype` (required by
+  # --error_correction wildtype) and `quality`. They are real samples, but they are not part of the
+  # selection design - they feed error correction and QC - and MERGE_COUNTS drops them too. Leaving
+  # them in gave them an empty `selection_id`, which DiMSum reads back as NA and then dies in
+  # dimsum__check_experiment_design on `sum(exp_design[,"selection_id"] < 0)` with the opaque
+  # "missing value where TRUE/FALSE needed".
+  ss <- ss[ss\$type %in% c("input", "output"), , drop = FALSE]
+  if (nrow(ss) == 0) {
+    stop("Samplesheet has no 'input'/'output' rows - DiMSum needs both to compute fitness.")
   }
 
+  # ---- order rows: by sample (if multiple), input before output, then replicate ----
+  # Sorting happens before naming, because the names are derived from the row order below.
+  multi_base <- length(unique(ss\$sample)) > 1
+  type_rank  <- match(ss\$type, c("input", "output"))
+  ord <- if (multi_base) {
+    order(ss\$sample, type_rank, ss\$replicate)
+  } else {
+    order(type_rank, ss\$replicate)
+  }
+  ss <- ss[ord, , drop = FALSE]
+
+  # ---- sample_name: must equal the count column MERGE_COUNTS writes for this row ----
+  # merge_counts.R names its columns positionally - paste0("input", seq_len(n_in)) over the files
+  # sorted by replicate - so the name has to come from each row's POSITION within its type, not from
+  # the samplesheet's `replicate` value. The two only coincide when the replicates happen to be a
+  # contiguous 1..N; replicates 1,2,4 would otherwise produce "input4" for a column named "input3"
+  # and DiMSum could not match them. DiMSum also requires sample_name to be alphanumeric and to
+  # start with a letter, so the parts are joined without a separator.
+  idx <- stats::ave(seq_len(nrow(ss)), ss\$sample, ss\$type, FUN = seq_along)
+  # NOTE: for multiple biological samples these names still will not match the counts file, because
+  # one design is built from the whole samplesheet and broadcast to every per-sample DiMSum run
+  # (see subworkflows/local/calculate_fitness/main.nf). Multi-sample + DiMSum is a separate,
+  # known-broken case; single-sample runs are correct.
+  sample_name <- if (multi_base) paste0(ss\$sample, ss\$type, idx) else paste0(ss\$type, idx)
+
   # ---- build DiMSum columns ----
-  experiment_replicate <- ss\$replicate
-  selection_id <- ifelse(ss\$type == "input", 0L,
-                         ifelse(ss\$type == "output", 1L, NA_integer_))
-  # assume one selection batch
+  experiment_replicate <- ss\$replicate           # pairs an input with an output; need not be 1..N
+  selection_id <- ifelse(ss\$type == "input", 0L, 1L)
+  # assume one selection batch; DiMSum requires this to be blank for input samples
   selection_replicate <- ifelse(ss\$type == "output", 1L, NA_integer_)
   # assume one technical batch
   technical_replicate <- rep(1L, nrow(ss))
@@ -53,15 +78,6 @@ make_dimsum_experimental_design <- function(samplesheet_csv, out_path = "experim
     pair2                = pair2,
     stringsAsFactors     = FALSE
   )
-
-  # ---- order rows: by sample (if multiple), type (input, output, quality), then replicate ----
-  type_rank <- match(ss\$type, c("input", "output", "quality"))
-  ord <- if (multi_base) {
-    order(ss\$sample, type_rank, ss\$replicate, na.last = TRUE)
-  } else {
-    order(type_rank, ss\$replicate, na.last = TRUE)
-  }
-  ed <- ed[ord, , drop = FALSE]
   rownames(ed) <- NULL
 
   # ---- write & return ----

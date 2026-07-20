@@ -2,4 +2,10 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
+  # r-base must be pinned: with r-dimsum alone the solver is free to satisfy it with an ancient R
+  # (it picked 4.0.5), which does not match the container's 4.4.2 and makes DiMSum emit a different
+  # set of diagnostic plots. Every pin here mirrors the paired container exactly.
   - bioconda::r-dimsum=1.4
+  - conda-forge::r-base=4.4.2
+  - conda-forge::r-data.table=1.16.4
+  - bioconda::bioconductor-biostrings=2.74.0
