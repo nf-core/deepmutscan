@@ -349,7 +349,7 @@ if (length(Biostrings_version) == 0) Biostrings_version <- "unknown"
 f <- file("versions.yml", "w")
 writeLines(
   c(
-    '"\${task.process}":',
+    '"${task.process}":',
     paste('    r-base:', r_version),
     paste('    r-Biostrings:', Biostrings_version)
   ),

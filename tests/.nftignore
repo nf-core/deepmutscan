@@ -19,6 +19,7 @@ fitness/DiMSum_results/**/*.png
 **/*.RData
 **/*_error_correction_report.html
 **/variant_effect_inspection_tool.html
+deepmutscan_report.html
 **/structure_data.json
 fitness/DiMSum_results/**/report.html
 **/fitness_estimation_mutscan_edgeR.tsv

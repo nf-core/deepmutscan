@@ -21,4 +21,13 @@ process RUN_MUTSCAN {
 
   script:
   template 'fitness_calculation_mutscan.R'
+
+  stub:
+  """
+  touch fitness_estimation_mutscan_edgeR.tsv fitness_estimation_mutscan_limma.tsv mutscan_stub.pdf
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+      r-base: "0.0.0"
+  END_VERSIONS
+  """
 }

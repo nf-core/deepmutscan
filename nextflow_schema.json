@@ -70,6 +70,18 @@
                     "enum": ["false_doubles", "none", "wildtype"],
                     "default": "false_doubles"
                 },
+                "false_doubles_method": {
+                    "type": "string",
+                    "description": "Estimator used by the false-doubles correction. 'mle' (default) is a per-variant maximum-likelihood error rate; 'eb' is an empirical-Bayes estimate that pools across variants and shrinks per substitution class (steadier for sparse variants). Only applies when error_correction = 'false_doubles'.",
+                    "enum": ["mle", "eb"],
+                    "default": "mle"
+                },
+                "false_doubles_codon_window": {
+                    "type": "integer",
+                    "description": "Window (in codons, upstream and downstream) within which false double mutants are matched to a single-nucleotide variant during false-doubles correction.",
+                    "minimum": 1,
+                    "default": 40
+                },
                 "pdb": {
                     "type": "string",
                     "format": "file-path",
@@ -112,8 +124,9 @@
                     "description": "Enable basic fitness calculation and preceded data preparation."
                 },
                 "run_seqdepth": {
-                    "type": ["boolean", "string"],
-                    "description": "Whether to run the SeqDepth simulation module."
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Estimate sequencing-depth saturation by closed-form hypergeometric rarefaction (fast; on by default)."
                 }
             }
         },

@@ -1,4 +1,7 @@
 channels:
   - conda-forge
+  - bioconda
 dependencies:
   - conda-forge::r-base=4.4.1
+  - conda-forge::r-stringr
+  - bioconda::bioconductor-biostrings

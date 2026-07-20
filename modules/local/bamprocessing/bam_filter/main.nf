@@ -37,14 +37,15 @@ END_VERSIONS
     """
 
     stub:
-    def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}.bam
+    # Must match the name the script block writes: the input bam is staged under
+    # \${meta.id}.bam, so touching that name here would just re-touch the input and
+    # leave the process with no output of its own.
+    touch ${meta.id}_filtered.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bamfilteringdms: \$(samtools --version |& sed '1!d ; s/samtools //')
+        samtools: \$(samtools --version |& sed '1!d ; s/samtools //')
 END_VERSIONS
     """
 }

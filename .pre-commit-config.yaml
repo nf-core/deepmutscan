@@ -17,7 +17,7 @@ repos:
               subworkflows/(?!local/).*|
               .*\.snap$|
               assets/test_structure/.*\.pdb$|
-              assets/structure_viewer/3Dmol-min\.js.*
+              assets/variant_effect_inspection_tool/3Dmol-min\.js.*
           )$
       - id: end-of-file-fixer
         exclude: |
@@ -27,7 +27,7 @@ repos:
               subworkflows/(?!local/).*|
               .*\.snap$|
               assets/test_structure/.*\.pdb$|
-              assets/structure_viewer/3Dmol-min\.js.*
+              assets/variant_effect_inspection_tool/3Dmol-min\.js.*
           )$
   - repo: https://github.com/seqeralabs/nf-lint-pre-commit
     rev: v0.3.0

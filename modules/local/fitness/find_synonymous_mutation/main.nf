@@ -19,4 +19,13 @@ process FIND_SYNONYMOUS_MUTATION {
 
   script:
   template 'find_syn_mutation.R'
+
+  stub:
+  """
+  touch synonymous_wt.txt
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+      r-base: "0.0.0"
+  END_VERSIONS
+  """
 }

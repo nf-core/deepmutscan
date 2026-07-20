@@ -88,19 +88,35 @@ def to_float(x):
         return None
 
 
+REP_RE = re.compile(r"^rescaled_fitness_rep(\\d+)\$", re.I)
+OUT_RE = re.compile(r"^output(\\d+)\$", re.I)
+
+
 def load_fitness(path):
     """Per-position variant records from the default fitness_estimation.tsv.
 
-    Captures the mean fitness, its SD and the per-replicate (rescaled) fitness so the viewer can
-    derive replicate-based metrics. Missing columns/values are tolerated (single-replicate data).
+    Captures the mean fitness, its SD and every per-replicate (rescaled) fitness, so the viewer can
+    recompute the mean/SD over a user-chosen subset of replicates. That subsetting is exact rather
+    than approximate: the fitness step derives each `rescaled_fitness_rep<N>` from that replicate's
+    own input/output counts and its own synonymous/stop anchors, so a replicate's value never
+    depends on which other replicates were in the run.
+
+    Returns (per_pos, rep_ids). Any number of replicates is handled; missing values are tolerated.
     """
     df = pd.read_csv(path, sep="\\t", dtype=str, keep_default_na=False)
 
     def col(name):
         return next((c for c in df.columns if c.strip().lower() == name), None)
 
+    def numbered(rx):
+        return sorted((c for c in df.columns if rx.match(c.strip())),
+                      key=lambda c: int(rx.match(c.strip()).group(1)))
+
     fit_col, sd_col = col("mean fitness"), col("fitness sd")
-    r1_col, r2_col = col("rescaled_fitness_rep1"), col("rescaled_fitness_rep2")
+    rep_cols = numbered(REP_RE)
+    out_cols = numbered(OUT_RE)
+    rep_ids = [REP_RE.match(c.strip()).group(1) for c in rep_cols]
+
     per_pos = {}
     for _, row in df.iterrows():
         pos = to_float(row.get("pos", ""))
@@ -114,12 +130,11 @@ def load_fitness(path):
             "mut": mut,
             "fitness": to_float(row.get(fit_col, "")) if fit_col else None,
             "sd": to_float(row.get(sd_col, "")) if sd_col else None,
-            "rep1": to_float(row.get(r1_col, "")) if r1_col else None,
-            "rep2": to_float(row.get(r2_col, "")) if r2_col else None,
-            "n_out": (to_float(row.get("output1", "")) or 0) + (to_float(row.get("output2", "")) or 0),
+            "reps": [to_float(row.get(c, "")) for c in rep_cols],
+            "n_out": sum((to_float(row.get(c, "")) or 0) for c in out_cols),
             "syn": mut == wt, "stop": bool(is_stop),
         })
-    return per_pos
+    return per_pos, rep_ids
 
 
 def load_counts(paths):
@@ -185,7 +200,7 @@ def main():
     off0, identity = best_alignment(wt_seq, struct_residues)
     struct_by_index = struct_residues  # 0-based list
 
-    fit_per_pos = load_fitness(args.fitness)
+    fit_per_pos, rep_ids = load_fitness(args.fitness)
     # per-position aggregate (structure colour) and per-variant values (substitution-specific swarm)
     counts_per_pos, counts_per_var = load_counts(sorted(args.counts))  # sorted -> deterministic
 
@@ -216,17 +231,6 @@ def main():
     def mean(xs):
         return (sum(xs) / len(xs)) if xs else None
 
-    def rep_corr(vs):
-        pairs = [(v["rep1"], v["rep2"]) for v in vs
-                 if v.get("rep1") is not None and v.get("rep2") is not None]
-        if len(pairs) < 3:
-            return None
-        a = np.array([p[0] for p in pairs], float)
-        b = np.array([p[1] for p in pairs], float)
-        if a.std() == 0 or b.std() == 0:
-            return None
-        return float(np.corrcoef(a, b)[0, 1])
-
     residues = []
     for i, wt_aa in enumerate(wt_seq):  # i is 0-based; position = i + 1
         pos = i + 1
@@ -254,6 +258,8 @@ def main():
             vc = counts_per_var.get((pos, v["mut"]), {})
             vlist.append({
                 "mut": v["mut"], "syn": v["syn"], "stop": v["stop"], "n_out": r6(v["n_out"]),
+                # per-replicate fitness, so the viewer can re-derive mean/SD for a chosen subset
+                "reps": [r6(x) if x is not None else None for x in v["reps"]],
                 "metrics": {
                     "fitness": r6(v["fitness"]), "fitness_sd": r6(v["sd"]),
                     "coverage": r6(vc.get("coverage")), "counts": r6(vc.get("counts")),
@@ -298,6 +304,7 @@ def main():
         "sequence": wt_seq,
         "alignment": {"offset": off0, "identity": round(identity, 4),
                       "n_residues_structure": len(struct_residues)},
+        "replicates": rep_ids,
         "metrics": metrics,
         "residues": residues,
     }

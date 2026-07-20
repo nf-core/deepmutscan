@@ -17,4 +17,13 @@ process MERGE_COUNTS {
 
   script:
   template 'merge_counts.R'
+
+  stub:
+  """
+  touch counts_merged.tsv
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+      r-base: "0.0.0"
+  END_VERSIONS
+  """
 }
