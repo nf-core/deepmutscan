@@ -649,9 +649,9 @@
 
       const SAMPLES = DATA.samples || [];
       const SIDS = SAMPLES.map((s) => s.id);
-      // Same window the pipeline's R plots use, so the smoothed curves here and the published PDFs
-      // describe the same thing.
-      const WINDOW = Number((DATA.run || {}).sliding_window_size) || 10;
+      // Default matches the window the pipeline's R plots use, so the smoothed curves here and the
+      // published PDFs describe the same thing; the Library-QC control lets the reader change it live.
+      let WINDOW = Number((DATA.run || {}).sliding_window_size) || 10;
       // Reads must span every varying base (plus --min_flank), so counts and counts-per-coverage are
       // only comparable within a class; pooling them makes a curve that tracks class composition
       // rather than the library. The R plots draw one line per class for the same reason.
@@ -660,11 +660,32 @@
         ["2", "2 varying bases"],
         ["3", "3 varying bases"],
       ];
-      // Fixed slot order; a sample keeps its colour no matter what is filtered. Beyond 8 samples an
-      // overlay would have to recycle hues, so the comparison falls back to small multiples instead.
+      // Colour groups the files by role: inputs share a blue family, outputs a red/orange one, so a plot
+      // reads "before vs after selection" at a glance. Replicates within a role are separated by
+      // lightness (kept in a band that stays legible on both the light and dark panel). Wildtype/quality
+      // helper samples get their own hues; anything with no parseable type falls back to the accent.
+      // A sample keeps its colour no matter what is filtered. Beyond 8 samples an overlay would have to
+      // crowd the lightness band, so the comparison falls back to small multiples instead.
       const MAXHUE = 8;
       const COLOR = {};
-      SIDS.forEach((id, i) => (COLOR[id] = i < MAXHUE ? `var(--s${i + 1})` : "var(--accent)"));
+      (function buildPalette() {
+        const FAM = { input: 212, output: 14, wildtype: 265, quality: 150 };
+        const groups = {};
+        SAMPLES.forEach((s) => (groups[s.type || "other"] = groups[s.type || "other"] || []).push(s));
+        for (const [type, arr] of Object.entries(groups)) {
+          arr.sort((a, b) => (a.replicate ?? 0) - (b.replicate ?? 0) || (a.id < b.id ? -1 : 1));
+          const hue = FAM[type];
+          arr.forEach((s, i) => {
+            if (hue == null) {
+              COLOR[s.id] = "var(--accent)";
+              return;
+            }
+            const n = arr.length;
+            const L = n <= 1 ? 55 : 66 - (20 * i) / (n - 1); // 66%..46%
+            COLOR[s.id] = `hsl(${hue} 68% ${L}%)`;
+          });
+        }
+      })();
       const OVERLAY_OK = SIDS.length <= MAXHUE;
       const sel = new Set(SIDS);
 
@@ -1152,13 +1173,6 @@
           false,
         ],
         [
-          "counts",
-          "Variant counts along the ORF",
-          "Mean variant reads per residue position — the raw depth behind every downstream estimate.",
-          true,
-          true,
-        ],
-        [
           "cpc",
           "Counts per coverage along the ORF",
           "Variant counts normalised by the coverage at that position, i.e. the frequency at which the library's variants appear. This is the coverage-independent view of library representation.",
@@ -1296,9 +1310,9 @@
             ["Error correction", r.error_correction || "none"],
             ["Pipeline version", r.version || "–"],
           ];
-          let h = `<h1>Run overview</h1><p class="lead">A single, self-contained tour of this deep mutational scanning run — from sequencing quality through library representation and error correction to variant effects. Every figure is redrawn here from the run's own tables, and the detailed tool reports are embedded, so the file reads on its own and travels as one attachment.</p>`;
+          let h = `<h1>Run overview</h1><p class="lead">A self-contained tour of this deep mutational scanning run — sequencing quality, library representation, error correction, variant effects. Every figure is redrawn from the run's own tables and the detailed tool reports are embedded, so the file reads and travels on its own.</p>`;
           h += `<div class="tiles">${tiles.map(([k, v]) => `<div class="tile"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`).join("")}</div>`;
-          h += `<div class="panel"><h2>Sequencing files ${info("Every fastq pair that entered the run. Input and output refer to the two sides of the selection experiment; replicates are independent repeats.")}</h2>`;
+          h += `<div class="panel"><h2>Sequencing files ${info("Every fastq pair in the run, by selection side (input/output) and replicate.")}</h2>`;
           h += `<div class="tblwrap"><table><thead><tr><th>File</th><th>Library variants</th><th>Total counts</th></tr></thead><tbody>${SAMPLES.map(
             (s) =>
               `<tr><td>${esc(s.id)}</td><td>${s.ec ? fmt(s.ec.n_variants) : "–"}</td><td>${s.ec ? fmt(s.ec.total_corrected) : "–"}</td></tr>`,
@@ -1323,7 +1337,7 @@
             };
             const t = RS.total;
             h += `<div class="panel"><h2>Run statistics ${info(
-              "Compute used by each pipeline step, from Nextflow's execution trace as of report generation — the report task and the version collation that follow it are not yet in it. CPU time sums the task run-times; CACHED tasks reused an earlier run and cost no compute now.",
+              "Per-process compute from Nextflow's execution trace at report time (excludes this report and the trailing version collation). CPU time sums task runtimes; CACHED tasks reused earlier results.",
             )}</h2>`;
             h += `<div class="tiles">${[
               ["Tasks", fmt(t.tasks)],
@@ -1340,7 +1354,18 @@
                     p.cpu_time,
                   )}</td><td>${p.cpu_pct == null ? "–" : fmt(p.cpu_pct) + "%"}</td><td>${sz(p.peak_rss)}</td></tr>`,
               )
-              .join("")}</tbody></table></div></div>`;
+              .join("")}</tbody></table></div>`;
+            // Straight into Nextflow's own richer report + timeline, which sit next to this file in
+            // pipeline_info/. Relative links, so they resolve when the report is opened from the results
+            // folder (the location it is published to).
+            const sfx = (DATA.run || {}).trace_report_suffix;
+            if (sfx)
+              h += `<p class="desc" style="margin-top:10px">Nextflow's own outputs, next to this file: <a href="pipeline_info/execution_report_${esc(
+                sfx,
+              )}.html" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">execution report ↗</a> · <a href="pipeline_info/execution_timeline_${esc(
+                sfx,
+              )}.html" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">timeline ↗</a></p>`;
+            h += `</div>`;
           }
           // README: what this file is and how it maps onto the results folder. The report is meant as
           // the way in - a reader should be able to orient here and then find the underlying files.
@@ -1371,8 +1396,8 @@
             ["intermediate_files/", "Alignments and per-step variant-count tables — the inputs behind every plot."],
             ["pipeline_info/", "Nextflow execution report, timeline, trace and software versions."],
           ];
-          h += `<div class="panel"><h2>About this report ${info("A single, self-contained overview of the run, from sequencing quality through library representation to variant effects. It embeds the detailed reports and re-plots the underlying tables interactively, so it can be read on its own and shared as one file.")}</h2>
-            <p class="desc">This is the guided entry point to a deepmutscan run. Each page follows the analysis in order — sequencing quality, then how well the mutational library is represented, then (where it ran) error correction and variant effects. Every plot is regenerated here from the run's own tables; the original detailed reports are embedded too. Being one self-contained file, it can be opened offline and sent as a single attachment.</p>
+          h += `<div class="panel"><h2>About this report ${info("Self-contained overview from sequencing QC to variant effects; detailed reports are embedded and underlying tables re-plotted client-side.")}</h2>
+            <p class="desc">Guided entry point: pages follow the analysis order — sequencing quality, library representation, then (where run) error correction and variant effects. Plots are regenerated from the run's tables and the original detailed reports embedded, so the file opens offline and sends as one attachment.</p>
             <h3 style="margin:14px 0 6px;font-size:13px;color:var(--ink2)">Where everything lives in the results folder</h3>
             <div class="tblwrap"><table><thead><tr><th>Path</th><th>Contents</th></tr></thead><tbody>${struct
               .map(([p, d]) => `<tr><td><code>${p}</code></td><td>${d}</td></tr>`)
@@ -1389,14 +1414,14 @@
           id: "seqqc",
           label: "Sequencing QC",
           build(root) {
-            let h = `<h1>Sequencing QC</h1><p class="lead">Read-level quality for every fastq, and how thoroughly each library was sequenced.</p>`;
+            let h = `<h1>Sequencing QC</h1><p class="lead">Read quality per fastq, and sequencing saturation per library.</p>`;
             if (sdSamples.length)
               h += `<div class="panel"><h2>Sequencing-depth saturation ${info(
-                "For each file, the expected fraction of the designed library still detected — variants kept at or above the count threshold — as the sequencing depth is subsampled from full (1.0) down to zero. A curve that has flattened by full depth means the library was sequenced to saturation; one still rising means deeper sequencing would recover more variants. Computed as a closed-form hypergeometric rarefaction.",
+                "Expected fraction of the designed library detected (variants ≥ count threshold) as depth is rarefied from 1.0 to 0, by closed-form hypergeometric. A plateau indicates saturation; a rising tail, undersequencing.",
               )}</h2><p class="desc">Detected variants (% of the possible library) against the fraction of achieved sequencing depth.</p><div class="row" id="sd-legend"></div><div id="sd-plot"></div></div>`;
             if (mqc)
               h += `<div class="panel"><h2>Read quality ${info(
-                "The aggregated MultiQC report over every fastq file in the run.",
+                "Aggregated MultiQC over all fastqs in the run.",
               )}</h2><iframe class="frame" data-frame="${esc(fkey(mqc))}" title="MultiQC report"></iframe></div>`;
             root.innerHTML = h;
             mountFrames(root);
@@ -1405,7 +1430,9 @@
         });
 
       // Sequencing-depth rarefaction: one line per file, depth fraction (x) vs % of the library
-      // detected (y). Overlaid so saturation can be compared across files at a glance.
+      // detected (y). Overlaid so saturation can be compared across files at a glance. `sdSel` holds the
+      // files currently drawn; it persists across page visits and is seeded (to inputs) on first draw.
+      const sdSel = new Set();
       function drawSeqDepth(sdSamples) {
         const host = document.getElementById("sd-plot");
         if (!host) return;
@@ -1447,19 +1474,45 @@
         });
         yl.textContent = "Variants detected (% of library)";
         svg.appendChild(yl);
-        sdSamples.forEach((s) => {
-          let d = "";
-          s.seqdepth.forEach((p, i) => (d += (i ? " L " : "M ") + x(p.x) + " " + y(p.y)));
-          const path = el("path", { d, fill: "none", stroke: COLOR[s.id], "stroke-width": 1.6, "stroke-opacity": 0.9 });
-          path.addEventListener("mousemove", (e) => showTT(e, `<b>${esc(s.id)}</b>`));
-          path.addEventListener("mouseleave", hideTT);
-          svg.appendChild(path);
-        });
-        document.getElementById("sd-legend").innerHTML = sdSamples
+        // Default to the input libraries only - they are what "how deeply did we sequence the starting
+        // pool" is usually asked of; outputs (and helper samples) are one legend click away. Fall back to
+        // all files if the run has no input-typed file.
+        if (sdSel.size === 0) {
+          const inputs = sdSamples.filter((s) => s.type === "input");
+          (inputs.length ? inputs : sdSamples).forEach((s) => sdSel.add(s.id));
+        }
+        sdSamples
+          .filter((s) => sdSel.has(s.id))
+          .forEach((s) => {
+            let d = "";
+            s.seqdepth.forEach((p, i) => (d += (i ? " L " : "M ") + x(p.x) + " " + y(p.y)));
+            const path = el("path", {
+              d,
+              fill: "none",
+              stroke: COLOR[s.id],
+              "stroke-width": 1.6,
+              "stroke-opacity": 0.9,
+            });
+            path.addEventListener("mousemove", (e) => showTT(e, `<b>${esc(s.id)}</b>`));
+            path.addEventListener("mouseleave", hideTT);
+            svg.appendChild(path);
+          });
+        const legend = document.getElementById("sd-legend");
+        legend.innerHTML = sdSamples
           .map(
-            (s) => `<span class="chip"><span class="sw" style="background:${COLOR[s.id]}"></span>${esc(s.id)}</span>`,
+            (s) =>
+              `<span class="chip${sdSel.has(s.id) ? "" : " off"}" data-sd="${esc(s.id)}"><span class="sw" style="background:${COLOR[s.id]}"></span>${esc(s.id)}</span>`,
           )
           .join("");
+        legend.onclick = (e) => {
+          const c = e.target.closest("[data-sd]");
+          if (!c) return;
+          const id = c.dataset.sd;
+          if (sdSel.has(id)) {
+            if (sdSel.size > 1) sdSel.delete(id); // never leave the plot empty
+          } else sdSel.add(id);
+          drawSeqDepth(sdSamples);
+        };
       }
 
       // --- library QC ---
@@ -1470,8 +1523,8 @@
           build(root) {
             // Heading + sequencing-file selector pin to the top while the plots scroll, so it stays clear
             // which files the curves are showing and the selection is always reachable.
-            let h = `<div class="stick"><h1>Library QC</h1><div class="row" id="lchips"></div></div>`;
-            h += `<p class="lead">Whether the mutagenised library is built and sequenced well: how uniformly its variants are represented along the ORF, how deeply each position is covered, and where representation drops off. These are the checks that decide whether the downstream fitness estimates rest on solid counts.</p>`;
+            let h = `<div class="stick"><h1>Library QC</h1><div class="row" id="lchips"></div><div class="row"><label class="sw-lbl">rolling-mean window&nbsp;<input type="number" id="rm-window" min="1" max="200" value="${WINDOW}" style="width:60px" /></label></div></div>`;
+            h += `<p class="lead">Library build and sequencing quality: uniformity of variant representation along the ORF, per-position coverage, and where representation drops off — the basis for trusting the downstream fitness estimates.</p>`;
             // One selection of varying-bases classes, shared by the two split plots. Comparing 1 vs 2
             // vs 3 only reads clearly in a single plot, so all three are always drawn; this set just
             // controls which are opaque. Default: the single-nucleotide class.
@@ -1484,15 +1537,13 @@
                   ([v, lbl]) =>
                     `<button data-vb="${v}"${vbSel.has(v) ? ' class="on"' : ""}><span class="sw" style="background:${CLASS_COLOR[v]}"></span>${esc(lbl)}</button>`,
                 ).join("")}</span>`;
-              h += `<label class="sw-lbl"><input type="checkbox" id="rm-${dataKey}" checked /> rolling mean (w=${WINDOW}) ${info(
-                "On by default, matching the pipeline's published plots: a rolling mean over " +
-                  WINDOW +
-                  " residues (--sliding_window_size), gaps ignored rather than counted as zero. Switch it off to see the unsmoothed per-position values.",
+              h += `<label class="sw-lbl"><input type="checkbox" id="rm-${dataKey}" checked /> rolling mean ${info(
+                "Rolling mean over the window set above (default --sliding_window_size), gaps skipped rather than zero-filled. Off shows the unsmoothed per-position values.",
               )}</label>`;
               h += `<span class="spacer"></span><span class="row" id="dl-${dataKey}"></span></div>`;
               h += `<div id="c-${dataKey}"></div></div>`;
             });
-            h += `<div class="panel"><h2>Counts per coverage — one file at a time ${info("Counts divided by coverage for every substitution (rows) at every residue (columns), on a log colour scale. Grey means the substitution was not observed. A heatmap cannot overlay several files, so it always shows a single one.")}</h2>
+            h += `<div class="panel"><h2>Counts per coverage — one file at a time ${info("Counts ÷ coverage per substitution (rows) × residue (columns), log colour; grey = unobserved. Single file only.")}</h2>
                   <div class="row" id="hsel"></div><div id="c-heat"></div></div>`;
             root.innerHTML = h;
 
@@ -1515,6 +1566,13 @@
               ).join("");
             };
             chips(document.getElementById("lchips"), redraw);
+            document.getElementById("rm-window").addEventListener("input", (e) => {
+              const w = parseInt(e.target.value, 10);
+              if (w >= 1) {
+                WINDOW = w;
+                redraw();
+              }
+            });
             QC_PLOTS.forEach(([dataKey, t, d, logY, split]) => {
               document.getElementById("rm-" + dataKey).addEventListener("change", redraw);
               const seg = document.getElementById("vb-" + dataKey);
@@ -1557,8 +1615,8 @@
           id: "ec",
           label: "Error correction",
           build(root) {
-            let h = `<h1>Error correction</h1><p class="lead">What sequencing-error correction removed. The full report — nucleotide-level substitution classes, cross-file spread and a file selector — is embedded below.</p>`;
-            h += `<div class="panel"><h2>Removed per file ${info("Counts removed by the correction, as a share of the raw counts. 'Variants adjusted' counts how many library variants changed at all.")}</h2><div class="tblwrap"><table><thead><tr><th>File</th><th>Library variants</th><th>Variants adjusted</th><th>Raw counts</th><th>Corrected</th><th>% removed</th></tr></thead><tbody>`;
+            let h = `<h1>Error correction</h1><p class="lead">What sequencing-error correction removed. The full nucleotide-level report is embedded below.</p>`;
+            h += `<div class="panel"><h2>Removed per file ${info("Counts removed by correction as a fraction of raw; 'variants adjusted' counts variants that changed at all.")}</h2><div class="tblwrap"><table><thead><tr><th>File</th><th>Library variants</th><th>Variants adjusted</th><th>Raw counts</th><th>Corrected</th><th>% removed</th></tr></thead><tbody>`;
             h += SAMPLES.filter((s) => s.ec)
               .map(
                 (s) =>
@@ -1570,7 +1628,7 @@
             // left for this page to switch between.
             if (ecReports.length) {
               h += `<div class="panel"><h2>Full report ${info(
-                "The complete error-correction report, with its own file selector: deselect files there to see the correction for a subset or a single file.",
+                "The full error-correction report; its file selector drives subset or single-file views.",
               )}</h2><iframe class="frame" style="height:84vh" data-frame="${esc(fkey(ecReports[0]))}" title="Error-correction report"></iframe></div>`;
             }
             root.innerHTML = h;
@@ -1616,22 +1674,37 @@
             let h = `<h1>Variant effects</h1><p class="lead">How each substitution changes fitness. ${
               METHODS.length ? "Estimators in this run: " + METHODS.map(([, n]) => n).join(", ") + "." : ""
             }</p>`;
-            if (F)
-              h += `<div class="panel"><h2>Fitness landscape ${info("Mean fitness per substitution across replicates: blue is fitter than wildtype, red less fit, white neutral. The scale is symmetric around 0, which is anchored on the synonymous variants; stops anchor -1. Grey means the substitution was not measured. Click any cell for the exact nucleotide changes behind it.")}</h2><div id="f-heat"></div><div id="f-cell"></div></div>`;
-            // Slow-spinning wildtype fold coloured by mean fitness per residue, plus a link out to the
-            // full interactive inspection tool. Only when the run produced a structure.
-            if (DATA.structure && window.$3Dmol)
-              h += `<div class="panel"><h2>Fitness on the structure ${info(
-                "The wildtype fold coloured by the mean fitness of the missense substitutions at each residue, on the same blue-to-red scale as the landscape. Residues with no measured substitution are grey. The model spins on its own; use the full inspection tool for a controllable, clickable view.",
-              )}</h2><p class="desc">Each residue is coloured by its mean fitness${
-                DATA.structure.identity < 0.9
-                  ? ` (structure↔sequence identity ${(DATA.structure.identity * 100).toFixed(0)}%)`
-                  : ""
-              }.${
-                (DATA.reports || []).some((r) => r.group === "viewer")
-                  ? ` <a href="#" id="open-viewer" style="color:var(--accent);font-weight:600">Open the full interactive inspection tool ↗</a>`
-                  : ""
-              }</p><div id="f-struct" style="height:560px;position:relative"></div></div>`;
+            const hasStruct = DATA.structure && window.$3Dmol;
+            // The blue-white-red fitness scale, faithful to colFit: −fmax red (deleterious), 0 white,
+            // +fmax blue (fitness gain) — the same ramp the landscape heatmap uses, so one legend serves
+            // both. Placed BETWEEN the landscape and the structure when the two share a block.
+            const legendHTML = (() => {
+              const fm = (DATA.structure && DATA.structure.fmax) || 1;
+              const grad = "linear-gradient(to right,#b40426,#e26a52,#f2c0a4,#f2f2f2,#c3cfe2,#6f8fe8,#3a4cc0)";
+              return `<div style="max-width:360px;margin:16px auto"><div style="height:12px;border-radius:6px;background:${grad}"></div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:3px"><span>−${fm.toFixed(2)} · less fit</span><span>0 · neutral</span><span>+${fm.toFixed(2)} · fitter</span></div></div>`;
+            })();
+            const landInfo = info(
+              "Mean fitness per substitution across replicates: blue fitter than wildtype, red less fit, white neutral. Symmetric about 0 (anchored on synonymous variants), stops at −1; grey = unmeasured. Click a cell for the contributing nucleotide changes.",
+            );
+            const structInfo = info(
+              "Wildtype fold coloured by mean missense fitness per residue, on the landscape's scale; grey = unmeasured. Auto-spins; use the inspection tool for interaction.",
+            );
+            const structDesc = `<p class="desc">Each residue is coloured by its mean fitness${
+              DATA.structure && DATA.structure.identity < 0.9
+                ? ` (structure↔sequence identity ${(DATA.structure.identity * 100).toFixed(0)}%)`
+                : ""
+            }.${
+              (DATA.reports || []).some((r) => r.group === "viewer")
+                ? ` <a href="#" id="open-viewer" style="color:var(--accent);font-weight:600">Open the full interactive inspection tool ↗</a>`
+                : ""
+            }</p>`;
+            const landBlock = `<h2>Fitness landscape ${landInfo}</h2><div id="f-heat"></div><div id="f-cell"></div>`;
+            const structBlock = `<h2 style="margin-top:4px">Fitness on the structure ${structInfo}</h2>${structDesc}<div id="f-struct" style="height:560px;position:relative"></div>`;
+            // One block with the shared legend between the two views when both are present; otherwise
+            // whichever one exists, with the legend kept alongside the structure.
+            if (F && hasStruct) h += `<div class="panel">${landBlock}${legendHTML}${structBlock}</div>`;
+            else if (F) h += `<div class="panel">${landBlock}</div>`;
+            else if (hasStruct) h += `<div class="panel">${structBlock}${legendHTML}</div>`;
             // Point to the full per-method outputs on disk: the landscape here is a summary, and each
             // estimator writes its complete tables, diagnostics and report to the results folder.
             if (METHODS.length)
@@ -1760,7 +1833,7 @@
               x += `</div>`;
               if (nt.length) {
                 x += `<h4>Nucleotide changes reaching this substitution ${info(
-                  "Every distinct codon in the data that produces this amino-acid change, written as the nucleotide substitutions relative to the wildtype ORF. The pipeline pools these into one fitness value, so a disagreement between them is worth a look.",
+                  "Every codon in the data producing this amino-acid change, as nucleotide substitutions vs the wildtype ORF. Pooled into one fitness value, so disagreement between them is worth checking.",
                 )}</h4>`;
                 x += `<div class="tblwrap"><table><thead><tr><th>Codon</th><th>Nucleotide change(s)</th><th>ORF positions</th></tr></thead><tbody>`;
                 nt.forEach((v) => {
@@ -1821,7 +1894,7 @@
               `<div class="panel"><h2>${esc(heading)}</h2>${note ? `<p class="desc">${note}</p>` : ""}` +
               `<ol class="cites">${items.map((c) => `<li>${citeLine(c)}</li>`).join("")}</ol>` +
               `<button class="act" data-bib="${which}">Get biblatex</button></div>`;
-            let h = `<h1>Citation</h1><p class="lead">If this run supports your work, please cite the pipeline and the tools it used. The tool list below is exactly what this run invoked.</p>`;
+            let h = `<h1>Citation</h1><p class="lead">If this run supports your work, cite the pipeline and the tools below — exactly those it invoked.</p>`;
             h += sect(
               "Pipeline",
               CITE.pipeline || [],

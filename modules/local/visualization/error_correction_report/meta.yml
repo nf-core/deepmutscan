@@ -24,6 +24,9 @@ input:
   - - method:
         type: string
         description: Error-correction method label (e.g. `false_doubles`, `wildtype`).
+  - - false_doubles_method:
+        type: string
+        description: False-doubles estimator actually used (`mle` or `eb`); named in the report heading.
   - - template_html:
         type: file
         description: HTML template into which the report data is injected.

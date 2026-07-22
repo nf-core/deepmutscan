@@ -18,6 +18,7 @@ process VISUALIZATION_ERROR_CORRECTION_REPORT {
     val ids_b64                              // base64(JSON) [file id, ...] aligned with `corrected`
     path corrected, stageAs: 'c*/*'          // per-file tables share a basename -> numbered dirs
     val method
+    val false_doubles_method                 // 'mle' | 'eb' - names the estimator in the report heading
     path template_html
 
     output:

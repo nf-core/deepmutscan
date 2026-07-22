@@ -282,6 +282,7 @@ workflow DEEPMUTSCAN {
         ch_ec.map { rows -> groovy.json.JsonOutput.toJson(rows.collect { [id: it[0].id, type: it[0].type, replicate: it[0].replicate] }).bytes.encodeBase64().toString() },
         ch_ec.map { rows -> rows.collect { it[1] } },
         params.error_correction,
+        params.false_doubles_method,
         file("${projectDir}/assets/error_correction_report/ec_report_template.html", checkIfExists: true)
       )
       ch_versions = ch_versions.mix(VISUALIZATION_ERROR_CORRECTION_REPORT.out.versions)
@@ -532,6 +533,10 @@ workflow DEEPMUTSCAN {
                     dimsum: params.dimsum,
                     mutscan: params.mutscan,
                     outdir: params.outdir,
+                    // Lets the Overview link straight to Nextflow's own execution report + timeline,
+                    // which sit next to this file as execution_{report,timeline}_<suffix>.html.
+                    trace_report_suffix: params.trace_report_suffix,
+                    false_doubles_method: params.false_doubles_method,
                 ]).bytes.encodeBase64().toString(),
             )
         }
