@@ -500,12 +500,17 @@ def run_stats(path):
     rows = {}
     for _, r in df.iterrows():
         p = proc(r.get("name", ""))
-        d = rows.setdefault(p, {"n": 0, "cached": 0, "cpu_time": 0.0, "rss": 0.0, "cpu": []})
+        d = rows.setdefault(p, {"n": 0, "cached": 0, "cpu_time": 0.0, "rss": 0.0, "cpu": [], "submit": ""})
         d["n"] += 1
         if r.get("status", "") == "CACHED":
             d["cached"] += 1
         d["cpu_time"] += _dur_s(r.get("realtime", ""))
         d["rss"] = max(d["rss"], _size_b(r.get("peak_rss", "")))
+        # earliest submission time, so the table can read top-to-bottom in run order. The trace timestamp
+        # is "YYYY-MM-DD HH:MM:SS.mmm", which sorts lexically = chronologically, so no parsing is needed.
+        sub = r.get("submit", "")
+        if sub and (not d["submit"] or sub < d["submit"]):
+            d["submit"] = sub
         c = r.get("%cpu", "").replace("%", "").strip()
         try:
             d["cpu"].append(float(c))
@@ -515,8 +520,10 @@ def run_stats(path):
         "process": p, "tasks": d["n"], "cached": d["cached"],
         "cpu_time": round(d["cpu_time"], 1), "peak_rss": round(d["rss"]),
         "cpu_pct": round(sum(d["cpu"]) / len(d["cpu"])) if d["cpu"] else None,
+        "submit": d["submit"],
     } for p, d in rows.items()]
-    procs.sort(key=lambda x: -x["cpu_time"])
+    # chronological: first-submitted process first (falls back to name for any row with no timestamp)
+    procs.sort(key=lambda x: (x["submit"] or "~", x["process"]))
     status = df["status"] if "status" in df.columns else pd.Series([], dtype=str)
     total = {
         "tasks": int(df.shape[0]),
@@ -605,7 +612,14 @@ def main():
     samples, plots, reports, fitness, dl, versions = {}, {}, [], None, [], {}
 
     def sample(sid):
-        return samples.setdefault(sid, {"id": sid, "positions": [], "classes": {}, "heatmap": None, "ec": None, "seqdepth": None})
+        # type/replicate drive the input-vs-output colour palette and the seqdepth default selection.
+        # Pipeline ids are "<sample>_<type>_<rep>_<pe|se>", so the type is a delimited token - matching it
+        # that way is robust for any protein name (which is a separate, earlier segment).
+        m = re.search(r"_(input|output|wildtype|quality)_(\\d+)", sid)
+        stype = m.group(1) if m else None
+        srep = int(m.group(2)) if m else None
+        return samples.setdefault(sid, {"id": sid, "type": stype, "replicate": srep,
+                                        "positions": [], "classes": {}, "heatmap": None, "ec": None, "seqdepth": None})
 
     # The ORF length has to come from the wildtype protein sequence, not from the highest position that
     # happens to carry a variant, or trailing residues with no library coverage would silently shorten

@@ -267,7 +267,7 @@
         opacity: 0;
         transition: opacity 0.08s;
         white-space: nowrap;
-        z-index: 9;
+        z-index: 50;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
       }
       .controls {
@@ -494,6 +494,49 @@
       .stick .secsub {
         margin-bottom: 8px;
       }
+      /* lower-triangle scatter cells: clickable, and outlined on hover / while open to signal it */
+      #c-corr rect.scell {
+        cursor: pointer;
+      }
+      #c-corr rect.scell:hover,
+      #c-corr rect.scell.hot {
+        stroke: var(--accent);
+        stroke-width: 1.5;
+      }
+      /* floating card holding the enlarged pairwise scatter */
+      #corr-zoom {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 40;
+        display: none;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+        padding: 12px 14px;
+      }
+      #corr-zoom.on {
+        display: block;
+      }
+      #corr-zoom .cz-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        color: var(--ink2);
+        margin-bottom: 6px;
+      }
+      #corr-zoom .cz-x {
+        margin-left: auto;
+        border: none;
+        background: transparent;
+        color: var(--ink2);
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -515,15 +558,16 @@
           <button
             class="ibtn"
             type="button"
-            data-info="Each cell is the correlation between two files of the per-variant error frequency removed by correction (raw minus corrected counts-per-coverage), over the single-nucleotide variants they share."
+            data-info="Upper triangle: Pearson r between two files of the per-variant removed error frequency (raw − corrected counts-per-coverage) over shared SNVs. Lower triangle: the same pair as a scatter — click to enlarge, hover a point for its variant."
           >
             i
           </button>
         </h2>
       </div>
       <p class="secsub">
-        Where do the same errors recur? Each cell is how strongly two files agree on which variants are error-prone. The
-        more the files agree, the more the correction reflects the sequencing chemistry rather than chance.
+        Where errors recur. The upper triangle scores how strongly two files agree on which variants are error-prone;
+        the lower triangle shows each pair as a scatter (click to enlarge). Higher agreement means the correction
+        reflects sequencing chemistry rather than chance.
       </p>
       <div class="panel">
         <div id="c-corr"></div>
@@ -537,15 +581,15 @@
           <button
             class="ibtn"
             type="button"
-            data-info="Each point is one single-nucleotide variant's raw frequency (counts ÷ coverage) against its corrected frequency, with the dashed y = x line marking no change. The 'removed' lane holds variants taken to exactly zero, which the logarithmic axis cannot otherwise place."
+            data-info="Per-SNV raw vs corrected frequency (counts ÷ coverage); dashed y = x marks no change. The 'removed' lane holds variants floored to zero, which the log axis cannot place. Error bars span the spread across selected files."
           >
             i
           </button>
         </h2>
       </div>
       <p class="secsub">
-        The effect of correction on the measured variants, kept separate for input and output libraries. Toggle
-        individual files within each group; where two or more are shown, the horizontal bar is the spread across them.
+        Effect of correction on measured variants, split by input and output libraries. Toggle files; with two or more,
+        the bars span their spread.
       </p>
       <div class="grid2" id="scatter-groups"></div>
 
@@ -560,7 +604,7 @@
             <button
               class="ibtn"
               type="button"
-              data-info="Every panel in this section is computed from the single sequencing file chosen in the selector."
+              data-info="Every panel in this section is computed from the file chosen in the selector."
             >
               i
             </button>
@@ -579,7 +623,7 @@
               <button
                 class="ibtn"
                 type="button"
-                data-info="Each dot is one single-nucleotide variant's raw frequency (filled) and corrected frequency (hollow), grouped into the six strand-symmetric substitution classes. The horizontal tick marks each class median."
+                data-info="Per-SNV removed error frequency (raw − corrected counts-per-coverage ≈ per-nt error rate) in the selected file, by strand-symmetric substitution class; tick = class median."
               >
                 i
               </button>
@@ -592,7 +636,7 @@
               <button
                 class="ibtn"
                 type="button"
-                data-info="The percentage of each single-nucleotide variant's counts removed by correction in the selected file. Only corrected variants are shown - variants the correction left untouched are not plotted."
+                data-info="Percentage of each SNV's counts removed in the selected file; untouched variants are omitted."
               >
                 i
               </button>
@@ -608,7 +652,7 @@
           <button
             class="ibtn"
             type="button"
-            data-info="The fraction of counts removed by correction at each residue position of the selected file, along the reading frame."
+            data-info="Fraction of counts removed per residue along the reading frame, selected file."
           >
             i
           </button>
@@ -623,7 +667,7 @@
           <button
             class="ibtn"
             type="button"
-            data-info="One row per single-nucleotide variant of the selected file, in reference coordinates (the pipeline's base_mut convention). Frequencies are counts ÷ coverage."
+            data-info="One row per SNV of the selected file, in reference (base_mut) coordinates; frequencies are counts ÷ coverage."
           >
             i
           </button>
@@ -659,6 +703,7 @@
     </div>
 
     <div class="tt" id="tt"></div>
+    <div id="corr-zoom"></div>
 
     <script id="ec-data" type="application/json">
       __EC_DATA__
@@ -668,6 +713,9 @@
       const FILES = (DATA.files || []).map((f) => (typeof f === "string" ? { id: f } : f));
       const V = DATA.variants || [];
       const CLASSES = DATA.classes || [];
+      const V_BY_KEY = {}; // variant lookup for the correlation-matrix scatter point annotations
+      for (const v of V) V_BY_KEY[v.key] = v;
+      let R_LAST = null; // last correlation matrix (with its keyed pairs), for openScatter
       const tt = document.getElementById("tt");
       const fmt = (x, d = 0) =>
         x == null || isNaN(x) ? "–" : Number(x).toLocaleString(undefined, { maximumFractionDigits: d });
@@ -721,14 +769,17 @@
       const SHORT = shortLabels(FILES.map((f) => f.id));
 
       document.getElementById("h-sample").textContent = DATA.sample;
+      const estimatorLabel = { mle: "maximum-likelihood estimation", eb: "empirical-Bayes estimation" }[DATA.estimator];
       const methodLabel =
-        { false_doubles: "False-doubles correction", wildtype: "Wildtype-based correction" }[DATA.method] ||
-        DATA.method;
+        DATA.method === "false_doubles"
+          ? `False-doubles correction${estimatorLabel ? ` (${estimatorLabel})` : ""}`
+          : DATA.method === "wildtype"
+            ? "Wildtype-based correction"
+            : DATA.method;
       document.getElementById("h-method").textContent = methodLabel;
       document.getElementById("h-lead").textContent =
-        `Single-nucleotide counts carry a background of sequencing errors. This report shows how the ` +
-        `${methodLabel.toLowerCase()} estimated that background and what it removed, across ` +
-        `${FILES.length} sequencing file${FILES.length === 1 ? "" : "s"} of sample ${DATA.sample}.`;
+        `How ${methodLabel.toLowerCase()} estimated the sequencing-error background in single-nucleotide counts and ` +
+        `what it removed, across ${FILES.length} file${FILES.length === 1 ? "" : "s"} of sample ${DATA.sample}.`;
 
       /* ---------- per-file, per-variant quantities ---------- */
       // The error frequency the correction removed from a variant in one file. Equal to the estimated
@@ -811,13 +862,21 @@
             const a = maps[i],
               b = maps[j];
             const [small, other] = a.size < b.size ? [a, b] : [b, a];
+            // Keyed points are kept only for the lower triangle (i>j), which is where the scatterplots are
+            // drawn; x = column file (j), y = row file (i), so the thumbnail and its enlargement share a
+            // frame with the matrix.
+            const keyed = i > j ? [] : null;
             for (const [k, va] of small) {
               const vb = other.get(k);
-              if (vb != null) pairs.push([va, vb]); // r is symmetric, so lane order is irrelevant
+              if (vb == null) continue; // r is symmetric, so lane order is irrelevant
+              pairs.push([va, vb]);
+              if (keyed) keyed.push({ key: k, x: maps[j].get(k), y: maps[i].get(k) });
             }
-            R[i].push({ r: pearson(pairs), n: pairs.length });
+            R[i].push({ r: pearson(pairs), n: pairs.length, pairs: keyed });
           }
         }
+        R_LAST = R;
+        closeScatter(); // a rebuild (e.g. theme change) invalidates any open cell
         const off = Math.max(...SHORT.map((s) => s.length)) * 6 + 14;
         const cell = Math.max(30, Math.min(64, Math.floor((980 - off) / N)));
         const W = off + N * cell + 12,
@@ -843,6 +902,44 @@
             const c = R[i][j];
             const x = off + j * cell,
               y = off + i * cell;
+            if (i > j) {
+              // lower triangle: a scatter thumbnail of the two files' removed-error frequencies. Clickable
+              // (hover outline hints at it); click enlarges it (openScatter), where points annotate on hover.
+              svg.appendChild(
+                el("rect", {
+                  x: x + 1,
+                  y: y + 1,
+                  width: cell - 2,
+                  height: cell - 2,
+                  rx: 4,
+                  fill: "var(--bg)",
+                  stroke: "var(--line)",
+                  "stroke-width": 0.5,
+                }),
+              );
+              if (c.pairs && c.pairs.length >= 3) miniScatter(svg, c.pairs, x + 3, y + 3, cell - 6, rColor(c.r));
+              const hit = el("rect", {
+                x,
+                y,
+                width: cell,
+                height: cell,
+                fill: "transparent",
+                class: "scell",
+                "data-ij": i + "," + j,
+              });
+              hit.addEventListener("mousemove", (e) =>
+                showTT(
+                  e,
+                  `<b>${esc(SHORT[i])} × ${esc(SHORT[j])}</b><br>` +
+                    (c.r == null ? "too few shared variants" : `r = ${c.r.toFixed(3)} · ${fmt(c.n)} shared variants`) +
+                    (c.pairs && c.pairs.length >= 3 ? "<br><span style='opacity:.7'>click to enlarge</span>" : ""),
+                ),
+              );
+              hit.addEventListener("mouseleave", hideTT);
+              if (c.pairs && c.pairs.length >= 3) hit.addEventListener("click", () => openScatter(i, j));
+              svg.appendChild(hit);
+              continue;
+            }
             const rect = el("rect", {
               x: x + 1,
               y: y + 1,
@@ -902,6 +999,121 @@
         kl.textContent = "correlation (r)";
         svg.appendChild(kl);
       }
+
+      // A shared log scale for a set of {x,y} error-frequency pairs (both axes use it, so y=x reads true).
+      function pairScale(pairs) {
+        const vals = pairs.flatMap((p) => [p.x, p.y]).filter((v) => v > 0);
+        const lo = vals.length ? Math.min(...vals) : 1e-6;
+        const hi = vals.length ? Math.max(...vals) : 1;
+        const l10 = (v) => Math.log10(Math.max(v, lo / 2));
+        const span = l10(hi) - l10(lo) || 1;
+        // Normalised 0..1 position, CLAMPED: a variant the correction left alone removes 0, which on a log
+        // axis falls below the floor and would otherwise plot at a negative coordinate - outside the cell.
+        // Clamping pins those to the bottom-left edge instead of letting the cloud spill past its box.
+        const nrm = (v) => Math.max(0, Math.min(1, (l10(v) - l10(lo)) / span));
+        return { lo, hi, l10, span, nrm };
+      }
+
+      // Thumbnail scatter inside a matrix cell: just the dot cloud, no axes.
+      function miniScatter(svg, pairs, x0, y0, size, col) {
+        const s = pairScale(pairs);
+        const px = (v) => x0 + s.nrm(v) * size;
+        const py = (v) => y0 + size - s.nrm(v) * size;
+        for (const p of pairs) {
+          svg.appendChild(
+            el("circle", { cx: px(p.x), cy: py(p.y), r: 0.7, fill: col || "var(--accent)", "fill-opacity": 0.5 }),
+          );
+        }
+      }
+
+      // The enlarged, hoverable scatter shown on click. Lives in a floating card (#corr-zoom).
+      let corrOpen = null; // "i,j" of the open cell, or null
+      function openScatter(i, j) {
+        const zoom = document.getElementById("corr-zoom");
+        const cell = R_LAST[i][j];
+        if (!cell || !cell.pairs) return;
+        corrOpen = i + "," + j;
+        const S = 360,
+          m = { l: 60, r: 12, t: 12, b: 46 };
+        const iw = S - m.l - m.r,
+          ih = S - m.t - m.b;
+        const sc = pairScale(cell.pairs);
+        const px = (v) => m.l + sc.nrm(v) * iw;
+        const py = (v) => m.t + ih - sc.nrm(v) * ih;
+        const svg = el("svg", { viewBox: `0 0 ${S} ${S}`, width: S, height: S });
+        tipDelegate(svg);
+        // y = x reference
+        svg.appendChild(
+          el("line", {
+            x1: px(sc.lo),
+            y1: py(sc.lo),
+            x2: px(sc.hi),
+            y2: py(sc.hi),
+            stroke: "var(--ink2)",
+            "stroke-dasharray": "4 4",
+            "stroke-width": 1,
+          }),
+        );
+        [0, 1, 2, 3].forEach((k) => {
+          const gv = Math.pow(10, sc.l10(sc.lo) + (sc.span * k) / 3);
+          svg.appendChild(el("line", { class: "grid", x1: m.l, x2: m.l + iw, y1: py(gv), y2: py(gv) }));
+          const ty = el("text", { class: "tick", x: m.l - 6, y: py(gv) + 3, "text-anchor": "end" });
+          ty.textContent = gv.toExponential(0);
+          svg.appendChild(ty);
+          const tx = el("text", { class: "tick", x: px(gv), y: m.t + ih + TICK_PX + 4, "text-anchor": "middle" });
+          tx.textContent = gv.toExponential(0);
+          svg.appendChild(tx);
+        });
+        for (const p of cell.pairs) {
+          const vv = V_BY_KEY[p.key];
+          svg.appendChild(
+            el("circle", {
+              cx: px(p.x),
+              cy: py(p.y),
+              r: 2.2,
+              fill: "var(--accent)", // stay blue like the thumbnail; class colour is not the point here
+              "fill-opacity": 0.7,
+              "data-tip": `<b>${esc(vv ? vv.pos_mut : p.key)}</b>${vv ? ` · <code>${esc(vv.nt)}</code>` : ""}<br>${esc(SHORT[j])} ${sci(p.x)}<br>${esc(SHORT[i])} ${sci(p.y)}`,
+            }),
+          );
+        }
+        const xl = el("text", { class: "albl", x: m.l + iw / 2, y: S - 6, "text-anchor": "middle" });
+        xl.textContent = SHORT[j] + " — removed error frequency";
+        svg.appendChild(xl);
+        const yl = el("text", {
+          class: "albl",
+          x: -(m.t + ih / 2),
+          y: 14,
+          transform: "rotate(-90)",
+          "text-anchor": "middle",
+        });
+        yl.textContent = SHORT[i] + " — removed error frequency";
+        svg.appendChild(yl);
+        zoom.innerHTML = `<div class="cz-head">${esc(SHORT[i])} × ${esc(SHORT[j])} · r = ${cell.r == null ? "–" : cell.r.toFixed(3)} · ${fmt(cell.pairs.length)} shared variants<button class="cz-x" type="button" aria-label="close">×</button></div>`;
+        zoom.appendChild(svg);
+        zoom.classList.add("on");
+        zoom.querySelector(".cz-x").addEventListener("click", closeScatter);
+        // reflect the open cell in the matrix
+        document
+          .querySelectorAll("#c-corr .scell")
+          .forEach((r) => r.classList.toggle("hot", r.dataset.ij === corrOpen));
+      }
+      function closeScatter() {
+        const zoom = document.getElementById("corr-zoom");
+        if (zoom) {
+          zoom.classList.remove("on");
+          zoom.innerHTML = "";
+        }
+        corrOpen = null;
+        document.querySelectorAll("#c-corr .scell.hot").forEach((r) => r.classList.remove("hot"));
+      }
+      // Dismiss: a click that is neither inside the card nor on a scatter cell (clicking another cell just
+      // re-opens via its own handler), and whenever the matrix scrolls out of view.
+      document.addEventListener("click", (e) => {
+        if (!corrOpen) return;
+        if (e.target.closest("#corr-zoom") || e.target.closest(".scell")) return;
+        closeScatter();
+      });
 
       /* =========================================================
          SECTION 2 — raw vs corrected, split by library type
@@ -989,7 +1201,7 @@
           const fr = aggSel(v, "f_raw", set);
           if (!fr || !(fr.mean > 0)) continue;
           const fc = aggSel(v, "f_cor", set);
-          pts.push({ v, fr: fr.mean, frsd: fr.sd, fc: fc ? fc.mean : 0, n: fr.n });
+          pts.push({ v, fr: fr.mean, frsd: fr.sd, fc: fc ? fc.mean : 0, fcsd: fc ? fc.sd : null, n: fr.n });
         }
         if (!pts.length) {
           host.innerHTML = '<div class="empty">No variants for this selection.</div>';
@@ -1002,7 +1214,7 @@
         host.appendChild(svg);
         tipDelegate(svg);
         const xs = pts.flatMap((p) => [p.fr, p.frsd ? p.fr + p.frsd : p.fr]);
-        const ys = pts.filter((p) => p.fc > 0).map((p) => p.fc);
+        const ys = pts.filter((p) => p.fc > 0).flatMap((p) => [p.fc, p.fcsd ? p.fc + p.fcsd : p.fc]);
         const lo = Math.min(...xs, ...(ys.length ? ys : xs)),
           hi = Math.max(...xs, ...(ys.length ? ys : xs));
         const l10 = (v) => Math.log10(Math.max(v, lo / 2));
@@ -1062,6 +1274,20 @@
               }),
             );
           }
+          // vertical (corrected-frequency) spread bar, mirroring the horizontal raw one
+          if (p.fc > 0 && p.fcsd != null) {
+            svg.appendChild(
+              el("line", {
+                x1: px,
+                x2: px,
+                y1: y(Math.max(p.fc - p.fcsd, lo / 2)),
+                y2: y(p.fc + p.fcsd),
+                stroke: col,
+                "stroke-width": 1,
+                "stroke-opacity": 0.35,
+              }),
+            );
+          }
           const pct = p.fr > 0 ? ((p.fc - p.fr) / p.fr) * 100 : null;
           const c = el("circle", {
             cx: px,
@@ -1073,6 +1299,7 @@
               `<b>${esc(p.v.pos_mut)}</b> · <code>${esc(p.v.nt)}</code><br>raw ${sci(p.fr)}` +
               (p.frsd != null ? ` ± ${sci(p.frsd)} (n=${p.n})` : ` (n=${p.n})`) +
               `<br>corrected ${sci(p.fc)}` +
+              (p.fcsd != null ? ` ± ${sci(p.fcsd)}` : "") +
               (pct == null ? "" : `<br>${fmt(pct, 1)} % change`),
           });
           svg.appendChild(c);
@@ -1245,21 +1472,22 @@
       function drawBee() {
         const host = document.getElementById("c-bee");
         host.innerHTML = "";
+        // One point per SNV per class = the error frequency the correction removed from that variant in
+        // the selected file (raw − corrected counts-per-coverage), i.e. the estimated per-nt error rate at
+        // that site. Untouched variants remove 0 and have no rate to place on a log axis, so only variants
+        // with a positive removed frequency are shown.
         const perClass = CLASSES.map((c) => {
-          const raw = [],
-            cor = [];
+          const pts = [];
           for (const v of V) {
             if (v.cls !== c.cls) continue;
-            const fr = v.f_raw[curFile],
-              fc = v.f_cor[curFile];
-            if (fr != null && fr > 0) raw.push({ v, y: fr });
-            if (fc != null && fc > 0) cor.push({ v, y: fc });
+            const rmv = removed(v, curFile);
+            if (rmv != null && rmv > 0) pts.push({ v, y: rmv });
           }
-          return { cls: c.cls, label: c.label, raw, cor };
-        }).filter((s) => s.raw.length || s.cor.length);
+          return { cls: c.cls, label: c.label, pts };
+        }).filter((s) => s.pts.length);
         if (!perClass.length)
-          return (host.innerHTML = '<div class="empty">No single-nucleotide variants in this file.</div>');
-        const all = perClass.flatMap((s) => [...s.raw, ...s.cor]).map((p) => p.y);
+          return (host.innerHTML = '<div class="empty">No single-nucleotide error was removed in this file.</div>');
+        const all = perClass.flatMap((s) => s.pts.map((p) => p.y));
         const lo = Math.min(...all),
           hi = Math.max(...all);
         // taller than the other panels: more vertical room spreads the swarm in y, which is what keeps
@@ -1293,16 +1521,12 @@
           const h = (s.length - 1) / 2;
           return (s[Math.floor(h)] + s[Math.ceil(h)]) / 2;
         };
-        // Two half-lanes per class: raw on the left, corrected on the right, both filled (told apart by
-        // side, not by fill style). Frequencies are counts/coverage, so many variants land on nearly
-        // identical values; a small deterministic vertical jitter (stable per variant, recoverable on
-        // hover) breaks those ties so each lane's swarm spreads into neighbouring y-space rather than
-        // stacking dots in x. No global compression, so points never overlap.
-        const half = bw * 0.2;
+        // Frequencies are counts/coverage, so many variants land on nearly identical values; a small
+        // deterministic vertical jitter (stable per variant, recoverable on hover) breaks those ties so
+        // the swarm spreads into neighbouring y-space rather than stacking dots in x. Every point of every
+        // class is placed in ONE pass (per-class placement would let a dense swarm bleed into a neighbour).
+        const half = bw * 0.22;
         const rr = 1.1;
-        // Every point of every class and lane is collected first and placed in ONE pass. Placing each
-        // class (or each lane) separately lets a dense swarm spread past its column into the neighbour
-        // and overlap it, since the swarm width is deliberately not clamped.
         const items = [];
         perClass.forEach((s, i) => {
           const cx = m.l + bw * (i + 0.5);
@@ -1310,24 +1534,16 @@
           s.cx = cx;
           s.op = dim ? 0.14 : 1;
           s.col = clsColor(s.cls);
-          s.rawX = cx - bw * 0.26;
-          s.corX = cx + bw * 0.26;
-          [
-            { pts: s.raw, base: s.rawX, label: "raw", tag: "r" },
-            { pts: s.cor, base: s.corX, label: "corrected", tag: "c" },
-          ].forEach((lane) => {
-            lane.pts.forEach((p) =>
-              items.push({
-                v: p.v,
-                y: p.y,
-                base: lane.base,
-                label: lane.label,
-                col: s.col,
-                op: s.op,
-                yPix: y(p.y) + (jhash(p.v.key + lane.tag) - 0.5) * 16,
-              }),
-            );
-          });
+          s.pts.forEach((p) =>
+            items.push({
+              v: p.v,
+              y: p.y,
+              base: cx,
+              col: s.col,
+              op: s.op,
+              yPix: y(p.y) + (jhash(p.v.key) - 0.5) * 16,
+            }),
+          );
         });
         beeswarm(items, rr);
         items.forEach((p) => {
@@ -1338,36 +1554,21 @@
               r: rr,
               fill: p.col,
               "fill-opacity": 0.65 * p.op,
-              "data-tip": `<b>${esc(p.v.pos_mut)}</b> · <code>${esc(p.v.nt)}</code><br>${p.label} ${sci(p.y)}`,
+              "data-tip": `<b>${esc(p.v.pos_mut)}</b> · <code>${esc(p.v.nt)}</code><br>error frequency ${sci(p.y)}`,
             }),
           );
         });
         perClass.forEach((s) => {
-          // class medians: raw solid (left lane), corrected dashed (right lane)
-          const mr = med(s.raw.map((p) => p.y)),
-            mc = med(s.cor.map((p) => p.y));
-          if (mr != null)
+          const mm = med(s.pts.map((p) => p.y)); // class median error frequency
+          if (mm != null)
             svg.appendChild(
               el("line", {
-                x1: s.rawX - half,
-                x2: s.rawX + half,
-                y1: y(mr),
-                y2: y(mr),
+                x1: s.cx - half,
+                x2: s.cx + half,
+                y1: y(mm),
+                y2: y(mm),
                 stroke: s.col,
                 "stroke-width": 1.5,
-                "stroke-opacity": s.op,
-              }),
-            );
-          if (mc != null)
-            svg.appendChild(
-              el("line", {
-                x1: s.corX - half,
-                x2: s.corX + half,
-                y1: y(mc),
-                y2: y(mc),
-                stroke: s.col,
-                "stroke-width": 1.5,
-                "stroke-dasharray": "2 2",
                 "stroke-opacity": s.op,
               }),
             );
@@ -1389,10 +1590,10 @@
           transform: "rotate(-90)",
           "text-anchor": "middle",
         });
-        yl.textContent = "Frequency";
+        yl.textContent = "Removed error frequency";
         svg.appendChild(yl);
         const xl = el("text", { class: "albl", x: m.l + iw / 2, y: H - 4, "text-anchor": "middle" });
-        xl.textContent = "left = raw · right = corrected";
+        xl.textContent = "substitution class";
         svg.appendChild(xl);
       }
 
@@ -1577,7 +1778,10 @@
         const t = [
           ["Sequencing files", fmt(FILES.length)],
           ["Single-nucleotide variants", fmt(nSnv)],
-          ["Variants adjusted", fmt(adjusted)],
+          [
+            `Variants adjusted (≥1 file) <button class="ibtn" type="button" data-info="Counted if adjusted in ≥1 file (a union), so larger than any single file; the DETAIL section shows per-file counts.">i</button>`,
+            fmt(adjusted),
+          ],
           ["Counts removed", (pct >= 0 ? "" : "+") + fmt(pct, 1) + " %"],
         ];
         document.getElementById("tiles").innerHTML = t
@@ -1620,6 +1824,16 @@
         GROUPS.forEach((g) => drawScatter(g));
         drawDetail();
       });
+      // Close the enlarged scatter once the matrix it belongs to has scrolled out of sight.
+      const _corrHost = document.getElementById("c-corr");
+      if (_corrHost && "IntersectionObserver" in window) {
+        new IntersectionObserver(
+          (entries) => {
+            if (corrOpen && entries.some((e) => !e.isIntersecting)) closeScatter();
+          },
+          { threshold: 0 },
+        ).observe(_corrHost);
+      }
     </script>
   </body>
 </html>
