@@ -4,21 +4,21 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="description" content="nf-core/dmscore: Until now, most Deep Mutational Scanning (DMS) experiments relied on variant-specific barcoded libraries for sequencing. This method enabled DMS on large proteins and led to many great publications. Recently, efforts have increased to make use of the classic and more simple random fragmentation-based short-read sequencing (“shotgun-sequencing”). This saves time and money and due to its simpler experimental design is less prone to mistakes. dmscore handles the essential computational steps, processing the raw FASTQ files and generating a count table of variants. Along the way, it provides multiple QC metrics, enabling users to quickly evaluate the success of their experimental setup.">
-  <title>nf-core/dmscore Pipeline Report</title>
+  <meta name="description" content="nf-core/deepmutscan: Until now, most Deep Mutational Scanning (DMS) experiments relied on variant-specific barcoded libraries for sequencing. This method enabled DMS on large proteins and led to many great publications. Recently, efforts have increased to make use of the classic and more simple random fragmentation-based short-read sequencing (“shotgun-sequencing”). This saves time and money and due to its simpler experimental design is less prone to mistakes. dmscore handles the essential computational steps, processing the raw FASTQ files and generating a count table of variants. Along the way, it provides multiple QC metrics, enabling users to quickly evaluate the success of their experimental setup.">
+  <title>nf-core/deepmutscan Pipeline Report</title>
 </head>
 <body>
 <div style="font-family: Helvetica, Arial, sans-serif; padding: 30px; max-width: 800px; margin: 0 auto;">
 
 <img src="cid:nfcorepipelinelogo">
 
-<h1>nf-core/dmscore ${version}</h1>
+<h1>nf-core/deepmutscan ${version}</h1>
 <h2>Run Name: $runName</h2>
 
 <% if (!success){
     out << """
     <div style="color: #a94442; background-color: #f2dede; border-color: #ebccd1; padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px;">
-        <h4 style="margin-top:0; color: inherit;">nf-core/dmscore execution completed unsuccessfully!</h4>
+        <h4 style="margin-top:0; color: inherit;">nf-core/deepmutscan execution completed unsuccessfully!</h4>
         <p>The exit status of the task that caused the workflow execution to fail was: <code>$exitStatus</code>.</p>
         <p>The full error message was:</p>
         <pre style="white-space: pre-wrap; overflow: visible; margin-bottom: 0;">${errorReport}</pre>
@@ -27,7 +27,7 @@
 } else {
     out << """
     <div style="color: #3c763d; background-color: #dff0d8; border-color: #d6e9c6; padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px;">
-        nf-core/dmscore execution completed successfully!
+        nf-core/deepmutscan execution completed successfully!
     </div>
     """
 }
@@ -44,8 +44,8 @@
     </tbody>
 </table>
 
-<p>nf-core/dmscore</p>
-<p><a href="https://github.com/nf-core/dmscore">https://github.com/nf-core/dmscore</a></p>
+<p>nf-core/deepmutscan</p>
+<p><a href="https://github.com/nf-core/deepmutscan">https://github.com/nf-core/deepmutscan</a></p>
 
 </div>
 

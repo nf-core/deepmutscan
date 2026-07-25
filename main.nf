@@ -1,11 +1,11 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/dmscore
+    nf-core/deepmutscan
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/dmscore
-    Website: https://nf-co.re/dmscore
-    Slack  : https://nfcore.slack.com/channels/dmscore
+    Github : https://github.com/nf-core/deepmutscan
+    Website: https://nf-co.re/deepmutscan
+    Slack  : https://nfcore.slack.com/channels/deepmutscan
 ----------------------------------------------------------------------------------------
 */
 
@@ -15,10 +15,10 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { DMSCORE  } from './workflows/dmscore'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_dmscore_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_dmscore_pipeline'
-include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_dmscore_pipeline'
+include { DEEPMUTSCAN  } from './workflows/deepmutscan'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_deepmutscan_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_deepmutscan_pipeline'
+include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_deepmutscan_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -26,9 +26,6 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_dmsc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// TODO nf-core: Remove this line if you don't need a FASTA file
-//   This is an example of how to use getGenomeAttribute() to fetch parameters
-//   from igenomes.config using `--genome`
 params.fasta = getGenomeAttribute('fasta')
 
 /*
@@ -40,7 +37,7 @@ params.fasta = getGenomeAttribute('fasta')
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow NFCORE_DMSCORE {
+workflow NFCORE_DEEPMUTSCAN {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -50,12 +47,17 @@ workflow NFCORE_DMSCORE {
     //
     // WORKFLOW: Run pipeline
     //
-    DMSCORE (
-        samplesheet
+    DEEPMUTSCAN (
+        samplesheet,
+        params.multiqc_config,
+        params.multiqc_logo,
+        params.multiqc_methods_description,
+        params.outdir,
     )
     emit:
-    multiqc_report = DMSCORE.out.multiqc_report // channel: /path/to/multiqc_report.html
+    multiqc_report = DEEPMUTSCAN.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -80,7 +82,7 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    NFCORE_DMSCORE (
+    NFCORE_DEEPMUTSCAN (
         PIPELINE_INITIALISATION.out.samplesheet
     )
     //
@@ -92,8 +94,7 @@ workflow {
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        params.hook_url,
-        NFCORE_DMSCORE.out.multiqc_report
+        NFCORE_DEEPMUTSCAN.out.multiqc_report
     )
 }
 

@@ -1,0 +1,51 @@
+name: "visualization_counts_heatmap"
+description: Generates a comprehensive heatmap of variant counts, visualizing the mutation landscape across the entire reference sequence.
+keywords:
+  - deep mutational scanning
+  - dms
+  - visualization
+  - heatmap
+  - mutation landscape
+tools:
+  - "mutscan":
+      description: "R package for analysis of deep mutational scanning data"
+      homepage: "https://bioconductor.org/packages/release/bioc/html/mutscan.html"
+      documentation: "https://bioconductor.org/packages/release/bioc/manuals/mutscan/man/mutscan.pdf"
+      tool_dev_url: "https://github.com/csoneson/mutscan"
+      doi: "10.1186/s12859-023-05187-y"
+      licence: ["GPL-3.0-or-later"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - variantCounts_for_heatmaps:
+        type: file
+        description: CSV file containing processed variant counts formatted for heatmap generation
+        pattern: "*.{csv}"
+  - - min_counts:
+        type: integer
+        description: Minimum count threshold used to filter variants before plotting
+
+output:
+  - counts_heatmap:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', single_end:false ]`
+      - counts_heatmap.pdf:
+          type: file
+          description: PDF heatmap visualizing mutation frequencies across the sequence positions
+          pattern: "counts_heatmap.pdf"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

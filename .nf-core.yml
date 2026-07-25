@@ -1,12 +1,8 @@
-repository_type: pipeline
-
-nf_core_version: 3.1.2
-
 lint: {}
-
+nf_core_version: 4.0.2
+repository_type: pipeline
 template:
-  org: nf-core
-  name: dmscore
+  author: Benjamin Wehnert & Max Stammnitz
   description: "Until now, most Deep Mutational Scanning (DMS) experiments relied\
     \ on variant-specific barcoded libraries for sequencing. This method enabled DMS\
     \ on large proteins and led to many great publications. Recently, efforts have\
@@ -17,8 +13,9 @@ template:
     \ files and generating a count table of variants. Along the way, it provides multiple\
     \ QC metrics, enabling users to quickly evaluate the success of their experimental\
     \ setup."
-  author: Benjamin Wehnert & Max Stammnitz
-  version: 1.0.0dev
-  force: true
-  outdir: .
+  force: false
   is_nfcore: true
+  name: deepmutscan
+  org: nf-core
+  outdir: .
+  version: 1.0.0

@@ -1,0 +1,44 @@
+nextflow_pipeline {
+
+    name "Test pipeline"
+    script "../main.nf"
+    tag "pipeline"
+
+    test("-profile test") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            // stable_path: All files + folders in ${params.outdir}/ with a stable path (including file name)
+            // DiMSum's diagnostic plots are excluded from the path list as well as from the content
+            // hashes (tests/.nftignore): which of them DiMSum emits depends on its graphics stack, so
+            // their mere presence is not a stable contract to assert on.
+            def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}', 'multiqc/multiqc_plots', 'multiqc/multiqc_plots/**', 'fitness/DiMSum_results/**/reports/*.{pdf,png}'])
+            // stable_content: All files in ${params.outdir}/ with stable content
+            def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
+            // Parse the unstable TSVs to snapshot their structure instead of their hashes
+            def edger_tsv = path("$outputDir/fitness/mutscan_results/fitness_estimation_mutscan_edgeR.tsv").csv(sep: '\t')
+            def limma_tsv = path("$outputDir/fitness/mutscan_results/fitness_estimation_mutscan_limma.tsv").csv(sep: '\t')
+            assert workflow.success
+            assertAll(
+                { assert snapshot(
+                    // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
+                    removeNextflowVersion("$outputDir/pipeline_info/nf_core_deepmutscan_software_mqc_versions.yml"),
+                    // All stable path name, with a relative path
+                    stable_path,
+                    // All files with stable contents
+                    stable_content,
+                    // Partial structural snapshot of the unstable TSV files
+                    [
+                        edger_rowCount: edger_tsv.rowCount,
+                        limma_rowCount: limma_tsv.rowCount
+                    ]
+                ).match() }
+            )
+        }
+    }
+}
