@@ -2,10 +2,14 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  # r-base must be pinned: with r-dimsum alone the solver is free to satisfy it with an ancient R
-  # (it picked 4.0.5), which does not match the container's 4.4.2 and makes DiMSum emit a different
-  # set of diagnostic plots. Every pin here mirrors the paired container exactly.
+  # Every pin here mirrors the paired container exactly. r-base must be pinned: with r-dimsum alone the
+  # solver picks an ancient R (4.0.5), not the container's 4.4.2. ggplot2/GGally must ALSO be pinned:
+  # DiMSum 1.4 builds its merge/diagnostics reports through GGally, which breaks under ggplot2 4.0 (the
+  # solver floats to 4.0.3 on R 4.4.2) with "object 'dimsum_meta_new_report' not found" and aborts the
+  # run; the container holds ggplot2 at 3.5.1 / GGally at 2.2.1, so we do the same.
   - bioconda::r-dimsum=1.4
   - conda-forge::r-base=4.4.2
   - conda-forge::r-data.table=1.16.4
   - bioconda::bioconductor-biostrings=2.74.0
+  - conda-forge::r-ggplot2=3.5.1
+  - conda-forge::r-ggally=2.2.1

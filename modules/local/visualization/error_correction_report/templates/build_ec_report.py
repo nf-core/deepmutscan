@@ -18,6 +18,9 @@ import pandas as pd
 
 sample = "$sample"
 method = "$method"
+# The false-doubles estimator actually used (mle|eb), so the report can name it. Empty/other for the
+# wildtype method, where it does not apply.
+estimator = "$false_doubles_method"
 # Each entry is {id, type, replicate} - type/replicate come straight from the samplesheet (general
 # for any protein, not hard-coded here) and drive the input-vs-output split in the report.
 files = json.loads(base64.b64decode("$ids_b64").decode("utf-8"))
@@ -129,6 +132,7 @@ for fi, (fid, path) in enumerate(zip(files, paths)):
 data = {
     "sample": sample,
     "method": method,
+    "estimator": estimator,
     "files": files,
     "classes": [{"cls": k, "label": SNV_LABELS[k]} for k in SNV_CLASSES],
     "variants": sorted(variants.values(), key=lambda v: (v["pos"] if v["pos"] is not None else 0, v["key"])),
