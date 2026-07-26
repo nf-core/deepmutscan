@@ -56,6 +56,48 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
   all.false.doubles <- input.counts.raw
   all.false.doubles <- all.false.doubles[which(all.false.doubles[,"varying_bases"] >= 3 & all.false.doubles[,"varying_bases"] < 5 & all.false.doubles[,"varying_codons"] == 2),,drop = F]
   all.false.doubles\$codon_dist <- vapply(regmatches(all.false.doubles[,"codon_mut"], gregexpr("\\\\d+(?=:)", all.false.doubles[,"codon_mut"], perl = TRUE)), function(z) abs(diff(as.integer(z))), integer(1))
+  
+  ### additional filters: 
+
+  #### remove outlier double codon mutants with very high counts
+  all.false.doubles <- all.false.doubles[which(all.false.doubles\$counts <= quantile(all.false.doubles\$counts, c(0.995))),]
+
+  #### only keep 2+1 nt and 3+1 nt double codon mutants
+  all.false.doubles.nt <- all.false.doubles\$codon_mut
+  all.false.doubles.nt <- str_split_fixed(all.false.doubles.nt, ", ", 2)
+  all.false.doubles.nt[,1] <- str_split_fixed(all.false.doubles.nt[,1], ":", 2)[,2]
+  all.false.doubles.nt[,2] <- str_split_fixed(all.false.doubles.nt[,2], ":", 2)[,2]
+  classify_double_codon_variant <- function(x) {
+    parts <- strsplit(x, ">", fixed = TRUE)
+    n_changes <- vapply(parts, function(p) {
+      if (length(p) != 2L || nchar(p[1]) != nchar(p[2])) {
+        return(NA_integer_)
+      }
+      sum(strsplit(p[1], "")[[1]] != strsplit(p[2], "")[[1]])
+    }, integer(1))
+    labels <- c(1, 2, 3)
+    ifelse(n_changes %in% 1:3,
+           labels[n_changes],
+           ifelse(n_changes == 0L, "no change", NA_character_))
+  }
+  all.false.doubles.nt[,1] <- classify_double_codon_variant(all.false.doubles.nt[,1])
+  all.false.doubles.nt[,2] <- classify_double_codon_variant(all.false.doubles.nt[,2])
+  if(length(which(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 2) != 0)){
+    all.false.doubles <- all.false.doubles[-which(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 2),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 2),]
+  }
+  if(length(which(all.false.doubles.nt[,1] == 1 & all.false.doubles.nt[,2] == 1) != 0)){
+    all.false.doubles <- all.false.doubles[-which(all.false.doubles.nt[,1] == 1 & all.false.doubles.nt[,2] == 1),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(all.false.doubles.nt[,1] == 1 & all.false.doubles.nt[,2] == 1),]
+  }
+  if(length(which(c(all.false.doubles.nt[,1] == 3 & all.false.doubles.nt[,2] == 2) | c(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 3)) != 0)){
+    all.false.doubles <- all.false.doubles[-which(c(all.false.doubles.nt[,1] == 3 & all.false.doubles.nt[,2] == 2) | c(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 3)),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(c(all.false.doubles.nt[,1] == 3 & all.false.doubles.nt[,2] == 2) | c(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 3)),]
+  }
+  if(length(which(is.na(all.false.doubles.nt[,1]) == T | is.na(all.false.doubles.nt[,2]) == T) != 0)){
+    all.false.doubles <- all.false.doubles[-which(is.na(all.false.doubles.nt[,1]) == T | is.na(all.false.doubles.nt[,2]) == T),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(is.na(all.false.doubles.nt[,1]) == T | is.na(all.false.doubles.nt[,2]) == T),]
+  }
 
   all.false.doubles.codons <- str_split_fixed(all.false.doubles\$codon_mut, ", ", 2)
   all.false.doubles.codons[,1] <- as.integer(sub(":.*", "", all.false.doubles.codons[,1]))
@@ -270,6 +312,48 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
   all.false.doubles <- input.counts.raw
   all.false.doubles <- all.false.doubles[which(all.false.doubles[,"varying_bases"] >= 3 & all.false.doubles[,"varying_bases"] < 5 & all.false.doubles[,"varying_codons"] == 2),,drop = F]
   all.false.doubles\$codon_dist <- vapply(regmatches(all.false.doubles[,"codon_mut"], gregexpr("\\\\d+(?=:)", all.false.doubles[,"codon_mut"], perl = TRUE)), function(z) abs(diff(as.integer(z))), integer(1))
+  
+  ### additional filters: 
+
+  #### remove outlier double codon mutants with very high counts
+  all.false.doubles <- all.false.doubles[which(all.false.doubles\$counts <= quantile(all.false.doubles\$counts, c(0.995))),]
+
+  #### only keep 2+1 nt and 3+1 nt double codon mutants
+  all.false.doubles.nt <- all.false.doubles\$codon_mut
+  all.false.doubles.nt <- str_split_fixed(all.false.doubles.nt, ", ", 2)
+  all.false.doubles.nt[,1] <- str_split_fixed(all.false.doubles.nt[,1], ":", 2)[,2]
+  all.false.doubles.nt[,2] <- str_split_fixed(all.false.doubles.nt[,2], ":", 2)[,2]
+  classify_double_codon_variant <- function(x) {
+    parts <- strsplit(x, ">", fixed = TRUE)
+    n_changes <- vapply(parts, function(p) {
+      if (length(p) != 2L || nchar(p[1]) != nchar(p[2])) {
+        return(NA_integer_)
+      }
+      sum(strsplit(p[1], "")[[1]] != strsplit(p[2], "")[[1]])
+    }, integer(1))
+    labels <- c(1, 2, 3)
+    ifelse(n_changes %in% 1:3,
+           labels[n_changes],
+           ifelse(n_changes == 0L, "no change", NA_character_))
+  }
+  all.false.doubles.nt[,1] <- classify_double_codon_variant(all.false.doubles.nt[,1])
+  all.false.doubles.nt[,2] <- classify_double_codon_variant(all.false.doubles.nt[,2])
+  if(length(which(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 2) != 0)){
+    all.false.doubles <- all.false.doubles[-which(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 2),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 2),]
+  }
+  if(length(which(all.false.doubles.nt[,1] == 1 & all.false.doubles.nt[,2] == 1) != 0)){
+    all.false.doubles <- all.false.doubles[-which(all.false.doubles.nt[,1] == 1 & all.false.doubles.nt[,2] == 1),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(all.false.doubles.nt[,1] == 1 & all.false.doubles.nt[,2] == 1),]
+  }
+  if(length(which(c(all.false.doubles.nt[,1] == 3 & all.false.doubles.nt[,2] == 2) | c(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 3)) != 0)){
+    all.false.doubles <- all.false.doubles[-which(c(all.false.doubles.nt[,1] == 3 & all.false.doubles.nt[,2] == 2) | c(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 3)),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(c(all.false.doubles.nt[,1] == 3 & all.false.doubles.nt[,2] == 2) | c(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 3)),]
+  }
+  if(length(which(is.na(all.false.doubles.nt[,1]) == T | is.na(all.false.doubles.nt[,2]) == T) != 0)){
+    all.false.doubles <- all.false.doubles[-which(is.na(all.false.doubles.nt[,1]) == T | is.na(all.false.doubles.nt[,2]) == T),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(is.na(all.false.doubles.nt[,1]) == T | is.na(all.false.doubles.nt[,2]) == T),]
+  }
 
   all.false.doubles.codons <- str_split_fixed(all.false.doubles\$codon_mut, ", ", 2)
   all.false.doubles.codons[,1] <- as.integer(sub(":.*", "", all.false.doubles.codons[,1]))
