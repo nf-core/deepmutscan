@@ -1,22 +1,15 @@
 repository_type: pipeline
-
 nf_core_version: 3.1.2
-
-lint: {}
-
+lint:
+  files_exist:
+    - .github/workflows/linting_comment.yml
+  files_unchanged:
+    - .github/workflows/branch.yml
+    - .github/workflows/linting.yml
 template:
   org: nf-core
   name: dmscore
-  description: "Until now, most Deep Mutational Scanning (DMS) experiments relied\
-    \ on variant-specific barcoded libraries for sequencing. This method enabled DMS\
-    \ on large proteins and led to many great publications. Recently, efforts have\
-    \ increased to make use of the classic and more simple random fragmentation-based\
-    \ short-read sequencing (\u201Cshotgun-sequencing\u201D). This saves time and\
-    \ money and due to its simpler experimental design is less prone to mistakes.\
-    \ dmscore handles the essential computational steps, processing the raw FASTQ\
-    \ files and generating a count table of variants. Along the way, it provides multiple\
-    \ QC metrics, enabling users to quickly evaluate the success of their experimental\
-    \ setup."
+  description: "Until now, most Deep Mutational Scanning (DMS) experiments relied on variant-specific barcoded libraries for sequencing. This method enabled DMS on large proteins and led to many great publications. Recently, efforts have increased to make use of the classic and more simple random fragmentation-based short-read sequencing (“shotgun-sequencing”). This saves time and money and due to its simpler experimental design is less prone to mistakes. dmscore handles the essential computational steps, processing the raw FASTQ files and generating a count table of variants. Along the way, it provides multiple QC metrics, enabling users to quickly evaluate the success of their experimental setup."
   author: Benjamin Wehnert & Max Stammnitz
   version: 1.0.0dev
   force: true
