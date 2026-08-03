@@ -501,7 +501,9 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
   }
 
   ## 5.) Calculate the empirical-Bayes sequencing error estimates
-  out.summary <- out.summary[-which(is.na(out.summary[,"False_double_variant_count"]) == T),]
+  if(length(which(is.na(out.summary[,"False_double_variant_count"]) == T)) != 0){
+    out.summary <- out.summary[-which(is.na(out.summary[,"False_double_variant_count"]) == T),]
+  }
   out.summary <- as.data.frame(out.summary)
   class(out.summary\$False_double_variant_count) <- "numeric"
   class(out.summary\$False_double_variant_coverage) <- "numeric"
