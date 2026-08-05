@@ -21,7 +21,7 @@ suppressMessages({
 ## -------------------------------------------------------------------------------------------------
 seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw, input_count_path_processed, output_file_path, seq_error_rate_path, codon_window){
 
-  ## load data (nucleotide-level counts from GATK)
+  ## load data (nucleotide-level counts)
 
   # WT sequence
   wt.seq <- readDNAStringSet(wt_path)
@@ -146,8 +146,8 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
   .cf <- coef(fit)
   dual.codon.coverage.estimate[,"Estimate % max. possible coverage"] <- exp(.cf[1] + .cf[2] * .dccd + .cf[3] * .dccd^2)
 
-  ## Process the GATK file, only look at single nucleotide variants
-  cat("Sequencing error correction of GATK counts...\\n")
+  ## Process the count file, only look at single nucleotide variants
+  cat("Sequencing error correction of raw counts...\\n")
   for (i in grep("[,]", input.counts.processed[,"base_mut"], invert = T)){
 
     ### algorithm:
@@ -264,7 +264,7 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
 ## -------------------------------------------------------------------------------------------------
 seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw, input_count_path_processed, output_file_path, seq_error_rate_path, codon_window){
 
-  ## load data (nucleotide-level counts from GATK)
+  ## load data (nucleotide-level counts)
 
   # WT sequence
   wt.seq <- readDNAStringSet(wt_path)
@@ -386,8 +386,8 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
   .cf <- coef(fit)
   dual.codon.coverage.estimate[,"Estimate % max. possible coverage"] <- exp(.cf[1] + .cf[2] * .dccd + .cf[3] * .dccd^2)
 
-  ## Process the GATK file, only look at single nucleotide variants
-  cat("Sequencing error correction of GATK counts...\\n")
+  ## Process the count file, only look at single nucleotide variants
+  cat("Sequencing error correction of raw counts...\\n")
   out.summary <- matrix(NA, ncol = 7, nrow = length(grep("[,]", input.counts.processed[,"base_mut"], invert = T)))
   colnames(out.summary) <- c("SNV", "Category",
                              "False_double_variant_count", "False_double_variant_coverage",
