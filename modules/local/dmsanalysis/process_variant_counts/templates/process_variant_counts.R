@@ -190,6 +190,7 @@ complete_prefiltered_counts <- function(possible_nnk_path, prefiltered_counts_pa
     mutate(codon_mut = paste0(Codon_Number, ":", wt_codon, ">", Variant))
 
   # Merge both dataframes based on the codon_mut column (full join to include all)
+  prefiltered_counts\$codon_mut <- toupper(prefiltered_counts\$codon_mut)
   merged_data <- full_join(prefiltered_counts, possible_nnk, by = "codon_mut")
 
   # Fill missing values in counts_per_cov and counts with 0.0000001
