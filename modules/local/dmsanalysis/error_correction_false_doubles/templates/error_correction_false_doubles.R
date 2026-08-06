@@ -102,8 +102,8 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
   all.false.doubles.codons <- str_split_fixed(all.false.doubles\$codon_mut, ", ", 2)
   all.false.doubles.codons[,1] <- as.integer(sub(":.*", "", all.false.doubles.codons[,1]))
   all.false.doubles.codons[,2] <- as.integer(sub(":.*", "", all.false.doubles.codons[,2]))
-  median.high.conf.coverage.per.pos <- rep(NA, max(as.numeric(str_split_fixed(input.counts.processed\$codon_mut, ":", 2)[,1])))
-  names(median.high.conf.coverage.per.pos) <- 1:max(as.numeric(str_split_fixed(input.counts.processed\$codon_mut, ":", 2)[,1]))
+  median.high.conf.coverage.per.pos <- rep(NA, max.codon)
+  names(median.high.conf.coverage.per.pos) <- 1:max.codon
   for(i in 1:length(median.high.conf.coverage.per.pos)){
     median.high.conf.coverage.per.pos[i] <- median(input.counts.processed[which(names(median.high.conf.coverage.per.pos)[i] == str_split_fixed(input.counts.processed\$codon_mut, ":", 2)[,1]),"cov"])
   }
