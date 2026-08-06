@@ -82,6 +82,7 @@ filter_counts_by_codon_library <- function(counts_file_path, codon_library_path,
   }
 
   # Filter the variant-count table
+  counts_table\$codon_mut <- toupper(counts_table\$codon_mut)
   filtered_counts <- counts_table %>%
     filter(varying_codons == 1) %>% # Keep rows with single-codon mutations
     rowwise() %>%
