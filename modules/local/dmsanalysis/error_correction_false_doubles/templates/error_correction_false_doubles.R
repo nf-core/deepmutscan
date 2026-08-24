@@ -56,8 +56,8 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
   all.false.doubles <- input.counts.raw
   all.false.doubles <- all.false.doubles[which(all.false.doubles[,"varying_bases"] >= 3 & all.false.doubles[,"varying_bases"] < 5 & all.false.doubles[,"varying_codons"] == 2),,drop = F]
   all.false.doubles\$codon_dist <- vapply(regmatches(all.false.doubles[,"codon_mut"], gregexpr("\\\\d+(?=:)", all.false.doubles[,"codon_mut"], perl = TRUE)), function(z) abs(diff(as.integer(z))), integer(1))
-  
-  ### additional filters: 
+
+  ### additional filters:
 
   #### remove outlier double codon mutants with very high counts
   all.false.doubles <- all.false.doubles[which(all.false.doubles\$counts <= quantile(all.false.doubles\$counts, c(0.995))),]
@@ -299,8 +299,8 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
   all.false.doubles <- input.counts.raw
   all.false.doubles <- all.false.doubles[which(all.false.doubles[,"varying_bases"] >= 3 & all.false.doubles[,"varying_bases"] < 5 & all.false.doubles[,"varying_codons"] == 2),,drop = F]
   all.false.doubles\$codon_dist <- vapply(regmatches(all.false.doubles[,"codon_mut"], gregexpr("\\\\d+(?=:)", all.false.doubles[,"codon_mut"], perl = TRUE)), function(z) abs(diff(as.integer(z))), integer(1))
-  
-  ### additional filters: 
+
+  ### additional filters:
 
   #### remove outlier double codon mutants with very high counts
   all.false.doubles <- all.false.doubles[which(all.false.doubles\$counts <= quantile(all.false.doubles\$counts, c(0.995))),]
