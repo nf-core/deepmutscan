@@ -128,11 +128,16 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
     return(invisible(NULL))
   }
 
+  ## keep the full distance range before dropping rows, so the lookup below stays long enough
+  .max_dist <- max(c(all.false.doubles\$codon_dist, codon_window), na.rm = TRUE)
+  ## fit on the finite rows only - lm() errors on the -Inf that log() gives a zero-coverage double
+  all.false.doubles <- all.false.doubles[.usable, , drop = FALSE]
+
   fit <- lm(log(all.false.doubles\$perc_cov_to_max) ~ all.false.doubles\$codon_dist + I(all.false.doubles\$codon_dist^2))
   all.false.doubles\$pred_cov_perc <- exp(predict(fit))
 
   ### convert this into a look-up table: "% max. possible coverage" depending on codon-codon distance
-  dual.codon.coverage.estimate <- matrix(NA, nrow = max(all.false.doubles\$codon_dist), ncol = 2)
+  dual.codon.coverage.estimate <- matrix(NA, nrow = .max_dist, ncol = 2)
   colnames(dual.codon.coverage.estimate) <- c("Codon distance", "Estimate % max. possible coverage")
   dual.codon.coverage.estimate[,"Codon distance"] <- 1:nrow(dual.codon.coverage.estimate)
   ## deepmutscan fix (Maxi-approved deviation from the verbatim script): fill the coverage-decay
@@ -239,7 +244,9 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
     e_MLE <- sum(tmp.summary.table.pos\$`false double variant count`) /
       sum(tmp.summary.table.pos\$`true high-conf. variant count` * c(tmp.summary.table.pos\$`false double variant coverage` / tmp.summary.table.pos\$`true high-conf. variant coverage`))
     seq.error.rate[tmp.single,"1nt false counts/coverage"] <- e_MLE
-    input.counts.processed[i,"counts_per_cov_corrected"] <- input.counts.processed[i,"counts_per_cov"] - e_MLE
+    ## clamped here too - the guard below only tests the rounded count, so a subtraction landing in
+    ## (-0.5, 0] rounds to 0, skips the guard, and leaves a negative frequency behind
+    input.counts.processed[i,"counts_per_cov_corrected"] <- max(0, input.counts.processed[i,"counts_per_cov"] - e_MLE)
 
     ## 5.) Apply correction factor
     input.counts.processed[i,"counts_corrected"] <- input.counts.processed[i,"counts"] - c(e_MLE * input.counts.processed[i,"cov"])
@@ -368,11 +375,16 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
     return(invisible(NULL))
   }
 
+  ## keep the full distance range before dropping rows, so the lookup below stays long enough
+  .max_dist <- max(c(all.false.doubles\$codon_dist, codon_window), na.rm = TRUE)
+  ## fit on the finite rows only - lm() errors on the -Inf that log() gives a zero-coverage double
+  all.false.doubles <- all.false.doubles[.usable, , drop = FALSE]
+
   fit <- lm(log(all.false.doubles\$perc_cov_to_max) ~ all.false.doubles\$codon_dist + I(all.false.doubles\$codon_dist^2))
   all.false.doubles\$pred_cov_perc <- exp(predict(fit))
 
   ### convert this into a look-up table: "% max. possible coverage" depending on codon-codon distance
-  dual.codon.coverage.estimate <- matrix(NA, nrow = max(all.false.doubles\$codon_dist), ncol = 2)
+  dual.codon.coverage.estimate <- matrix(NA, nrow = .max_dist, ncol = 2)
   colnames(dual.codon.coverage.estimate) <- c("Codon distance", "Estimate % max. possible coverage")
   dual.codon.coverage.estimate[,"Codon distance"] <- 1:nrow(dual.codon.coverage.estimate)
   ## deepmutscan fix (Maxi-approved deviation from the verbatim script): fill the coverage-decay
@@ -603,7 +615,8 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
 
   ## 6.) Apply correction factors systematically (use upper 95% percentile to correct, a.k.a. "conservative")
   seq.error.rate[match(out.summary\$SNV, rownames(seq.error.rate)),"1nt false counts/coverage"] <- out.summary\$e_EB
-  input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"counts_per_cov_corrected"] <- input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"counts_per_cov"] - out.summary\$e_EB
+  ## clamped here too - the guard below only tests the rounded count (see the MLE branch)
+  input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"counts_per_cov_corrected"] <- pmax(0, input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"counts_per_cov"] - out.summary\$e_EB)
   input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"counts_corrected"] <- input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"counts"] - c(out.summary\$e_EB * input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"cov"])
 
   ## round to nearest integer, do not allow for negative counts
