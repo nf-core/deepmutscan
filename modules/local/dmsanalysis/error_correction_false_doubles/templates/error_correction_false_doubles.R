@@ -21,7 +21,7 @@ suppressMessages({
 ## -------------------------------------------------------------------------------------------------
 seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw, input_count_path_processed, output_file_path, seq_error_rate_path, codon_window){
 
-  ## load data (nucleotide-level counts from GATK)
+  ## load data (nucleotide-level counts)
 
   # WT sequence
   wt.seq <- readDNAStringSet(wt_path)
@@ -57,11 +57,53 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
   all.false.doubles <- all.false.doubles[which(all.false.doubles[,"varying_bases"] >= 3 & all.false.doubles[,"varying_bases"] < 5 & all.false.doubles[,"varying_codons"] == 2),,drop = F]
   all.false.doubles\$codon_dist <- vapply(regmatches(all.false.doubles[,"codon_mut"], gregexpr("\\\\d+(?=:)", all.false.doubles[,"codon_mut"], perl = TRUE)), function(z) abs(diff(as.integer(z))), integer(1))
 
+  ### additional filters:
+
+  #### remove outlier double codon mutants with very high counts
+  all.false.doubles <- all.false.doubles[which(all.false.doubles\$counts <= quantile(all.false.doubles\$counts, c(0.995))),]
+
+  #### only keep 2+1 nt and 3+1 nt double codon mutants
+  all.false.doubles.nt <- all.false.doubles\$codon_mut
+  all.false.doubles.nt <- str_split_fixed(all.false.doubles.nt, ", ", 2)
+  all.false.doubles.nt[,1] <- str_split_fixed(all.false.doubles.nt[,1], ":", 2)[,2]
+  all.false.doubles.nt[,2] <- str_split_fixed(all.false.doubles.nt[,2], ":", 2)[,2]
+  classify_double_codon_variant <- function(x) {
+    parts <- strsplit(x, ">", fixed = TRUE)
+    n_changes <- vapply(parts, function(p) {
+      if (length(p) != 2L || nchar(p[1]) != nchar(p[2])) {
+        return(NA_integer_)
+      }
+      sum(strsplit(p[1], "")[[1]] != strsplit(p[2], "")[[1]])
+    }, integer(1))
+    labels <- c(1, 2, 3)
+    ifelse(n_changes %in% 1:3,
+           labels[n_changes],
+           ifelse(n_changes == 0L, "no change", NA_character_))
+  }
+  all.false.doubles.nt[,1] <- classify_double_codon_variant(all.false.doubles.nt[,1])
+  all.false.doubles.nt[,2] <- classify_double_codon_variant(all.false.doubles.nt[,2])
+  if(length(which(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 2) != 0)){
+    all.false.doubles <- all.false.doubles[-which(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 2),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 2),]
+  }
+  if(length(which(all.false.doubles.nt[,1] == 1 & all.false.doubles.nt[,2] == 1) != 0)){
+    all.false.doubles <- all.false.doubles[-which(all.false.doubles.nt[,1] == 1 & all.false.doubles.nt[,2] == 1),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(all.false.doubles.nt[,1] == 1 & all.false.doubles.nt[,2] == 1),]
+  }
+  if(length(which(c(all.false.doubles.nt[,1] == 3 & all.false.doubles.nt[,2] == 2) | c(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 3)) != 0)){
+    all.false.doubles <- all.false.doubles[-which(c(all.false.doubles.nt[,1] == 3 & all.false.doubles.nt[,2] == 2) | c(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 3)),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(c(all.false.doubles.nt[,1] == 3 & all.false.doubles.nt[,2] == 2) | c(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 3)),]
+  }
+  if(length(which(is.na(all.false.doubles.nt[,1]) == T | is.na(all.false.doubles.nt[,2]) == T) != 0)){
+    all.false.doubles <- all.false.doubles[-which(is.na(all.false.doubles.nt[,1]) == T | is.na(all.false.doubles.nt[,2]) == T),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(is.na(all.false.doubles.nt[,1]) == T | is.na(all.false.doubles.nt[,2]) == T),]
+  }
+
   all.false.doubles.codons <- str_split_fixed(all.false.doubles\$codon_mut, ", ", 2)
   all.false.doubles.codons[,1] <- as.integer(sub(":.*", "", all.false.doubles.codons[,1]))
   all.false.doubles.codons[,2] <- as.integer(sub(":.*", "", all.false.doubles.codons[,2]))
-  median.high.conf.coverage.per.pos <- rep(NA, max(as.numeric(str_split_fixed(input.counts.processed\$codon_mut, ":", 2)[,1])))
-  names(median.high.conf.coverage.per.pos) <- 1:max(as.numeric(str_split_fixed(input.counts.processed\$codon_mut, ":", 2)[,1]))
+  median.high.conf.coverage.per.pos <- rep(NA, max.codon)
+  names(median.high.conf.coverage.per.pos) <- 1:max.codon
   for(i in 1:length(median.high.conf.coverage.per.pos)){
     median.high.conf.coverage.per.pos[i] <- median(input.counts.processed[which(names(median.high.conf.coverage.per.pos)[i] == str_split_fixed(input.counts.processed\$codon_mut, ":", 2)[,1]),"cov"])
   }
@@ -86,11 +128,16 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
     return(invisible(NULL))
   }
 
+  ## keep the full distance range before dropping rows, so the lookup below stays long enough
+  .max_dist <- max(c(all.false.doubles\$codon_dist, codon_window), na.rm = TRUE)
+  ## fit on the finite rows only - lm() errors on the -Inf that log() gives a zero-coverage double
+  all.false.doubles <- all.false.doubles[.usable, , drop = FALSE]
+
   fit <- lm(log(all.false.doubles\$perc_cov_to_max) ~ all.false.doubles\$codon_dist + I(all.false.doubles\$codon_dist^2))
   all.false.doubles\$pred_cov_perc <- exp(predict(fit))
 
   ### convert this into a look-up table: "% max. possible coverage" depending on codon-codon distance
-  dual.codon.coverage.estimate <- matrix(NA, nrow = max(all.false.doubles\$codon_dist), ncol = 2)
+  dual.codon.coverage.estimate <- matrix(NA, nrow = .max_dist, ncol = 2)
   colnames(dual.codon.coverage.estimate) <- c("Codon distance", "Estimate % max. possible coverage")
   dual.codon.coverage.estimate[,"Codon distance"] <- 1:nrow(dual.codon.coverage.estimate)
   ## deepmutscan fix (Maxi-approved deviation from the verbatim script): fill the coverage-decay
@@ -104,8 +151,8 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
   .cf <- coef(fit)
   dual.codon.coverage.estimate[,"Estimate % max. possible coverage"] <- exp(.cf[1] + .cf[2] * .dccd + .cf[3] * .dccd^2)
 
-  ## Process the GATK file, only look at single nucleotide variants
-  cat("Sequencing error correction of GATK counts...\\n")
+  ## Process the count file, only look at single nucleotide variants
+  cat("Sequencing error correction of raw counts...\\n")
   for (i in grep("[,]", input.counts.processed[,"base_mut"], invert = T)){
 
     ### algorithm:
@@ -114,7 +161,7 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
     ### -> if there are zero false double mutants: skip / set correction factor to zero
     ### -> if there are any false double mutants: continue
     ### 3.) generate a table for ALL possible 2/3nt variants in the selected window:
-    ### true high-conf. variant count | true high-conf. variant coverage | false double double variant count (often 0 or 1) | false double double variant coverage
+    ### true high-conf. variant count | true high-conf. variant coverage | false double variant count (often 0 or 1) | false double variant coverage
     ### 4.) Maximum likelihood estimation (MLE) over all events
     ### 5.) Apply correction factor
 
@@ -123,26 +170,13 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
     seq.error.rate[tmp.single, "1nt counts/coverage"] <- input.counts.processed[i,"counts_per_cov"]
 
     ## 2.) look for 2/3nt hits in up to 40 codons (120 bp) upstream or downstream
-    tmp.false.doubles <- input.counts.raw[grep(paste0("(?<!\\\\d)",input.counts.processed[i,"codon_mut"]), input.counts.raw[,"codon_mut"], perl = T),,drop = F]
-
-    ## subset multi-codon variants
-    tmp.false.doubles <- tmp.false.doubles[which(tmp.false.doubles[,"varying_bases"] >= 3 & tmp.false.doubles[,"varying_bases"] < 5 & tmp.false.doubles[,"varying_codons"] == 2),,drop = F]
-    if(nrow(tmp.false.doubles) == 0){
-      next
-    }
+    tmp.false.doubles <- all.false.doubles[grep(paste0("(?<!\\\\d)",input.counts.processed[i,"codon_mut"]), all.false.doubles[,"codon_mut"], perl = T),,drop = F]
 
     ## set and enforce distance threshold
     tmp.ref.codon <- as.numeric(strsplit(input.counts.processed[i,"codon_mut"] , ":")[[1]][1])
     tmp.min.from.ref <- max(c(1, tmp.ref.codon - c(codon_window - 1)))
     tmp.max.from.ref <- min(c(max.codon, tmp.ref.codon + c(codon_window - 1)))
-    tmp.double.codon <- str_split_fixed(tmp.false.doubles\$codon_mut, ", ", 2)
-    tmp.double.codon.n1 <- as.integer(sub(":.*", "", tmp.double.codon[,1]))
-    tmp.double.codon.n2 <- as.integer(sub(":.*", "", tmp.double.codon[,2]))
-    tmp.double.codon.within.range <- (tmp.double.codon.n1 >= tmp.min.from.ref & tmp.double.codon.n1 <= tmp.max.from.ref) & (tmp.double.codon.n2 >= tmp.min.from.ref & tmp.double.codon.n2 <= tmp.max.from.ref)
-    tmp.false.doubles <- tmp.false.doubles[which(tmp.double.codon.within.range == T),,drop = F]
-    if(nrow(tmp.false.doubles) == 0){
-      next
-    }
+    tmp.false.doubles <- tmp.false.doubles[which(tmp.false.doubles\$codon_dist < codon_window),,drop = F]
 
     ## 3.) generate a table for ALL possible 2/3nt variants in the selected window
     tmp.summary.table.entries <- input.counts.processed
@@ -156,14 +190,14 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
     colnames(tmp.summary.table) <- c("codon distance",
                                      "true high-conf. variant count",
                                      "true high-conf. variant coverage",
-                                     "false double double variant count",
-                                     "false double double variant coverage")
+                                     "false double variant count",
+                                     "false double variant coverage")
     rownames(tmp.summary.table) <- paste0(c(tmp.summary.table.entries\$codon_mut),", ", c(tmp.summary.table.entries\$base_mut))
 
     tmp.summary.table[,"codon distance"] <- abs(as.numeric(str_split_fixed(tmp.summary.table.entries\$codon_mut, ":", 2)[,1]) - tmp.ref.codon)
     tmp.summary.table[,"true high-conf. variant count"] <- tmp.summary.table.entries\$counts
     tmp.summary.table[,"true high-conf. variant coverage"] <- tmp.summary.table.entries\$cov
-    tmp.summary.table[,"false double double variant count"] <- 0
+    tmp.summary.table[,"false double variant count"] <- 0
 
     ## input the actual hits
     tmp.double.codon <- str_split_fixed(tmp.false.doubles\$codon_mut, ", ", 2)
@@ -182,8 +216,8 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
       }
     }
 
-    tmp.summary.table[tmp.match,"false double double variant count"] <- tmp.false.doubles[,"counts"]
-    tmp.summary.table[tmp.match,"false double double variant coverage"] <- tmp.false.doubles[,"cov"]
+    tmp.summary.table[tmp.match,"false double variant count"] <- tmp.false.doubles[,"counts"]
+    tmp.summary.table[tmp.match,"false double variant coverage"] <- tmp.false.doubles[,"cov"]
     tmp.summary.table <- as.data.frame(tmp.summary.table)
 
     ## 4.) Maximum likelihood estimation (MLE) over all events, iterating over codon positions
@@ -197,20 +231,22 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
       tmp.name <- rownames(tmp.summary.table.pos)[j]
       tmp.summary.table.pos[j,"true high-conf. variant count"] <- sum(tmp.summary.table[grep(paste0("^",tmp.name), rownames(tmp.summary.table)),"true high-conf. variant count"])
       tmp.summary.table.pos[j,"true high-conf. variant coverage"] <- max(tmp.summary.table[grep(paste0("^",tmp.name), rownames(tmp.summary.table)),"true high-conf. variant coverage"])
-      tmp.summary.table.pos[j,"false double double variant count"] <- sum(tmp.summary.table[grep(paste0("^",tmp.name), rownames(tmp.summary.table)),"false double double variant count"])
-      tmp.summary.table.pos[j,"false double double variant coverage"] <- max(tmp.summary.table[grep(paste0("^",tmp.name), rownames(tmp.summary.table)),"false double double variant coverage"], na.rm = T)
+      tmp.summary.table.pos[j,"false double variant count"] <- sum(tmp.summary.table[grep(paste0("^",tmp.name), rownames(tmp.summary.table)),"false double variant count"])
+      tmp.summary.table.pos[j,"false double variant coverage"] <- max(tmp.summary.table[grep(paste0("^",tmp.name), rownames(tmp.summary.table)),"false double variant coverage"], na.rm = T)
 
       ## infer a good proxy for the false double variant coverage with 0 counts (based estimated distance-dependent % coverage decay observed across all observed double mutants)
-      if(tmp.summary.table.pos[j,"false double double variant coverage"] == "-Inf"){
-        tmp.summary.table.pos[j,"false double double variant coverage"] <- c(dual.codon.coverage.estimate[abs(tmp.summary.table.pos[j,"codon distance"]),"Estimate % max. possible coverage"] / 100) * tmp.summary.table.pos[j,"true high-conf. variant coverage"]
-        tmp.summary.table.pos[j,"false double double variant coverage"] <- round(tmp.summary.table.pos[j,"false double double variant coverage"])
+      if(tmp.summary.table.pos[j,"false double variant coverage"] == "-Inf"){
+        tmp.summary.table.pos[j,"false double variant coverage"] <- c(dual.codon.coverage.estimate[abs(tmp.summary.table.pos[j,"codon distance"]),"Estimate % max. possible coverage"] / 100) * tmp.summary.table.pos[j,"true high-conf. variant coverage"]
+        tmp.summary.table.pos[j,"false double variant coverage"] <- round(tmp.summary.table.pos[j,"false double variant coverage"])
       }
     }
     tmp.summary.table.pos <- as.data.frame(tmp.summary.table.pos)
-    e_MLE <- sum(tmp.summary.table.pos\$`false double double variant count`) /
-      sum(tmp.summary.table.pos\$`true high-conf. variant count` * c(tmp.summary.table.pos\$`false double double variant coverage` / tmp.summary.table.pos\$`true high-conf. variant coverage`))
+    e_MLE <- sum(tmp.summary.table.pos\$`false double variant count`) /
+      sum(tmp.summary.table.pos\$`true high-conf. variant count` * c(tmp.summary.table.pos\$`false double variant coverage` / tmp.summary.table.pos\$`true high-conf. variant coverage`))
     seq.error.rate[tmp.single,"1nt false counts/coverage"] <- e_MLE
-    input.counts.processed[i,"counts_per_cov_corrected"] <- input.counts.processed[i,"counts_per_cov"] - e_MLE
+    ## clamped here too - the guard below only tests the rounded count, so a subtraction landing in
+    ## (-0.5, 0] rounds to 0, skips the guard, and leaves a negative frequency behind
+    input.counts.processed[i,"counts_per_cov_corrected"] <- max(0, input.counts.processed[i,"counts_per_cov"] - e_MLE)
 
     ## 5.) Apply correction factor
     input.counts.processed[i,"counts_corrected"] <- input.counts.processed[i,"counts"] - c(e_MLE * input.counts.processed[i,"cov"])
@@ -235,7 +271,7 @@ seq_error_correct_by_false_doubles_MLE <- function(wt_path, input_count_path_raw
 ## -------------------------------------------------------------------------------------------------
 seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw, input_count_path_processed, output_file_path, seq_error_rate_path, codon_window){
 
-  ## load data (nucleotide-level counts from GATK)
+  ## load data (nucleotide-level counts)
 
   # WT sequence
   wt.seq <- readDNAStringSet(wt_path)
@@ -270,6 +306,48 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
   all.false.doubles <- input.counts.raw
   all.false.doubles <- all.false.doubles[which(all.false.doubles[,"varying_bases"] >= 3 & all.false.doubles[,"varying_bases"] < 5 & all.false.doubles[,"varying_codons"] == 2),,drop = F]
   all.false.doubles\$codon_dist <- vapply(regmatches(all.false.doubles[,"codon_mut"], gregexpr("\\\\d+(?=:)", all.false.doubles[,"codon_mut"], perl = TRUE)), function(z) abs(diff(as.integer(z))), integer(1))
+
+  ### additional filters:
+
+  #### remove outlier double codon mutants with very high counts
+  all.false.doubles <- all.false.doubles[which(all.false.doubles\$counts <= quantile(all.false.doubles\$counts, c(0.995))),]
+
+  #### only keep 2+1 nt and 3+1 nt double codon mutants
+  all.false.doubles.nt <- all.false.doubles\$codon_mut
+  all.false.doubles.nt <- str_split_fixed(all.false.doubles.nt, ", ", 2)
+  all.false.doubles.nt[,1] <- str_split_fixed(all.false.doubles.nt[,1], ":", 2)[,2]
+  all.false.doubles.nt[,2] <- str_split_fixed(all.false.doubles.nt[,2], ":", 2)[,2]
+  classify_double_codon_variant <- function(x) {
+    parts <- strsplit(x, ">", fixed = TRUE)
+    n_changes <- vapply(parts, function(p) {
+      if (length(p) != 2L || nchar(p[1]) != nchar(p[2])) {
+        return(NA_integer_)
+      }
+      sum(strsplit(p[1], "")[[1]] != strsplit(p[2], "")[[1]])
+    }, integer(1))
+    labels <- c(1, 2, 3)
+    ifelse(n_changes %in% 1:3,
+           labels[n_changes],
+           ifelse(n_changes == 0L, "no change", NA_character_))
+  }
+  all.false.doubles.nt[,1] <- classify_double_codon_variant(all.false.doubles.nt[,1])
+  all.false.doubles.nt[,2] <- classify_double_codon_variant(all.false.doubles.nt[,2])
+  if(length(which(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 2) != 0)){
+    all.false.doubles <- all.false.doubles[-which(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 2),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 2),]
+  }
+  if(length(which(all.false.doubles.nt[,1] == 1 & all.false.doubles.nt[,2] == 1) != 0)){
+    all.false.doubles <- all.false.doubles[-which(all.false.doubles.nt[,1] == 1 & all.false.doubles.nt[,2] == 1),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(all.false.doubles.nt[,1] == 1 & all.false.doubles.nt[,2] == 1),]
+  }
+  if(length(which(c(all.false.doubles.nt[,1] == 3 & all.false.doubles.nt[,2] == 2) | c(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 3)) != 0)){
+    all.false.doubles <- all.false.doubles[-which(c(all.false.doubles.nt[,1] == 3 & all.false.doubles.nt[,2] == 2) | c(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 3)),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(c(all.false.doubles.nt[,1] == 3 & all.false.doubles.nt[,2] == 2) | c(all.false.doubles.nt[,1] == 2 & all.false.doubles.nt[,2] == 3)),]
+  }
+  if(length(which(is.na(all.false.doubles.nt[,1]) == T | is.na(all.false.doubles.nt[,2]) == T) != 0)){
+    all.false.doubles <- all.false.doubles[-which(is.na(all.false.doubles.nt[,1]) == T | is.na(all.false.doubles.nt[,2]) == T),]
+    all.false.doubles.nt <- all.false.doubles.nt[-which(is.na(all.false.doubles.nt[,1]) == T | is.na(all.false.doubles.nt[,2]) == T),]
+  }
 
   all.false.doubles.codons <- str_split_fixed(all.false.doubles\$codon_mut, ", ", 2)
   all.false.doubles.codons[,1] <- as.integer(sub(":.*", "", all.false.doubles.codons[,1]))
@@ -297,11 +375,16 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
     return(invisible(NULL))
   }
 
+  ## keep the full distance range before dropping rows, so the lookup below stays long enough
+  .max_dist <- max(c(all.false.doubles\$codon_dist, codon_window), na.rm = TRUE)
+  ## fit on the finite rows only - lm() errors on the -Inf that log() gives a zero-coverage double
+  all.false.doubles <- all.false.doubles[.usable, , drop = FALSE]
+
   fit <- lm(log(all.false.doubles\$perc_cov_to_max) ~ all.false.doubles\$codon_dist + I(all.false.doubles\$codon_dist^2))
   all.false.doubles\$pred_cov_perc <- exp(predict(fit))
 
   ### convert this into a look-up table: "% max. possible coverage" depending on codon-codon distance
-  dual.codon.coverage.estimate <- matrix(NA, nrow = max(all.false.doubles\$codon_dist), ncol = 2)
+  dual.codon.coverage.estimate <- matrix(NA, nrow = .max_dist, ncol = 2)
   colnames(dual.codon.coverage.estimate) <- c("Codon distance", "Estimate % max. possible coverage")
   dual.codon.coverage.estimate[,"Codon distance"] <- 1:nrow(dual.codon.coverage.estimate)
   ## deepmutscan fix (Maxi-approved deviation from the verbatim script): fill the coverage-decay
@@ -315,8 +398,8 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
   .cf <- coef(fit)
   dual.codon.coverage.estimate[,"Estimate % max. possible coverage"] <- exp(.cf[1] + .cf[2] * .dccd + .cf[3] * .dccd^2)
 
-  ## Process the GATK file, only look at single nucleotide variants
-  cat("Sequencing error correction of GATK counts...\\n")
+  ## Process the count file, only look at single nucleotide variants
+  cat("Sequencing error correction of raw counts...\\n")
   out.summary <- matrix(NA, ncol = 7, nrow = length(grep("[,]", input.counts.processed[,"base_mut"], invert = T)))
   colnames(out.summary) <- c("SNV", "Category",
                              "False_double_variant_count", "False_double_variant_coverage",
@@ -340,7 +423,7 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
     ### -> if there are zero false double mutants: skip / set correction factor to zero
     ### -> if there are any false double mutants: continue
     ### 3.) generate a table for ALL possible 2/3nt variants in the selected window:
-    ### true high-conf. variant count | true high-conf. variant coverage | false double double variant count (often 0 or 1) | false double double variant coverage
+    ### true high-conf. variant count | true high-conf. variant coverage | false double variant count (often 0 or 1) | false double variant coverage
     ### 4.) Iterate of all positions
     ### 5.) Calculate the empirical Bayes
     ### 6.) Apply correction factor
@@ -350,26 +433,11 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
     seq.error.rate[tmp.single, "1nt counts/coverage"] <- input.counts.processed[i,"counts_per_cov"]
 
     ## 2.) look for 2/3nt hits in up to 40 codons (120 bp) upstream or downstream
-    tmp.false.doubles <- input.counts.raw[grep(paste0("(?<!\\\\d)",input.counts.processed[i,"codon_mut"]), input.counts.raw[,"codon_mut"], perl = T),,drop = F]
-
-    ## subset multi-codon variants
-    tmp.false.doubles <- tmp.false.doubles[which(tmp.false.doubles[,"varying_bases"] >= 3 & tmp.false.doubles[,"varying_bases"] < 5 & tmp.false.doubles[,"varying_codons"] == 2),,drop = F]
-    if(nrow(tmp.false.doubles) == 0){
-      next
-    }
-
-    ## set and enforce distance threshold
+    tmp.false.doubles <- all.false.doubles[grep(paste0("(?<!\\\\d)",input.counts.processed[i,"codon_mut"]), all.false.doubles[,"codon_mut"], perl = T),,drop = F]
     tmp.ref.codon <- as.numeric(strsplit(input.counts.processed[i,"codon_mut"] , ":")[[1]][1])
     tmp.min.from.ref <- max(c(1, tmp.ref.codon - c(codon_window - 1)))
     tmp.max.from.ref <- min(c(max.codon, tmp.ref.codon + c(codon_window - 1)))
-    tmp.double.codon <- str_split_fixed(tmp.false.doubles\$codon_mut, ", ", 2)
-    tmp.double.codon.n1 <- as.integer(sub(":.*", "", tmp.double.codon[,1]))
-    tmp.double.codon.n2 <- as.integer(sub(":.*", "", tmp.double.codon[,2]))
-    tmp.double.codon.within.range <- (tmp.double.codon.n1 >= tmp.min.from.ref & tmp.double.codon.n1 <= tmp.max.from.ref) & (tmp.double.codon.n2 >= tmp.min.from.ref & tmp.double.codon.n2 <= tmp.max.from.ref)
-    tmp.false.doubles <- tmp.false.doubles[which(tmp.double.codon.within.range == T),,drop = F]
-    if(nrow(tmp.false.doubles) == 0){
-      next
-    }
+    tmp.false.doubles <- tmp.false.doubles[which(tmp.false.doubles\$codon_dist < codon_window),,drop = F]
 
     ## 3.) generate a table for ALL possible 2/3nt variants in the selected window
     tmp.summary.table.entries <- input.counts.processed
@@ -383,14 +451,14 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
     colnames(tmp.summary.table) <- c("codon distance",
                                      "true high-conf. variant count",
                                      "true high-conf. variant coverage",
-                                     "false double double variant count",
-                                     "false double double variant coverage")
+                                     "false double variant count",
+                                     "false double variant coverage")
     rownames(tmp.summary.table) <- paste0(c(tmp.summary.table.entries\$codon_mut),", ", c(tmp.summary.table.entries\$base_mut))
 
     tmp.summary.table[,"codon distance"] <- abs(as.numeric(str_split_fixed(tmp.summary.table.entries\$codon_mut, ":", 2)[,1]) - tmp.ref.codon)
     tmp.summary.table[,"true high-conf. variant count"] <- tmp.summary.table.entries\$counts
     tmp.summary.table[,"true high-conf. variant coverage"] <- tmp.summary.table.entries\$cov
-    tmp.summary.table[,"false double double variant count"] <- 0
+    tmp.summary.table[,"false double variant count"] <- 0
 
     ## input the actual hits
     tmp.double.codon <- str_split_fixed(tmp.false.doubles\$codon_mut, ", ", 2)
@@ -409,8 +477,8 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
       }
     }
 
-    tmp.summary.table[tmp.match,"false double double variant count"] <- tmp.false.doubles[,"counts"]
-    tmp.summary.table[tmp.match,"false double double variant coverage"] <- tmp.false.doubles[,"cov"]
+    tmp.summary.table[tmp.match,"false double variant count"] <- tmp.false.doubles[,"counts"]
+    tmp.summary.table[tmp.match,"false double variant coverage"] <- tmp.false.doubles[,"cov"]
     tmp.summary.table <- as.data.frame(tmp.summary.table)
 
     ## 4.) Iterate over codon positions
@@ -424,28 +492,30 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
       tmp.name <- rownames(tmp.summary.table.pos)[j]
       tmp.summary.table.pos[j,"true high-conf. variant count"] <- sum(tmp.summary.table[grep(paste0("^",tmp.name), rownames(tmp.summary.table)),"true high-conf. variant count"])
       tmp.summary.table.pos[j,"true high-conf. variant coverage"] <- max(tmp.summary.table[grep(paste0("^",tmp.name), rownames(tmp.summary.table)),"true high-conf. variant coverage"])
-      tmp.summary.table.pos[j,"false double double variant count"] <- sum(tmp.summary.table[grep(paste0("^",tmp.name), rownames(tmp.summary.table)),"false double double variant count"])
-      tmp.summary.table.pos[j,"false double double variant coverage"] <- max(tmp.summary.table[grep(paste0("^",tmp.name), rownames(tmp.summary.table)),"false double double variant coverage"], na.rm = T)
+      tmp.summary.table.pos[j,"false double variant count"] <- sum(tmp.summary.table[grep(paste0("^",tmp.name), rownames(tmp.summary.table)),"false double variant count"])
+      tmp.summary.table.pos[j,"false double variant coverage"] <- max(tmp.summary.table[grep(paste0("^",tmp.name), rownames(tmp.summary.table)),"false double variant coverage"], na.rm = T)
 
       ## infer a good proxy for the false double variant coverage with 0 counts (based estimated distance-dependent % coverage decay observed across all observed double mutants)
-      if(tmp.summary.table.pos[j,"false double double variant coverage"] == "-Inf"){
-        tmp.summary.table.pos[j,"false double double variant coverage"] <- c(dual.codon.coverage.estimate[abs(tmp.summary.table.pos[j,"codon distance"]),"Estimate % max. possible coverage"] / 100) * tmp.summary.table.pos[j,"true high-conf. variant coverage"]
-        tmp.summary.table.pos[j,"false double double variant coverage"] <- round(tmp.summary.table.pos[j,"false double double variant coverage"])
+      if(tmp.summary.table.pos[j,"false double variant coverage"] == "-Inf"){
+        tmp.summary.table.pos[j,"false double variant coverage"] <- c(dual.codon.coverage.estimate[abs(tmp.summary.table.pos[j,"codon distance"]),"Estimate % max. possible coverage"] / 100) * tmp.summary.table.pos[j,"true high-conf. variant coverage"]
+        tmp.summary.table.pos[j,"false double variant coverage"] <- round(tmp.summary.table.pos[j,"false double variant coverage"])
       }
     }
     tmp.summary.table.pos <- as.data.frame(tmp.summary.table.pos)
 
     ### fill the master table
-    out.summary[match(tmp.single,out.summary[,"SNV"]),"False_double_variant_count"] <- sum(tmp.summary.table.pos\$`false double double variant count`)
-    out.summary[match(tmp.single,out.summary[,"SNV"]),"False_double_variant_coverage"] <- sum(tmp.summary.table.pos\$`false double double variant coverage`)
+    out.summary[match(tmp.single,out.summary[,"SNV"]),"False_double_variant_count"] <- sum(tmp.summary.table.pos\$`false double variant count`)
+    out.summary[match(tmp.single,out.summary[,"SNV"]),"False_double_variant_coverage"] <- sum(tmp.summary.table.pos\$`false double variant coverage`)
     out.summary[match(tmp.single,out.summary[,"SNV"]),"True_high_conf_variant_count"] <- sum(tmp.summary.table.pos\$`true high-conf. variant count`)
     out.summary[match(tmp.single,out.summary[,"SNV"]),"True_high_conf_variant_coverage"] <- sum(tmp.summary.table.pos\$`true high-conf. variant coverage`)
-    out.summary[match(tmp.single,out.summary[,"SNV"]),"Exposure_m"] <- sum(tmp.summary.table.pos\$`true high-conf. variant count` * c(tmp.summary.table.pos\$`false double double variant coverage` / tmp.summary.table.pos\$`true high-conf. variant coverage`))
+    out.summary[match(tmp.single,out.summary[,"SNV"]),"Exposure_m"] <- sum(tmp.summary.table.pos\$`true high-conf. variant count` * c(tmp.summary.table.pos\$`false double variant coverage` / tmp.summary.table.pos\$`true high-conf. variant coverage`))
 
   }
 
   ## 5.) Calculate the empirical-Bayes sequencing error estimates
-  out.summary <- out.summary[-which(is.na(out.summary[,"False_double_variant_count"]) == T),]
+  if(length(which(is.na(out.summary[,"False_double_variant_count"]) == T)) != 0){
+    out.summary <- out.summary[-which(is.na(out.summary[,"False_double_variant_count"]) == T),]
+  }
   out.summary <- as.data.frame(out.summary)
   class(out.summary\$False_double_variant_count) <- "numeric"
   class(out.summary\$False_double_variant_coverage) <- "numeric"
@@ -543,14 +613,10 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
   ##### posterior mean = shrunk EB estimate
   out.summary\$e_EB  <- out.summary\$post_shape / out.summary\$post_rate
 
-  ##### other posterior intervals
-  # out.summary\$e_EB_upper_1SD <- qgamma(0.68, shape = out.summary\$post_shape, rate = out.summary\$post_rate)
-  # out.summary\$e_EB_upper_2SD <- qgamma(0.95, shape = out.summary\$post_shape, rate = out.summary\$post_rate)
-  # out.summary\$e_EB_upper_3SD <- qgamma(0.997, shape = out.summary\$post_shape, rate = out.summary\$post_rate)
-
   ## 6.) Apply correction factors systematically (use upper 95% percentile to correct, a.k.a. "conservative")
   seq.error.rate[match(out.summary\$SNV, rownames(seq.error.rate)),"1nt false counts/coverage"] <- out.summary\$e_EB
-  input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"counts_per_cov_corrected"] <- input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"counts_per_cov"] - out.summary\$e_EB
+  ## clamped here too - the guard below only tests the rounded count (see the MLE branch)
+  input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"counts_per_cov_corrected"] <- pmax(0, input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"counts_per_cov"] - out.summary\$e_EB)
   input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"counts_corrected"] <- input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"counts"] - c(out.summary\$e_EB * input.counts.processed[match(out.summary\$SNV, input.counts.processed\$base_mut),"cov"])
 
   ## round to nearest integer, do not allow for negative counts

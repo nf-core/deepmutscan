@@ -82,6 +82,7 @@ filter_counts_by_codon_library <- function(counts_file_path, codon_library_path,
   }
 
   # Filter the variant-count table
+  counts_table\$codon_mut <- toupper(counts_table\$codon_mut)
   filtered_counts <- counts_table %>%
     filter(varying_codons == 1) %>% # Keep rows with single-codon mutations
     rowwise() %>%
@@ -190,6 +191,7 @@ complete_prefiltered_counts <- function(possible_nnk_path, prefiltered_counts_pa
     mutate(codon_mut = paste0(Codon_Number, ":", wt_codon, ">", Variant))
 
   # Merge both dataframes based on the codon_mut column (full join to include all)
+  prefiltered_counts\$codon_mut <- toupper(prefiltered_counts\$codon_mut)
   merged_data <- full_join(prefiltered_counts, possible_nnk, by = "codon_mut")
 
   # Fill missing values in counts_per_cov and counts with 0.0000001
