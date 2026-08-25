@@ -19,6 +19,16 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # The pipeline pulls ~17 container images, three of them heavy bioconductor/R stacks, which
+    # overruns the runner disk part-way through (docker exit 125, "no space left on device").
+    # Reclaim the preinstalled toolchain first: the RunsOn default image is ubuntu24-full-x64, so the
+    # same Android/.NET/Haskell bloat as a GitHub-hosted runner is present and removable.
+    - name: Free disk space
+      uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
+      with:
+        tool-cache: false # later steps need the toolchain
+        large-packages: false # slowest sweep, smallest reliable gain
+
     - name: Setup Nextflow
       uses: nf-core/setup-nextflow@b4ec1bc7c16a94435159de94a05253542fddf6ef # v3
       with:
