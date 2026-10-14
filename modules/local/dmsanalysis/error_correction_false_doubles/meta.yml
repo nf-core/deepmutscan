@@ -29,12 +29,22 @@ input:
         type: file
         description: Completed library table (all possible variants) to also correct.
         pattern: "*.csv"
+  - - wt_fasta:
+        type: file
+        description: Reference FASTA the reads were aligned to; base_mut positions are in its frame.
+        pattern: "*.{fa,fasta}"
   - - aa_seq:
         type: file
         description: Reference amino-acid sequence (one line).
   - - min_counts:
         type: integer
         description: Minimum count threshold for the amino-acid-level heatmap table.
+  - - method:
+        type: string
+        description: Estimator for the false-doubles error rate, `mle` or `eb`.
+  - - codon_window:
+        type: integer
+        description: Codon window within which false double mutants are collected for a variant.
 
 output:
   - corrected:
@@ -53,6 +63,14 @@ output:
           type: file
           description: Completed library table with corrected counts propagated (for logdiff etc.).
           pattern: "library_completed_variantCounts_error_corrected.csv"
+  - seq_error_rate:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - seq_error_rate.csv:
+          type: file
+          description: Observed frequency and estimated sequencing-error rate per single-nucleotide variant.
+          pattern: "seq_error_rate.csv"
   - versions:
       - versions.yml:
           type: file

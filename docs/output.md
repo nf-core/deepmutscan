@@ -4,7 +4,7 @@
 
 This document describes the output produced by the `nf-core/deepmutscan` pipeline.
 
-The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory. Library-specific files are named, or placed in subfolders named, after the library identifier in the samplesheet `<sample>_<type>_<replicate>_pe` (e.g. `GID1A_input_1_pe`).
+The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory. Library-specific files are named, or placed in subfolders named, after the library identifier `<library>`, built from the samplesheet as `<sample>_<type>_<replicate>_pe` (e.g. `GID1A_input_1_pe`).
 
 ```tree title="nf-core/deepmutscan results"
 results/
@@ -13,14 +13,15 @@ results/
 ├── multiqc/                             # MultiQC report across all FASTQ files
 ├── intermediate_files/                  # reference index, alignments, variant count tables, error correction
 │   ├── bwa/
-│   ├── bam_files/{bwa/mem,filtered,premerged,sorted}/
-│   ├── variant_counts/<sample>/
+│   ├── bam_files/sorted/                # only the sorted, indexed BAM is published
+│   ├── variant_counts/<library>/
 │   └── processed_variant_counts/<library>/
-├── library_QC/                          # per-sample library QC plots + run-level error-correction report
-│   └── <sample>/
+├── library_QC/                          # per-library QC plots + run-level error-correction report
+│   └── <library>/
 ├── fitness/                             # fitness results, mostly only with --fitness
 │   ├── default_results/
-│   ├── DiMSum_results/                  # single_rep_counts/ always; dimsum_results/ only with --dimsum
+│   ├── single_rep_counts/               # per-library counts in DiMSum input format, always written
+│   ├── DiMSum_results/                  # only with --dimsum
 │   └── mutscan_results/                 # only with --mutscan
 ├── variant_effect_inspection_tool/      # only with --fitness and --pdb
 └── pipeline_info/                       # Nextflow and pipeline run information
@@ -82,13 +83,16 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - `aa_seq.txt`: wildtype amino acid sequence translated from `--reading_frame`.
   - `possible_mutations.csv`: all programmed codon variants per position, as defined by `--mutagenesis_type`; used for library filtering and visualisation.
   - `bwa/`: BWA index of the reference FASTA.
-  - `bam_files/bwa/mem/<sample>.bam`: raw read alignments.
-  - `bam_files/filtered/<sample>_filtered.bam`: alignments after removal of unmapped, secondary, low mapping-quality (MAPQ < 30) and indel-containing reads.
-  - `bam_files/premerged/<sample>_merged.bam`: alignments of merged read pairs (consensus reads), used for variant counting.
-  - `bam_files/sorted/<sample>.sorted.bam` and `.bai`: coordinate-sorted and indexed merged alignments.
-  - `variant_counts/<sample>/<library>.variant_counts.tsv`: raw variant count table with one row per observed combination of nucleotide changes, its count, coverage and codon / amino acid annotation.
-  - `variant_counts/<sample>/variant_counts_columns.tsv`: description of every column of the variant count table.
-  - `processed_variant_counts/<sample>/`:
+  - `bam_files/sorted/<library>.sorted.bam` and `.bai`: the coordinate-sorted, indexed alignments of
+    the merged read pairs - exactly what the variant counter reads. This is the only BAM published.
+    The three upstream stages (raw BWA-MEM output, the MAPQ/indel-filtered alignments, and the
+    re-aligned merged reads before sorting) are near-identical copies of the same reads: publishing
+    all four added over 100 GB per full-size run. They remain in the Nextflow work directory if you
+    need them for debugging.
+  - `variant_counts/<library>/<library>.variant_counts.tsv`: variant count table with one row per observed combination of nucleotide changes, its count, coverage and codon / amino acid annotation, after `--min_counts`.
+  - `variant_counts/<library>/<library>.variant_counts_prefilter.tsv`: the same table before `--min_counts` was applied. The sequencing-error correction reads this one, because its estimator depends on the low-count variants the threshold removes.
+  - `variant_counts/<library>/variant_counts_columns.tsv`: description of every column of the variant count table.
+  - `processed_variant_counts/<library>/`:
     - `annotated_variantCounts.csv`: variant counts annotated with codon and amino acid changes and counts per coverage.
     - `variantCounts_filtered_by_library.csv`: single-codon variants that match the programmed library.
     - `library_completed_variantCounts.csv`: all programmed variants, including unobserved ones (with a near-zero placeholder count), used for the count distribution plots.
@@ -103,7 +107,7 @@ These files document every step from raw reads to variant frequencies.
 <details markdown="1">
 <summary>Output files</summary>
 
-- `intermediate_files/processed_variant_counts/<sample>/` (unless `--error_correction none`)
+- `intermediate_files/processed_variant_counts/<library>/` (unless `--error_correction none`)
   - `variantCounts_filtered_by_library_error_corrected.csv`, `library_completed_variantCounts_error_corrected.csv`, `variantCounts_for_heatmaps_error_corrected.csv`: corrected versions of the tables above. The corrected counts are used by all downstream steps; in `variantCounts_filtered_by_library_error_corrected.csv`, the original counts are kept in the `counts_raw` and `counts_per_cov_raw` columns.
   - `seq_error_rate.csv` (`--error_correction false_doubles` only): estimated sequencing error rate for every possible single-nucleotide substitution along the reference.
 - `library_QC/`
@@ -157,8 +161,8 @@ These plots help to judge the success of the mutagenesis (are all positions and 
     - `fitness_estimation_count_correlation.pdf`: pairwise variant count correlations between all libraries.
     - `fitness_estimation_fitness_correlation.pdf`: pairwise fitness correlations between replicates.
     - `fitness_heatmap.pdf`: mean fitness per position (x-axis) and mutant amino acid (y-axis).
+  - `single_rep_counts/<library>_fitness_input.tsv`: per-library count tables in DiMSum input format. These are written for every run, also without `--fitness`.
   - `DiMSum_results/`
-    - `single_rep_counts/<library>_fitness_input.tsv`: per-library count tables in DiMSum input format. These are written for every run, also without `--fitness`.
     - `dimsum_results/` (with `--dimsum`): the complete [DiMSum](https://github.com/lehner-lab/DiMSum) default output, including its HTML `report.html`, fitness tables (`fitness_singles.txt`, `fitness_doubles.txt`, `fitness_synonymous.txt`, `fitness_wildtype.txt`, `fitness_singles_MaveDB.csv`) and `.RData` objects.
   - `mutscan_results/` (with `--mutscan`)
     - `fitness_estimation_mutscan_edgeR.tsv`, `fitness_estimation_mutscan_limma.tsv`: [mutscan](https://github.com/fmicompbio/mutscan) default variant enrichment estimates with edgeR and limma.

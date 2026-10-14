@@ -5,7 +5,7 @@
   </picture>
 </h1>
 
-[![GitHub Actions CI Status](https://github.com/nf-core/deepmutscan/actions/workflows/ci.yml/badge.svg)](https://github.com/nf-core/deepmutscan/actions/workflows/ci.yml)
+[![GitHub Actions CI Status](https://github.com/nf-core/deepmutscan/actions/workflows/nf-test.yml/badge.svg)](https://github.com/nf-core/deepmutscan/actions/workflows/nf-test.yml)
 [![GitHub Actions Linting Status](https://github.com/nf-core/deepmutscan/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/deepmutscan/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/deepmutscan/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
@@ -31,13 +31,14 @@ While DNA synthesis and sequencing technologies have advanced substantially, lon
 - End-to-end processing of DMS libraries from shotgun (randomly fragmented) or amplicon short-read sequencing
 - Light-weight variant counter with base-quality and read-edge filters, replacing `GATK AnalyzeSaturationMutagenesis`
 - Intrinsic sequencing-error correction of single-nucleotide variant counts from read-linked false double mutants (maximum-likelihood or empirical-Bayes estimators), or from additional wildtype template sequencing
+- Read QC with [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), aggregated across all libraries with [MultiQC](https://multiqc.info/)
 - Library quality control: mutant count heatmaps, positional coverage and mutation-type biases, sequencing-depth rarefaction
 - Fitness estimation with a built-in log-ratio estimator, plus optional [DiMSum](https://github.com/lehner-lab/DiMSum) and [mutscan](https://github.com/fmicompbio/mutscan)
 - Support for degenerate codon libraries (NNK, NNS, NNH, NNN and combinations), e.g. from nicking mutagenesis, and for custom (position-specific) codon libraries, e.g. from Twist tiles
 - A single, self-contained HTML report per run, and an optional interactive 3D variant effect inspection tool when a wildtype structure is supplied
 - Containerisation via Docker, Singularity/Apptainer and Conda; scalability across HPC and cloud systems
 
-For more details on the individual steps and on planned extensions, please read the [usage documentation](https://nf-co.re/deepmutscan/usage).
+For more details on the individual steps, please read the [usage documentation](https://nf-co.re/deepmutscan/usage).
 
 ## Pipeline summary
 
@@ -67,7 +68,7 @@ ORF1,output,1,/reads/output1_R1.fastq.gz,/reads/output1_R2.fastq.gz
 ORF1,output,2,/reads/output2_R1.fastq.gz,/reads/output2_R2.fastq.gz
 ```
 
-Secondly, provide the gene or gene region of interest as a reference FASTA file via `--fasta`, and the nucleotide coordinates of the mutagenised open reading frame within it via `--reading_frame` (1-based, inclusive, e.g. `1-300` for the first 100 codons).
+Secondly, provide the gene or gene region of interest as a reference FASTA file via `--fasta`, and the nucleotide coordinates of the mutagenised open reading frame within it via `--reading_frame` (1-based, inclusive, e.g. `151-450` for 100 codons starting at nucleotide 151).
 
 Now, you can run the pipeline using:
 
@@ -76,7 +77,7 @@ nextflow run nf-core/deepmutscan \
    -profile <docker/singularity/.../institute> \
    --input ./samplesheet.csv \
    --fasta ./ref.fa \
-   --reading_frame 1-300 \
+   --reading_frame 151-450 \
    --outdir ./results
 ```
 

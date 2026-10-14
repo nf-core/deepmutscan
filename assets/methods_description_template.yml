@@ -8,10 +8,12 @@ data: |
   <h4>Methods</h4>
   <p>Data was processed using nf-core/deepmutscan v${workflow.manifest.version} ${doi_text} (Wehnert <em>et al.</em>, in preparation), part of the nf-core collection of workflows (<a href="https://doi.org/10.1038/s41587-020-0439-x">Ewels <em>et al.</em>, 2020</a>), with Nextflow v${workflow.nextflow.version} and the following command:</p>
   <pre><code>${workflow.commandLine}</code></pre>
+  <p>${tool_citations}</p>
   <h4>References</h4>
   <ul>
     <li>Wehnert, B., <em>et al.</em> nf-core/deepmutscan. <em>bioRxiv</em> preprint (in preparation).</li>
     <li>Ewels, P. A., Peltzer, A., Fillinger, S., Patel, H., Alneberg, J., Wilm, A., Garcia, M. U., Di Tommaso, P., & Nahnsen, S. (2020). The nf-core framework for community-curated bioinformatics pipelines. Nature Biotechnology, 38(3), 276-278. doi: <a href="https://doi.org/10.1038/s41587-020-0439-x">10.1038/s41587-020-0439-x</a></li>
+  ${tool_bibliography}
   </ul>
   <div class="alert alert-info">
     <h5>Notes:</h5>

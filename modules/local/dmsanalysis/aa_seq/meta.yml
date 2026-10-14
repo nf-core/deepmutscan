@@ -12,12 +12,6 @@ tools:
       homepage: "https://bioconductor.org/packages/Biostrings"
       documentation: "https://bioconductor.org/packages/release/bioc/manuals/Biostrings/man/Biostrings.pdf"
       licence: ["Artistic-2.0"]
-  - "mutscan":
-      description: "R package for analysis of deep mutational scanning data"
-      homepage: "https://bioconductor.org/packages/mutscan"
-      tool_dev_url: "https://github.com/csoneson/mutscan"
-      doi: "10.1186/s12859-023-05187-y"
-      licence: ["GPL-3.0-or-later"]
 
 input:
   - - meta:

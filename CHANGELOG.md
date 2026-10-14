@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.0.0 - [unreleased<!-- TODO nf-core: replace with date on release -->]
+## v1.0.0 - [2026-10-13]
 
 Initial release of nf-core/deepmutscan, created with the [nf-core](https://nf-co.re/) template.
 
@@ -24,13 +24,10 @@ Initial release of nf-core/deepmutscan, created with the [nf-core](https://nf-co
 - DMS library QC per library: count and count-per-coverage heatmaps, sorted count distributions, sliding-window coverage and count profiles (`--sliding_window_size`, `--aimed_cov`), and sequencing-depth rarefaction on a geometric depth grid (`--run_seqdepth`)
 - Optional fitness estimation (`--fitness`): merged count tables, experimental design, synonymous wildtype proxy selection, default log-ratio fitness with replicate rescaling and summary statistics, replicate correlation plots and fitness heatmap
 - Optional fitness estimation with DiMSum (`--dimsum`) and mutscan edgeR / limma (`--mutscan`)
-- Minimum input read count per replicate for fitness estimation (`--min_counts`, default 10), applied to the default estimator, DiMSum and mutscan
-- Optional output pseudocount for dropout variants (`--output_pseudocount`, default 1; 0 disables), applied to the default estimator and DiMSum
+- Minimum observation count for a variant to be retained (`--min_counts`, default 1), applied during variant counting; the sequencing-error correction runs on the pre-threshold counts
 - Optional interactive 3D variant effect inspection tool built from a user-supplied wildtype structure (`--pdb`)
 - Self-contained, all-in-one run report (`deepmutscan_report.html`) embedding QC, error-correction, fitness, MultiQC and run statistics
 - `test` profile on a 50,000 read-pair subsample of a GID1A nicking-mutagenesis GluePCA experiment, with nf-test snapshot testing, and `test_full` profile on the complete dataset (ENA PRJEB110196); test data and the PDB structure are hosted on [nf-core/test-datasets](https://github.com/nf-core/test-datasets/tree/deepmutscan)
-
-### `Fixed`
 
 ### `Dependencies`
 
@@ -55,5 +52,3 @@ Initial release of nf-core/deepmutscan, created with the [nf-core](https://nf-co
 | `r-zoo`       | 1.8_15                |
 | `r-dimsum`    | 1.4                   |
 | `mutscan`     | 1.0.0                 |
-
-### `Deprecated`

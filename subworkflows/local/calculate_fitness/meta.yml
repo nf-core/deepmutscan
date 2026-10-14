@@ -30,6 +30,12 @@ input:
   - ch_aa_seq:
       type: channel
       description: Amino acid sequence channel
+  - val_run_dimsum:
+      type: value
+      description: Boolean, whether to run DiMSum
+  - val_run_mutscan:
+      type: value
+      description: Boolean, whether to run mutscan
 output:
   - fitness_estimation:
       type: channel

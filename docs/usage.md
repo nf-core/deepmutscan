@@ -73,7 +73,7 @@ Note that the pipeline will create the following files in your working directory
 ```bash
 work                # Directory containing the nextflow working files
 <OUTDIR>            # Finished results in specified location (defined with --outdir)
-.nextflow_log       # Log file from Nextflow
+.nextflow.log       # Log file from Nextflow
 # Other nextflow hidden files, eg. history of pipeline runs and old logs.
 ```
 
@@ -129,6 +129,10 @@ Merged reads are screened for base-level mismatches against the reference. `nf-c
 Two parameters tune the counter:
 
 - `--base_qual` (default `40`): minimum Phred base quality for a mismatch to be counted, and for a base to contribute to coverage.
+  Note what this threshold implies: `vsearch` recalculates qualities only where the two mates overlap, so a base in the overlap
+  that both mates agree on can exceed the instrument's own maximum, while bases outside the overlap keep their instrument quality.
+  On quality-binned instrument data (NovaSeq bins at Q37 or below) the default of `40` therefore restricts counting to the
+  overlapping, double-observed part of each merged read. Lower it (e.g. `--base_qual 30`) to count the full read length.
 - `--min_flank` (default `2`): minimum distance (in nucleotides) of a mismatch or covered base from the read end. Set to `0` to disable.
 
 ### 5. Library annotation and filtering
@@ -142,7 +146,7 @@ Sequencing errors occur at typically low, but position- and substitution-specifi
 - `false_doubles` (**default**): the library only contains single-codon changes, so reads carrying a programmed multi-nucleotide codon variant plus an unprogrammed single-nucleotide change in a nearby codon ("false double mutants") reveal the sequencing error rate of that single-nucleotide change. The error rate is estimated for every single-nucleotide variant from these read-linked observations within `--false_doubles_codon_window` codons (default `40`), and the expected number of erroneous counts is subtracted. No extra data are required. If a library contains too few false double mutants to model their coverage along the read (e.g. very small or shallow libraries), no correction is applied and a warning is written to the log. Two estimators are available via `--false_doubles_method`:
   - `mle` (**default**): a per-variant maximum-likelihood error rate.
   - `eb`: an empirical-Bayes estimate that shrinks the per-variant rate towards the mean of its substitution class. It is steadier for sparsely observed variants, e.g. in shallowly sequenced libraries.
-- `wildtype`: subtracts the variant-specific background measured by **additional deep sequencing of the unmutated template** from every library variant. Add these libraries to the samplesheet with `type` set to `wildtype` and the same `sample` name as the libraries they should correct. The pipeline stops with an error if a `sample` has no `wildtype` library. In this mode, the `wildtype` libraries themselves are not included in the library QC and fitness outputs.
+- `wildtype`: subtracts the variant-specific background measured by **additional deep sequencing of the unmutated template** from every library variant. Add these libraries to the samplesheet with `type` set to `wildtype` and the same `sample` name as the libraries they should correct. The pipeline stops with an error if there is no `wildtype` library, or if there is more than one. In this mode, the `wildtype` libraries themselves are not included in the library QC and fitness outputs.
 - `none`: no correction; counts are used as observed.
 
 Corrected counts are used for every count-dependent step downstream (count heatmaps, positional QC and fitness). The uncorrected tables are kept next to the corrected ones, and an interactive HTML report shows the effect of the correction across all libraries of the run.
@@ -160,15 +164,17 @@ Based on the library-filtered (and error-corrected) counts, `nf-core/deepmutscan
 
 With `--fitness`, libraries of each `sample` are grouped into a merged count table of all `input` and `output` replicates. Fitness is then estimated per replicate as the natural logarithm of each variant's output-to-input count ratio, relative to that of a synonymous wildtype proxy variant. As the proxy, the pipeline picks the synonymous variant with two nucleotide changes in one codon (or, if there is none, one nucleotide change) with the highest mean input count. Non-synonymous variants encoding the same amino acid sequence are aggregated. Per-replicate fitness values are linearly rescaled so that the median of synonymous variants is `0` and the median of stop codon variants is `-1` (if one of these anchors is missing, fitness values are only centred), and summarised as the mean and, with more than one replicate, the standard deviation across replicates.
 
-Two parameters control which variants are scored and how dropouts are treated:
+One parameter controls which variants are scored:
 
-- `--min_counts` (default `10`): minimum number of reads a variant needs in every `input` replicate to receive a fitness estimate. Variants with fewer input reads are poorly measured and are excluded.
-- `--output_pseudocount` (default `1`): pseudocount added to `output` replicates in which a variant observed in the input was not detected ("dropouts"), so that strongly depleted variants still receive a finite fitness value. Set it to `0` to disable; dropout variants then receive no fitness estimate in that replicate.
+- `--min_counts` (default `1`): minimum number of observations a variant needs to be kept in the count tables. It is applied
+  during variant counting (equivalent to GATK's `--min-variant-obs`), so variants below it are absent from every downstream
+  step, and are shown as dropouts in the count heatmaps. The sequencing-error correction is deliberately run on the
+  pre-threshold table, because its estimator depends on the very low-count variants that this threshold removes.
 
 Two established statistical frameworks can be run on the same merged counts:
 
-- `--dimsum`: [DiMSum](https://github.com/lehner-lab/DiMSum) fitness estimates (stages 4–5 of DiMSum, without its own read processing). `--min_counts` and `--output_pseudocount` are passed on to DiMSum (`--fitnessMinInputCountAll`, `--fitnessDropoutPseudocount`).
-- `--mutscan`: [mutscan](https://github.com/fmicompbio/mutscan) enrichment estimates with edgeR and limma. Variants below `--min_counts` are removed before the analysis.
+- `--dimsum`: [DiMSum](https://github.com/lehner-lab/DiMSum) fitness estimates (stages 4–5 of DiMSum, without its own read processing). DiMSum is run on the same merged count table as the default estimator, so `--min_counts` has already been applied to its input; no DiMSum-specific count thresholds are set by the pipeline.
+- `--mutscan`: [mutscan](https://github.com/fmicompbio/mutscan) enrichment estimates with edgeR and limma, on the same merged count table.
 
 ### Interactive variant effect inspection tool (`--pdb`)
 
@@ -290,7 +296,7 @@ Some HPC setups also allow you to run nextflow within a cluster job submitted yo
 ## Nextflow memory requirements
 
 In some cases, the Nextflow Java virtual machines can start to request a large amount of memory.
-We recommend adding the following line to your environment to limit this (typically in `~/.bashrc` or `~./bash_profile`):
+We recommend adding the following line to your environment to limit this (typically in `~/.bashrc` or `~/.bash_profile`):
 
 ```bash
 NXF_OPTS='-Xms1g -Xmx4g'
