@@ -52,8 +52,9 @@ generate_possible_variants <- function(wt_seq_input, start_stop_pos, mutagenesis
   custom_codons <- NULL
 
   if (mutagenesis_type == "custom") {
-    if (!file.exists(custom_codon_library_path) || is.null(custom_codon_library_path)) {
-      stop("Custom codons file must be provided and valid when using 'custom' mutagenesis_type.")
+    if (is.null(custom_codon_library_path) || !nzchar(custom_codon_library_path) ||
+        !file.exists(custom_codon_library_path)) {
+      stop("--mutagenesis_type custom requires a valid --custom_codon_library file.")
     }
 
     # Auto-detect format by inspecting the first line
@@ -138,7 +139,12 @@ generate_possible_variants <- function(wt_seq_input, start_stop_pos, mutagenesis
     }
   }
 
-  # Iterate over each wild-type codon to assign programmed variants
+  # Iterate over each wild-type codon to assign programmed variants. Collect one data.frame per
+  # position in a list and bind once at the end: growing `result` with rbind() inside the loop
+  # reallocates the whole table on every variant, which is O(n^2) and becomes the dominant cost
+  # for a long ORF with a permissive library (nnn gives 63 variants per position).
+  per_position <- vector("list", length(wt_codons))
+
   for (i in seq_along(wt_codons)) {
     wt_codon <- wt_codons[i]
     codon_list <- get_codon_list(wt_codon, i)
@@ -148,11 +154,20 @@ generate_possible_variants <- function(wt_seq_input, start_stop_pos, mutagenesis
 
     # Filter out the wild-type codon from the mutation list
     possible_variants <- codon_list[codon_list != wt_codon]
+    if (length(possible_variants) == 0) next
 
-    for (variant in possible_variants) {
-      # Note: \$ escaping is maintained for Nextflow compatibility
-      result <- rbind(result, data.frame(Codon_Number = i, wt_codon = wt_codon, Variant = variant, stringsAsFactors = FALSE))
-    }
+    per_position[[i]] <- data.frame(
+      Codon_Number = i,
+      wt_codon = wt_codon,
+      Variant = possible_variants,
+      stringsAsFactors = FALSE
+    )
+  }
+
+  result <- do.call(rbind, per_position)
+  if (is.null(result)) {
+    result <- data.frame(Codon_Number = integer(0), wt_codon = character(0),
+                         Variant = character(0), stringsAsFactors = FALSE)
   }
 
   write.csv(result, output_file, row.names = FALSE)
@@ -162,14 +177,8 @@ generate_possible_variants <- function(wt_seq_input, start_stop_pos, mutagenesis
 # Main Execution Block (Nextflow variable substitution)
 # ------------------------------------------------------------------------------
 
-# Replaces bash if/else logic. If Nextflow omits the optional file,
-# it passes "/NULL", which R translates to an actual NULL object.
-custom_lib_arg <- if ("$custom_codon_library" == "/NULL") {
-  NULL
-} else {
-  "$custom_codon_library"
-}
-
+# When no custom library is supplied the workflow passes an empty list for this optional
+# path input, so Nextflow stages nothing and the interpolation below is the empty string.
 generate_possible_variants(
   wt_seq_input              = "$wt_seq",
   start_stop_pos            = "$pos_range",
