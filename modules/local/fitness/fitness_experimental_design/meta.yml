@@ -6,7 +6,6 @@ keywords:
   - experimental design
   - samplesheet
   - dimsum
-  - mutscan
 tools:
   - "r-base":
       description: "R is a free software environment for statistical computing and graphics"

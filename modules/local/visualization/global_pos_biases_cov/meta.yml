@@ -8,13 +8,6 @@ keywords:
   - rolling window
   - bias
 tools:
-  - "mutscan":
-      description: "R package for analysis of deep mutational scanning data"
-      homepage: "https://bioconductor.org/packages/release/bioc/html/mutscan.html"
-      documentation: "https://bioconductor.org/packages/release/bioc/manuals/mutscan/man/mutscan.pdf"
-      tool_dev_url: "https://github.com/csoneson/mutscan"
-      doi: "10.1186/s12859-023-05187-y"
-      licence: ["GPL-3.0-or-later"]
 
 input:
   - - meta:

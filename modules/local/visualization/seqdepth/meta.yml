@@ -7,13 +7,6 @@ keywords:
   - sequencing depth
   - saturation
 tools:
-  - "mutscan":
-      description: "R package for analysis of deep mutational scanning data"
-      homepage: "https://bioconductor.org/packages/release/bioc/html/mutscan.html"
-      documentation: "https://bioconductor.org/packages/release/bioc/manuals/mutscan/man/mutscan.pdf"
-      tool_dev_url: "https://github.com/csoneson/mutscan"
-      doi: "10.1186/s12859-023-05187-y"
-      licence: ["GPL-3.0-or-later"]
 
 input:
   - - meta:
@@ -44,6 +37,14 @@ output:
           type: file
           description: PDF plot showing the simulation of variant detection as a function of sequencing depth
           pattern: "SeqDepth.pdf"
+  - curve:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - seqdepth_curve.csv:
+          type: file
+          description: Rarefaction curve points, re-plotted interactively by the summary report.
+          pattern: "seqdepth_curve.csv"
   - versions:
       - versions.yml:
           type: file

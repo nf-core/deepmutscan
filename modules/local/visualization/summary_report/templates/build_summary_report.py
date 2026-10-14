@@ -578,11 +578,11 @@ def software_versions(path):
 def citations(versions, extra=()):
     """The subset of CITATIONS whose tools actually ran, plus the pipeline and frameworks always.
 
-    Package names in versions.yml are the primary signal, but they are not always sufficient: DiMSum,
-    for instance, reports only `r-base`, so it is invisible at the package level. `extra` carries the
-    tokens that a run's own flags settle unambiguously (--dimsum, --mutscan, a --pdb structure). A tool
-    outside both signals is never cited - the page is about this run, not the pipeline's full
-    repertoire.
+    Package names in versions.yml are the primary signal, but they are not always sufficient:
+    3Dmol.js, for instance, is vendored as a JS asset and has no package entry at all. `extra`
+    carries the tokens that a run's own flags settle unambiguously (--dimsum, --mutscan, a --pdb
+    structure). A tool outside both signals is never cited - the page is about this run, not the
+    pipeline's full repertoire.
     """
     seen = {p.strip().lower() for pkgs in versions.values() for p in pkgs}
     seen |= {e.lower() for e in extra}
@@ -716,8 +716,8 @@ def main():
         run["required_cov"] = None
     run["orf_length"] = orf_len
 
-    # Flags settle the tools that the version strings alone cannot: DiMSum reports only r-base, and
-    # 3Dmol.js has no package entry at all - the structure viewer's presence is the tell.
+    # Flags settle the tools that the version strings alone cannot: 3Dmol.js has no package entry
+    # at all, so the structure viewer's presence is the only tell.
     def truthy(x):
         return str(x).strip().lower() in ("true", "1", "yes")
 

@@ -28,7 +28,7 @@ process VISUALIZATION_GLOBAL_POS_BIASES_COUNTS {
     """
     touch rolling_counts.pdf
     touch rolling_counts_per_cov.pdf
-    echo "VISUALIZATION_COUNTS_HEATMAP:" > versions.yml
+    echo "VISUALIZATION_GLOBAL_POS_BIASES_COUNTS:" > versions.yml
     echo "  stub-version: 0.0.0" >> versions.yml
     """
 }

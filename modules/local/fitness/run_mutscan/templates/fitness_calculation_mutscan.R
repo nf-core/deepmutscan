@@ -170,7 +170,7 @@ mutantName <- function(x, wt.seq){
 mutscan.summaryTable.from.counts <- function(x, sample, wt.seq){
 
   ### pre-process
-  x <- x[,c(1, grep(sample, colnames(x)))]
+  x <- x[,c(1, which(colnames(x) == sample))]
   colnames(x) <- c("sequence", "nbrReads")
   x <- cbind(x, "maxNbrReads" = x[,"nbrReads"], "nbrUmis" = x[,"nbrReads"])
 
@@ -274,7 +274,7 @@ run_mutscan_fitness_estimation <- function(counts_path,
   coldata <- as.data.frame(cbind("Name" = exp.design\$sample_name,
                                  "Condition" = condition,
                                  "Replicate" = exp.design\$experiment_replicate))
-  class(coldata\$Replicate) <- "integer"
+  coldata\$Replicate <- factor(coldata\$Replicate)
 
   # mutscan 'summarizeExperiment' object
   se <- summarizeExperiment(x = var.tables,

@@ -36,6 +36,10 @@ input:
         type: file
         description: The report's HTML shell; data, plots and assets are injected into it.
         pattern: "*.html"
+  - - threedmol_js:
+        type: file
+        description: 3Dmol.js library, inlined only when the run has a structure (`--pdb`).
+        pattern: "*.js"
 
 output:
   - report:

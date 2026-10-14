@@ -26,7 +26,7 @@ process VISUALIZATION_LOGDIFF {
     """
     touch logdiff_plot.pdf
     touch logdiff_varying_bases.pdf
-    echo "VISUALIZATION_COUNTS_HEATMAP:" > versions.yml
+    echo "VISUALIZATION_LOGDIFF:" > versions.yml
     echo "  stub-version: 0.0.0" >> versions.yml
     """
 }

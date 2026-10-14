@@ -24,15 +24,18 @@ generate_fitness_input <- function(wt_seq_path, counts_file, pos_range, output_f
     # Load the input variant-count CSV file
     counts_data <- read.csv(counts_csv, stringsAsFactors = FALSE)
 
-    # Initialize a data frame for results
-    results <- data.frame(
-      nt_seq = character(),
-      count = numeric(),
-      stringsAsFactors = FALSE
-    )
+    # Pre-allocate one slot per row. Growing `results` with rbind() inside the loop reallocated
+    # the whole frame on every variant (O(n^2)); for a long ORF that dominated the runtime.
+    n_rows <- nrow(counts_data)
+    seq_strings <- character(n_rows)
+    seq_counts  <- numeric(n_rows)
+
+    if (n_rows == 0) {
+      return(data.frame(nt_seq = character(0), count = numeric(0), stringsAsFactors = FALSE))
+    }
 
     # Iterate over each row in the input data
-    for (i in 1:nrow(counts_data)) {
+    for (i in 1:n_rows) {
       # Extract the mutation info
       codon_mut <- counts_data\$codon_mut[i]
 
@@ -55,13 +58,11 @@ generate_fitness_input <- function(wt_seq_path, counts_file, pos_range, output_f
       }
 
       # Convert the mutated codons back to a sequence string
-      mutated_seq_string <- paste(mutated_codons, collapse = "")
-
-      # Add the result to the data frame
-      results <- rbind(results, data.frame(nt_seq = mutated_seq_string, count = counts))
+      seq_strings[i] <- paste(mutated_codons, collapse = "")
+      seq_counts[i]  <- counts
     }
 
-    return(results)
+    return(data.frame(nt_seq = seq_strings, count = seq_counts, stringsAsFactors = FALSE))
   }
 
   # Process the variant-count file

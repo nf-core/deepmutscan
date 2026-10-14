@@ -24,7 +24,7 @@ process FITNESS_QC {
     touch fitness_estimation_count_correlation.pdf
     touch fitness_estimation_fitness_correlation.pdf
     cat > versions.yml <<'EOF'
-    FITNESS_PLOTS:
+    "${task.process}":
       stub-version: "0.0.0"
     EOF
   """

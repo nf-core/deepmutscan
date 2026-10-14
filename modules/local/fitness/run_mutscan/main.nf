@@ -1,6 +1,6 @@
 process RUN_MUTSCAN {
   tag "${sample.sample}"
-  label 'process_medium'
+  label 'process_single'
 
   conda "${moduleDir}/environment.yml"
 

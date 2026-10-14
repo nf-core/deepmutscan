@@ -81,12 +81,23 @@ run_fitness_plots <- function(fitness_table_path,
 
   if (length(fitness.repl) > 1) {
     pdf(out_fitness_corr_pdf, height = 9, width = 14)
+    ## Axis range from the data instead of a hard-coded c(-3, 1), which silently cropped
+    ## strongly deleterious variants out of the replicate-correlation panels. Fitness is
+    ## rescaled so synonymous = 0 and stop = -1, so the usual range is roughly [-1.5, 0.5],
+    ## but nothing bounds it: padding the observed range keeps every point visible.
+    fitness.range <- range(unlist(merged.counts.fitness[, fitness.repl]), finite = TRUE)
+    if (!all(is.finite(fitness.range))) {
+      fitness.range <- c(-3, 1)
+    }
+    fitness.pad <- max(0.1, diff(fitness.range) * 0.05)
+    fitness.lim <- c(fitness.range[1] - fitness.pad, fitness.range[2] + fitness.pad)
+
     pairs(merged.counts.fitness[, fitness.repl],
           lower.panel = panel_xy_abline_fitness,
           upper.panel = panel_cor_fitness,
           cex.text = 2,
-          xlim = c(-3, 1),
-          ylim = c(-3, 1))
+          xlim = fitness.lim,
+          ylim = fitness.lim)
     dev.off()
   } else {
     ## If only one (or zero) rescaled_fitness columns exist, still create an empty placeholder

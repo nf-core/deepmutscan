@@ -12,35 +12,38 @@ tools:
       licence: ["BSD-3-Clause"]
 
 input:
-  - - meta:
-        type: map
+  - - sample:
+        type: string
+        description: Run-level sample name, used for the report heading.
+  - - ids_b64:
+        type: string
         description: |
-          Groovy Map containing sample information
-          e.g. `[ id:'test', sample:'ORF1' ]`
-    - corrected:
+          Base64-encoded JSON array of the library identifiers, in the same order as `corrected`.
+          Base64 keeps the JSON free of quoting problems when it is interpolated into the template.
+  - - corrected:
         type: file
-        description: Error-corrected, library-filtered counts (with `counts` corrected and `counts_raw` preserved).
+        description: |
+          Error-corrected, library-filtered counts for every library of the run (with `counts`
+          corrected and `counts_raw` preserved). Staged into numbered directories because the
+          basenames repeat across libraries.
         pattern: "*.csv"
   - - method:
         type: string
-        description: Error-correction method label (e.g. `false_doubles`, `wildtype`).
+        description: Error-correction method label (`false_doubles` or `wildtype`).
   - - false_doubles_method:
         type: string
-        description: False-doubles estimator actually used (`mle` or `eb`); named in the report heading.
+        description: Estimator naming in the report heading, `mle` or `eb`.
   - - template_html:
         type: file
-        description: HTML template into which the report data is injected.
+        description: The report's HTML shell; data and plots are injected into it.
         pattern: "*.html"
 
 output:
   - report:
-      - meta:
-          type: map
-          description: Groovy Map containing sample information
-      - "*_error_correction_report.html":
+      - error_correction_report.html:
           type: file
-          description: Self-contained error-correction report.
-          pattern: "*_error_correction_report.html"
+          description: Self-contained, run-level error-correction report.
+          pattern: "error_correction_report.html"
   - versions:
       - versions.yml:
           type: file
