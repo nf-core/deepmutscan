@@ -2,6 +2,9 @@
     "-profile test": {
         "content": [
             {
+                "BAMFILTER_DMS": {
+                    "samtools": 1.21
+                },
                 "BWA_INDEX": {
                     "bwa": "0.7.19-r1273"
                 },
@@ -9,8 +12,9 @@
                     "bwa": "0.7.19-r1273",
                     "samtools": "1.22.1"
                 },
-                "DIMSUM_RUN": {
-                    "r-base": "4.4.2"
+                "COUNTS_TO_FITNESS": {
+                    "r-base": "4.5.1",
+                    "r-Biostrings": "2.78.0"
                 },
                 "DMSANALYSIS_AASEQ": {
                     "r-base": "4.5.1",
@@ -24,6 +28,16 @@
                 "DMSANALYSIS_POSSIBLE_MUTATIONS": {
                     "r-base": "4.5.1",
                     "biostrings": "2.78.0"
+                },
+                "DMSANALYSIS_PROCESS_VARIANT_COUNTS": {
+                    "r-base": "4.5.1",
+                    "r-dplyr": "1.1.4",
+                    "r-Biostrings": "2.78.0",
+                    "r-stringr": "1.6.0",
+                    "r-ggplot2": "4.0.2",
+                    "r-tidyr": "1.3.1",
+                    "r-reshape2": "1.4.4",
+                    "r-scales": "1.4.0"
                 },
                 "EXPDESIGN_FITNESS": {
                     "r-base": "4.5.1"
@@ -52,6 +66,15 @@
                 "MERGE_COUNTS": {
                     "r-base": "4.5.1"
                 },
+                "PREMERGE": {
+                    "bwa": "0.7.19-r1273",
+                    "samtools": 1.21,
+                    "vsearch": "2.30.0"
+                },
+                "RUN_DIMSUM": {
+                    "r-base": "4.4.2",
+                    "DiMSum": 1.4
+                },
                 "RUN_MUTSCAN": {
                     "r-base": "4.5.1",
                     "r-mutscan": "1.0.0",
@@ -76,10 +99,40 @@
                     "pandas": "2.2.1",
                     "numpy": "1.26.4"
                 },
+                "VISUALIZATION_COUNTS_HEATMAP": {
+                    "r-base": "4.5.1",
+                    "r-dplyr": "1.1.4",
+                    "r-ggplot2": "4.0.2"
+                },
+                "VISUALIZATION_COUNTS_PER_COV": {
+                    "r-base": "4.5.1",
+                    "r-dplyr": "1.1.4",
+                    "r-ggplot2": "4.0.2"
+                },
                 "VISUALIZATION_ERROR_CORRECTION_REPORT": {
                     "python": "3.12.3",
                     "pandas": "2.2.1",
                     "numpy": "1.26.4"
+                },
+                "VISUALIZATION_GLOBAL_POS_BIASES_COUNTS": {
+                    "r-base": "4.5.1",
+                    "r-dplyr": "1.1.4",
+                    "r-ggplot2": "4.0.2",
+                    "r-scales": "1.4.0",
+                    "r-zoo": "1.8.15"
+                },
+                "VISUALIZATION_GLOBAL_POS_BIASES_COV": {
+                    "r-base": "4.5.1",
+                    "r-dplyr": "1.1.4",
+                    "r-ggplot2": "4.0.2",
+                    "r-scales": "1.4.0",
+                    "r-zoo": "1.8.15"
+                },
+                "VISUALIZATION_LOGDIFF": {
+                    "r-base": "4.5.1",
+                    "r-dplyr": "1.1.4",
+                    "r-ggplot2": "4.0.2",
+                    "r-scales": "1.4.0"
                 },
                 "VISUALIZATION_SEQDEPTH": {
                     "r-base": "4.5.1",
@@ -131,11 +184,6 @@
                 "fitness/DiMSum_results/dimsum_results/reports/report_settings.RData",
                 "fitness/DiMSum_results/dimsum_results/tmp",
                 "fitness/DiMSum_results/dimsum_results/tmp/mutation_stats_dicts.RData",
-                "fitness/DiMSum_results/single_rep_counts",
-                "fitness/DiMSum_results/single_rep_counts/GID1A_input_1_pe_fitness_input.tsv",
-                "fitness/DiMSum_results/single_rep_counts/GID1A_input_2_pe_fitness_input.tsv",
-                "fitness/DiMSum_results/single_rep_counts/GID1A_output_1_pe_fitness_input.tsv",
-                "fitness/DiMSum_results/single_rep_counts/GID1A_output_2_pe_fitness_input.tsv",
                 "fitness/counts_merged.tsv",
                 "fitness/default_results",
                 "fitness/default_results/fitness_estimation.tsv",
@@ -149,26 +197,15 @@
                 "fitness/mutscan_results/mutscan_counts_corr.pdf",
                 "fitness/mutscan_results/mutscan_edgeR_volcano.pdf",
                 "fitness/mutscan_results/mutscan_limma_volcano.pdf",
+                "fitness/single_rep_counts",
+                "fitness/single_rep_counts/GID1A_input_1_pe_fitness_input.tsv",
+                "fitness/single_rep_counts/GID1A_input_2_pe_fitness_input.tsv",
+                "fitness/single_rep_counts/GID1A_output_1_pe_fitness_input.tsv",
+                "fitness/single_rep_counts/GID1A_output_2_pe_fitness_input.tsv",
                 "fitness/synonymous_wt.txt",
                 "intermediate_files",
                 "intermediate_files/aa_seq.txt",
                 "intermediate_files/bam_files",
-                "intermediate_files/bam_files/bwa",
-                "intermediate_files/bam_files/bwa/mem",
-                "intermediate_files/bam_files/bwa/mem/GID1A_input_1_pe.bam",
-                "intermediate_files/bam_files/bwa/mem/GID1A_input_2_pe.bam",
-                "intermediate_files/bam_files/bwa/mem/GID1A_output_1_pe.bam",
-                "intermediate_files/bam_files/bwa/mem/GID1A_output_2_pe.bam",
-                "intermediate_files/bam_files/filtered",
-                "intermediate_files/bam_files/filtered/GID1A_input_1_pe_filtered.bam",
-                "intermediate_files/bam_files/filtered/GID1A_input_2_pe_filtered.bam",
-                "intermediate_files/bam_files/filtered/GID1A_output_1_pe_filtered.bam",
-                "intermediate_files/bam_files/filtered/GID1A_output_2_pe_filtered.bam",
-                "intermediate_files/bam_files/premerged",
-                "intermediate_files/bam_files/premerged/GID1A_input_1_pe_merged.bam",
-                "intermediate_files/bam_files/premerged/GID1A_input_2_pe_merged.bam",
-                "intermediate_files/bam_files/premerged/GID1A_output_1_pe_merged.bam",
-                "intermediate_files/bam_files/premerged/GID1A_output_2_pe_merged.bam",
                 "intermediate_files/bam_files/sorted",
                 "intermediate_files/bam_files/sorted/GID1A_input_1_pe.sorted.bam",
                 "intermediate_files/bam_files/sorted/GID1A_input_1_pe.sorted.bam.bai",
@@ -225,15 +262,19 @@
                 "intermediate_files/variant_counts",
                 "intermediate_files/variant_counts/GID1A_input_1_pe",
                 "intermediate_files/variant_counts/GID1A_input_1_pe/GID1A_input_1_pe.variant_counts.tsv",
+                "intermediate_files/variant_counts/GID1A_input_1_pe/GID1A_input_1_pe.variant_counts_prefilter.tsv",
                 "intermediate_files/variant_counts/GID1A_input_1_pe/variant_counts_columns.tsv",
                 "intermediate_files/variant_counts/GID1A_input_2_pe",
                 "intermediate_files/variant_counts/GID1A_input_2_pe/GID1A_input_2_pe.variant_counts.tsv",
+                "intermediate_files/variant_counts/GID1A_input_2_pe/GID1A_input_2_pe.variant_counts_prefilter.tsv",
                 "intermediate_files/variant_counts/GID1A_input_2_pe/variant_counts_columns.tsv",
                 "intermediate_files/variant_counts/GID1A_output_1_pe",
                 "intermediate_files/variant_counts/GID1A_output_1_pe/GID1A_output_1_pe.variant_counts.tsv",
+                "intermediate_files/variant_counts/GID1A_output_1_pe/GID1A_output_1_pe.variant_counts_prefilter.tsv",
                 "intermediate_files/variant_counts/GID1A_output_1_pe/variant_counts_columns.tsv",
                 "intermediate_files/variant_counts/GID1A_output_2_pe",
                 "intermediate_files/variant_counts/GID1A_output_2_pe/GID1A_output_2_pe.variant_counts.tsv",
+                "intermediate_files/variant_counts/GID1A_output_2_pe/GID1A_output_2_pe.variant_counts_prefilter.tsv",
                 "intermediate_files/variant_counts/GID1A_output_2_pe/variant_counts_columns.tsv",
                 "library_QC",
                 "library_QC/GID1A_input_1_pe",
@@ -315,53 +356,49 @@
                 "experimentalDesign.tsv:md5,f95dea4a3e6cf7e206e789a96e502604",
                 "synonymous_wt.txt:md5,bb94c5975185b80f8d63acebfbf4a0da",
                 "aa_seq.txt:md5,421287586f566191f7da4a7aad7d24a8",
-                "GID1A_input_1_pe.bam:md5,57f54fa2bad68dc8ff39d2bb79d94742",
-                "GID1A_input_2_pe.bam:md5,5da708382cddfaa90e7b53e3d79d8f8e",
-                "GID1A_output_1_pe.bam:md5,f888077ed2234b2b7b033ceea621b33f",
-                "GID1A_output_2_pe.bam:md5,5b147ba80d87ee3ff3be6c3f34d7f67d",
-                "GID1A_input_1_pe_filtered.bam:md5,9a8f3691ec0478928227fe0da590054b",
-                "GID1A_input_2_pe_filtered.bam:md5,50f50c79514041c8746fb95070fbf321",
-                "GID1A_output_1_pe_filtered.bam:md5,b743b1fd86941c392c7d42474a82217d",
-                "GID1A_output_2_pe_filtered.bam:md5,20e02c4c5f0ba2ff9f9b553e80a89343",
-                "GID1A_input_1_pe_merged.bam:md5,e83e32f077c1f8018dd7cda8a27828fd",
-                "GID1A_input_2_pe_merged.bam:md5,eeb0a34e585e1858d3b758d6bde3b8db",
-                "GID1A_output_1_pe_merged.bam:md5,ed034511d33464cd9f032b8824663842",
-                "GID1A_output_2_pe_merged.bam:md5,9bafd9eee748877ac559815b1420b865",
-                "GID1A_input_1_pe.sorted.bam:md5,24f5af8379d0bd45c19cd576139f7a3a",
-                "GID1A_input_1_pe.sorted.bam.bai:md5,ce8bed587f846ab98e31f3f97051a031",
-                "GID1A_input_2_pe.sorted.bam:md5,da8d758b9d2db71a8875720cb6d30ec9",
-                "GID1A_input_2_pe.sorted.bam.bai:md5,20fc76357786d7b7fba3ee456b60ecb8",
-                "GID1A_output_1_pe.sorted.bam:md5,ad9578ea80cefa883638c140361acb7b",
-                "GID1A_output_1_pe.sorted.bam.bai:md5,dc3b14bd7d4ef3e234709115092be53b",
-                "GID1A_output_2_pe.sorted.bam:md5,01ac7c4cfdab13370f632be42670eeca",
-                "GID1A_output_2_pe.sorted.bam.bai:md5,bc71d941943835d6ae7a568fe560cfe2",
+                "GID1A_input_1_pe.sorted.bam:md5,82fb6a1c85d706c1e25c22f9a1b772c7",
+                "GID1A_input_1_pe.sorted.bam.bai:md5,d31a43402f337d3ea32cb62e6f7e096b",
+                "GID1A_input_2_pe.sorted.bam:md5,75468d32ec0758af13a5c97fbfa2ef53",
+                "GID1A_input_2_pe.sorted.bam.bai:md5,bc2538707718247d27180bcf934deb17",
+                "GID1A_output_1_pe.sorted.bam:md5,e993312a15082a41f38d6e98783a45e3",
+                "GID1A_output_1_pe.sorted.bam.bai:md5,f8f9ef2c6a2c08c17e6f27667792d17b",
+                "GID1A_output_2_pe.sorted.bam:md5,ab99451fb9bc583ed0909b9abdb0a6ba",
+                "GID1A_output_2_pe.sorted.bam.bai:md5,134e29bccf27d4fa79f04586350ffabe",
                 "GID1A.amb:md5,383ef17f6abb846ab669ebac30f5659b",
                 "GID1A.ann:md5,30c4a2204f9166d9594c790e0ca58793",
                 "GID1A.bwt:md5,120149e0239465625c2dd20a171701fd",
                 "GID1A.pac:md5,104f743d81d39b2527b5ae52db26654c",
                 "GID1A.sa:md5,1f697dcb3fedd2f3f29642598bdd795b",
                 "possible_mutations.csv:md5,9ce59fe91b726b1d88587a13fa899567",
-                "seq_error_rate.csv:md5,350a018c981eca2506ac6291a6e9e161",
-                "variantCounts_for_heatmaps.csv:md5,8794f9fc716405d1891d24af6b636a2f",
-                "variantCounts_for_heatmaps_error_corrected.csv:md5,8794f9fc716405d1891d24af6b636a2f",
-                "seq_error_rate.csv:md5,350a018c981eca2506ac6291a6e9e161",
-                "variantCounts_for_heatmaps.csv:md5,63c358cb04210b9dda2416ab3352494a",
-                "variantCounts_for_heatmaps_error_corrected.csv:md5,63c358cb04210b9dda2416ab3352494a",
-                "seq_error_rate.csv:md5,350a018c981eca2506ac6291a6e9e161",
-                "variantCounts_for_heatmaps.csv:md5,33c6c3af1825b9ea7fbc949a18bb38aa",
-                "variantCounts_for_heatmaps_error_corrected.csv:md5,33c6c3af1825b9ea7fbc949a18bb38aa",
-                "seq_error_rate.csv:md5,350a018c981eca2506ac6291a6e9e161",
-                "variantCounts_for_heatmaps.csv:md5,5277b202849d27c0b1773cacd8aae416",
-                "variantCounts_for_heatmaps_error_corrected.csv:md5,5277b202849d27c0b1773cacd8aae416",
+                "seq_error_rate.csv:md5,0f7b80a59448b99ea845b10e0c45b08a",
+                "variantCounts_for_heatmaps.csv:md5,39e2ae55a465003ac6b22aaf856131c1",
+                "variantCounts_for_heatmaps_error_corrected.csv:md5,39e2ae55a465003ac6b22aaf856131c1",
+                "seq_error_rate.csv:md5,572ce74806db8446a65e7e0ab93f7b14",
+                "variantCounts_for_heatmaps.csv:md5,76ca1b1bf3094fb3313e781ed85fd997",
+                "variantCounts_for_heatmaps_error_corrected.csv:md5,a157eb72ed6960dc0b84b071ae025523",
+                "seq_error_rate.csv:md5,a67ea7314991899f8b38cb7e8aa1670d",
+                "variantCounts_for_heatmaps.csv:md5,9bea322a82e1bb6483210dd6e8ed0876",
+                "variantCounts_for_heatmaps_error_corrected.csv:md5,9bea322a82e1bb6483210dd6e8ed0876",
+                "seq_error_rate.csv:md5,98ce8c333f4665a4e17ca0412a5b903d",
+                "variantCounts_for_heatmaps.csv:md5,8e9d7a9255bb302593856e7f7494828d",
+                "variantCounts_for_heatmaps_error_corrected.csv:md5,51d20f5ea67e8a37cdcbe5ac1b8b8b1e",
+                "GID1A_input_1_pe.variant_counts.tsv:md5,dff3194afe7c88fcb83bf3acf2ebba58",
+                "GID1A_input_1_pe.variant_counts_prefilter.tsv:md5,acbcbe1de28e716b3edf25f833af542b",
                 "variant_counts_columns.tsv:md5,c94801255a553ce5ff4a00d3170f6768",
+                "GID1A_input_2_pe.variant_counts.tsv:md5,6ebf0714fbffc48e81b88324873fdd37",
+                "GID1A_input_2_pe.variant_counts_prefilter.tsv:md5,42a85b193e0c962491b66bf7ed8cee10",
                 "variant_counts_columns.tsv:md5,c94801255a553ce5ff4a00d3170f6768",
+                "GID1A_output_1_pe.variant_counts.tsv:md5,66a460bf236ec9d0cfc8c4caf49a4ca4",
+                "GID1A_output_1_pe.variant_counts_prefilter.tsv:md5,c85abf51ee9f8ce95699f5fe5e3a97a1",
                 "variant_counts_columns.tsv:md5,c94801255a553ce5ff4a00d3170f6768",
+                "GID1A_output_2_pe.variant_counts.tsv:md5,b1450bc8351d5aa78254a7433a8ced1c",
+                "GID1A_output_2_pe.variant_counts_prefilter.tsv:md5,fbe56ee343d1dffa7d14ad5a7b27a112",
                 "variant_counts_columns.tsv:md5,c94801255a553ce5ff4a00d3170f6768",
                 "seqdepth_curve.csv:md5,a7217ad283c687d26d68c84c897f5f9e",
-                "seqdepth_curve.csv:md5,5daeef9c60240ac5eebafe632def9f65",
-                "seqdepth_curve.csv:md5,7fd3fd5ce9b8f3e5b2a336ee5719b5e2",
-                "seqdepth_curve.csv:md5,341bda014e405be6c6f572164daf5aae",
-                "error_correction_report.html:md5,802b1cca71ffb34758810cea748c73ea",
+                "seqdepth_curve.csv:md5,7f8fc880928bd4254d2239bc0481ab2d",
+                "seqdepth_curve.csv:md5,c837b1471f523001053d7d20165bba4f",
+                "seqdepth_curve.csv:md5,dc5bb515b66c381aae67bb9905af3309",
+                "error_correction_report.html:md5,e32f910d99fe02e70df1d5537fab35dd",
                 "fastqc-status-check-heatmap.txt:md5,58a9580c11af4210b1af65753383e120",
                 "fastqc_adapter_content_plot.txt:md5,2990ad34b6fa29151dd4b9a38828afbe",
                 "fastqc_overrepresented_sequences_plot.txt:md5,bd15a88aec7c1a85fe798b8a2d9cac77",
@@ -381,7 +418,7 @@
                 "limma_rowCount": 1230
             }
         ],
-        "timestamp": "2026-10-14T14:58:05.806526",
+        "timestamp": "2026-10-14T17:06:19.787711",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.1"
