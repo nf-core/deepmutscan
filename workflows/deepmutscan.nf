@@ -34,6 +34,8 @@ include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_deepmutscan_pipeline'
+include { asBool                 } from '../subworkflows/local/utils_nfcore_deepmutscan_pipeline'
+include { asInt                  } from '../subworkflows/local/utils_nfcore_deepmutscan_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -60,48 +62,34 @@ workflow DEEPMUTSCAN {
         .fromPath(params.fasta, checkIfExists: true)
         .map { fasta -> tuple( [id: 'ref'], fasta ) }
 
+    // CLI params arrive as Strings; normalise once here (see asBool/asInt)
+    def run_fitness     = asBool(params.fitness)
+    def run_dimsum      = asBool(params.dimsum)
+    def run_mutscan     = asBool(params.mutscan)
+    def run_seqdepth    = asBool(params.run_seqdepth)
+
     def reading_frame_ch        = Channel.value(params.reading_frame)
-    def min_counts_ch           = Channel.value(params.min_counts)
-    def custom_codon_library_ch = Channel.value(params.custom_codon_library)
+    def min_counts_ch           = Channel.value(asInt(params.min_counts))
+    // Optional path input: an empty list stages nothing, so the R template sees an empty string
+    def custom_codon_library_ch = Channel.value(
+        params.custom_codon_library ? file(params.custom_codon_library, checkIfExists: true) : []
+    )
     def mutagenesis_type_ch     = Channel.value(params.mutagenesis_type)
-    def sliding_window_size_ch  = Channel.value(params.sliding_window_size)
-    def aimed_cov_ch            = Channel.value(params.aimed_cov)
-    def run_seqdepth_ch         = Channel.value(params.run_seqdepth)
-    def base_qual_ch            = Channel.value(params.base_qual)
-    def min_flank_ch            = Channel.value(params.min_flank)
+    def sliding_window_size_ch  = Channel.value(asInt(params.sliding_window_size))
+    def aimed_cov_ch            = Channel.value(asInt(params.aimed_cov))
+    def base_qual_ch            = Channel.value(asInt(params.base_qual))
+    def min_flank_ch            = Channel.value(asInt(params.min_flank))
 
     // Raw samplesheet path channel for downstream subworkflows
     def ch_samplesheet_csv      = Channel.fromPath(params.input, checkIfExists: true)
 
     // '--dimsum' only has an effect together with '--fitness'
-    if (params.dimsum && !params.fitness) {
+    if (run_dimsum && !run_fitness) {
         log.warn("'--dimsum true' only works together with '--fitness true'. DiMSum will be skipped.")
     }
 
-    // '--error_correction wildtype' needs a 'wildtype' sample for every biological sample
-    if (params.error_correction == 'wildtype') {
-        ch_samplesheet
-            .map { meta, _reads -> tuple(meta.sample as String, meta.type as String) }
-            .toList()
-            .map { pairs ->
-                pairs.groupBy { it[0] }.each { sample, rows ->
-                    def types = rows.collect { it[1] }
-                    if (types.any { it != 'wildtype' } && !types.contains('wildtype')) {
-                        error(
-                            "[--error_correction wildtype] No 'wildtype' sample found for '${sample}' in the samplesheet.\n" +
-                            "  Add a samplesheet row with type 'wildtype' and sample '${sample}' (deep wildtype-only sequencing),\n" +
-                            "  or use the internal correction instead (default: --error_correction false_doubles),\n" +
-                            "  or disable error correction with --error_correction none."
-                        )
-                    }
-                }
-                pairs
-            }
-            .subscribe { }
-    }
-
     // Nudge fitness users who did not supply a structure towards the interactive tool
-    if (params.fitness && !params.pdb) {
+    if (run_fitness && !params.pdb) {
         log.info(
             "\n" +
             "  ┌─ Optional: interactive variant effect inspection tool ───────────────────┐\n" +
@@ -153,14 +141,16 @@ workflow DEEPMUTSCAN {
       BWA_MEM.out.bam
     )
 
-    // Broadcast the FASTA path to every BAM emitted by BAMFILTER_DMS
-    def ch_fasta_path_broadcast = ch_fasta
-      .combine(BAMFILTER_DMS.out.bam)   // flattened item: [meta3, fasta, meta, bam]
-      .map { it[1] }                    // keep only the fasta path (N emissions)
+    ch_versions = ch_versions.mix(BAMFILTER_DMS.out.versions)
+
+    // Re-use the index BWA_MEM aligned against rather than running `bwa index` once per library
+    def ch_bwa_index_for_premerge = BAMFILTER_DMS.out.bam
+      .combine(BWA_INDEX.out.index)                                    // [meta, bam, meta2, index]
+      .map { _meta, _bam, meta2, index -> tuple(meta2, index) }        // tuple(meta2, index) -- N
 
     PREMERGE(
-      BAMFILTER_DMS.out.bam,     // tuple(val(meta), path(bam))
-      ch_fasta_path_broadcast    // path(fasta)
+      BAMFILTER_DMS.out.bam,       // tuple(val(meta), path(bam))
+      ch_bwa_index_for_premerge    // tuple(val(meta2), path(index))
     )
 
     // Coordinate-sort + index the premerged BAM (required by the read-based counter)
@@ -207,6 +197,8 @@ workflow DEEPMUTSCAN {
 
     // Anchor (N items; one per sample)
     def ch_vc = VARIANTCOUNTING.out.variant_counts   // tuple(val(meta), path)
+    // Same table before --min_counts was applied; only the error correction uses it (see below)
+    def ch_vc_prefilter = VARIANTCOUNTING.out.variant_counts_prefilter
 
     // Build per-sample inputs using inline combinations (replaces fanout)
     def ch_possible_mut_for_proc = DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map { it[1] }.combine(ch_vc).map { it[0] }
@@ -221,6 +213,8 @@ workflow DEEPMUTSCAN {
       ch_min_counts_for_proc        // val(min_counts)                        -- N
     )
 
+    ch_versions = ch_versions.mix(DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.versions)
+
     def annotated_variantCounts_ch           = DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, a) }
     def variantCounts_filtered_by_library_ch = DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, b) }
     def library_completed_variantCounts_ch   = DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.processed_variantCounts.map { meta, a, b, c, d -> tuple(meta, c) }
@@ -232,8 +226,10 @@ workflow DEEPMUTSCAN {
     // picks up correction via the `counts_corrected` column, count heatmaps via canonical names.
     //
     if (params.error_correction == 'false_doubles') {
-      // per sample: raw (pre-filter) counts + library-filtered counts + completed library table
-      def ch_fd_in       = ch_vc.join(variantCounts_filtered_by_library_ch).join(library_completed_variantCounts_ch)  // (meta, raw, filtered, completed)
+      // per sample: genuinely pre-filter counts + library-filtered counts + completed library table.
+      // The estimator reads its error rate off variants seen only once or twice, which is exactly
+      // what --min_counts removes, so this must be the pre-filter table and not ch_vc.
+      def ch_fd_in       = ch_vc_prefilter.join(variantCounts_filtered_by_library_ch).join(library_completed_variantCounts_ch)  // (meta, raw, filtered, completed)
       def aa_seq_for_ec  = DMSANALYSIS_AASEQ.out.aa_seq.map { it[1] }.combine(ch_fd_in).map { it[0] }
       def min_for_ec     = min_counts_ch.combine(ch_fd_in).map { it[0] }
       // the reference the reads were aligned to (base_mut is in this fasta's coordinate frame),
@@ -242,7 +238,7 @@ workflow DEEPMUTSCAN {
       def fasta_for_ec   = ch_fasta.combine(ch_fd_in).map { it[1] }
       DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES(
         ch_fd_in, fasta_for_ec, aa_seq_for_ec, min_for_ec,
-        params.false_doubles_method, params.false_doubles_codon_window
+        params.false_doubles_method, asInt(params.false_doubles_codon_window)
       )
       ch_versions = ch_versions.mix(DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.versions)
       variantCounts_filtered_by_library_ch = DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.corrected.map { meta, filt, heat, comp -> tuple(meta, filt) }
@@ -331,6 +327,13 @@ workflow DEEPMUTSCAN {
       library_completed_variantCounts_ch
     )
 
+    ch_versions = ch_versions
+      .mix(VISUALIZATION_COUNTS_PER_COV.out.versions)
+      .mix(VISUALIZATION_COUNTS_HEATMAP.out.versions)
+      .mix(VISUALIZATION_GLOBAL_POS_BIASES_COUNTS.out.versions)
+      .mix(VISUALIZATION_GLOBAL_POS_BIASES_COV.out.versions)
+      .mix(VISUALIZATION_LOGDIFF.out.versions)
+
     // library QC plots (original R PDFs) + the tables the report re-plots interactively
     ch_report_assets = ch_report_assets
       .mix(VISUALIZATION_GLOBAL_POS_BIASES_COV.out.rolling_coverage.map          { meta, f -> [['qc', meta.id, 'rolling_coverage.pdf'], f] })
@@ -349,7 +352,7 @@ workflow DEEPMUTSCAN {
       // the variant ORFs, and the wildtype to diff them against only exists in the reference.
       .mix(ch_fasta.map                                                          { _meta, f -> [['fasta', 'run', 'reference.fasta'], f] })
 
-    if (params.run_seqdepth) {
+    if (run_seqdepth) {
       VISUALIZATION_SEQDEPTH(
         variantCounts_filtered_by_library_ch,
         possible_mutations_N,
@@ -373,16 +376,19 @@ workflow DEEPMUTSCAN {
       ch_fasta_for_fitness,         // path(fasta)
       ch_rf_for_fitness             // val(reading_frame)
     )
+    ch_versions = ch_versions.mix(COUNTS_TO_FITNESS.out.versions)
 
     // Execution of fitness subworkflow, if --fitness true
-    if (params.fitness) {
+    if (run_fitness) {
 
         CALCULATE_FITNESS (
             COUNTS_TO_FITNESS.out.fitness_input, // Input from previous step
             ch_samplesheet_csv,                   // Path to samplesheet
             ch_fasta,                             // The original Fasta tuple
             reading_frame_ch,                     // Reading frame value channel
-            DMSANALYSIS_AASEQ.out.aa_seq          // Amino Acid Sequence (for Heatmap)
+            DMSANALYSIS_AASEQ.out.aa_seq,         // Amino Acid Sequence (for Heatmap)
+            run_dimsum,                           // Boolean: run DiMSum
+            run_mutscan                           // Boolean: run mutscan
         )
 
         // Collect versions
@@ -527,11 +533,11 @@ workflow DEEPMUTSCAN {
                     version: workflow.manifest.version,
                     // The report smooths client-side with the same window the R plots use, and draws
                     // the same required-coverage reference line, so both must travel with the run.
-                    sliding_window_size: params.sliding_window_size,
-                    aimed_cov: params.aimed_cov,
-                    fitness: params.fitness,
-                    dimsum: params.dimsum,
-                    mutscan: params.mutscan,
+                    sliding_window_size: asInt(params.sliding_window_size),
+                    aimed_cov: asInt(params.aimed_cov),
+                    fitness: run_fitness,
+                    dimsum: run_dimsum,
+                    mutscan: run_mutscan,
                     outdir: params.outdir,
                     // Lets the Overview link straight to Nextflow's own execution report + timeline,
                     // which sit next to this file as execution_{report,timeline}_<suffix>.html.
@@ -548,7 +554,9 @@ workflow DEEPMUTSCAN {
         file("${projectDir}/assets/summary_report/summary_report_template.html", checkIfExists: true),
         file("${projectDir}/assets/variant_effect_inspection_tool/3Dmol-min.js", checkIfExists: true),
     )
-    ch_versions = ch_versions.mix(VISUALIZATION_SUMMARY_REPORT.out.versions)
+    // Deliberately NOT mixed into ch_versions: this process consumes the collated versions file
+    // (it embeds it to build the Citations page), so feeding its own versions back in would make
+    // the collectFile above wait on a process that is waiting on the collectFile.
 
     emit:
     multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
