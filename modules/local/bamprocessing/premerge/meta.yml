@@ -1,0 +1,65 @@
+name: "premerge"
+description: Processes paired-end BAM files by converting them to FASTQ, merging overlapping paired reads using VSEARCH, and re-aligning the merged single-end reads to the wild-type reference using BWA.
+keywords:
+  - paired-end merging
+  - alignment
+  - bwa
+  - vsearch
+  - samtools
+  - dms
+tools:
+  - "samtools":
+      description: "Tools for manipulating next-generation sequencing data"
+      homepage: "http://www.htslib.org/"
+      documentation: "http://www.htslib.org/doc/samtools.html"
+      tool_dev_url: "https://github.com/samtools/samtools"
+      doi: "10.1093/bioinformatics/btp352"
+      licence: ["MIT/Expat"]
+  - "vsearch":
+      description: "Versatile open-source tool for metagenomics"
+      homepage: "https://github.com/torognes/vsearch"
+      documentation: "https://github.com/torognes/vsearch/blob/master/README.md"
+      doi: "10.7717/peerj.2584"
+      licence: ["GPL-3.0-or-later", "BSD-2-Clause"]
+  - "bwa":
+      description: "Burrow-Wheeler Aligner for short-read alignment"
+      homepage: "http://bio-bwa.sourceforge.net/"
+      documentation: "http://bio-bwa.sourceforge.net/bwa.shtml"
+      doi: "10.1093/bioinformatics/btp324"
+      licence: ["GPL-3.0-or-later"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - bam:
+        type: file
+        description: Input paired-end BAM file
+        pattern: "*.{bam}"
+  - - wt_seq:
+        type: file
+        description: FASTA file containing the wild-type reference sequence
+        pattern: "*.{fasta,fa}"
+
+output:
+  - bam:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', single_end:false ]`
+      - "*.bam":
+          type: file
+          description: BAM file containing the merged and re-aligned reads
+          pattern: "*_merged.bam"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

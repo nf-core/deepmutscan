@@ -1,0 +1,48 @@
+name: "bamfilter_dms"
+description: Filters BAM files specifically for Deep Mutational Scanning (DMS) analysis by removing unmapped reads, low-quality alignments, secondary alignments, indels (CIGAR I/D/N), and perfectly matching wild-type reads.
+keywords:
+  - dms
+  - bam
+  - filtering
+  - samtools
+  - indels
+tools:
+  - "samtools":
+      description: "Tools for manipulating next-generation sequencing data"
+      homepage: "http://www.htslib.org/"
+      documentation: "http://www.htslib.org/doc/samtools.html"
+      tool_dev_url: "https://github.com/samtools/samtools"
+      doi: "10.1093/bioinformatics/btp352"
+      licence: ["MIT/Expat"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - bam:
+        type: file
+        description: Input BAM file to be filtered
+        pattern: "*.{bam}"
+
+output:
+  - bam:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', single_end:false ]`
+      - "*.bam":
+          type: file
+          description: Filtered BAM file containing only high-quality mutated reads without indels
+          pattern: "*_filtered.bam"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

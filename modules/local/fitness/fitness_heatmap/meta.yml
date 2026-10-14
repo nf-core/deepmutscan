@@ -1,0 +1,59 @@
+name: "fitness_heatmap"
+description: Generates a fitness landscape heatmap from calculated fitness scores, displaying the functional impact of amino acid substitutions at each position of the reference sequence.
+keywords:
+  - deep mutational scanning
+  - dms
+  - fitness
+  - visualization
+  - heatmap
+  - mutation landscape
+tools:
+  - "mutscan":
+      description: "R package for analysis of deep mutational scanning data"
+      homepage: "https://bioconductor.org/packages/release/bioc/html/mutscan.html"
+      documentation: "https://bioconductor.org/packages/release/bioc/manuals/mutscan/man/mutscan.pdf"
+      tool_dev_url: "https://github.com/csoneson/mutscan"
+      doi: "10.1186/s12859-023-05187-y"
+      licence: ["GPL-3.0-or-later"]
+  - "bioconductor-biostrings":
+      description: "Efficient manipulation of biological strings in R"
+      homepage: "https://bioconductor.org/packages/Biostrings"
+      licence: ["Artistic-2.0"]
+
+input:
+  - - sample:
+        type: map
+        description: |
+          Groovy Map containing sample information for the fitness data
+          e.g. `[ id:'test' ]`
+    - fitness_estimation_tsv:
+        type: file
+        description: TSV file containing calculated fitness scores and statistics
+        pattern: "*.{tsv}"
+  - - sample2:
+        type: map
+        description: |
+          Groovy Map containing metadata for the reference sequence
+    - wt_seq:
+        type: file
+        description: FASTA file or text file containing the wild-type reference sequence
+        pattern: "*.{fasta,fa,txt}"
+
+output:
+  - fitness_heatmap:
+      - sample:
+          type: map
+          description: Groovy Map containing sample information
+      - fitness_heatmap.pdf:
+          type: file
+          description: PDF heatmap visualizing the fitness scores across the protein sequence
+          pattern: "fitness_heatmap.pdf"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

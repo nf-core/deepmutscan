@@ -1,0 +1,66 @@
+name: "dmsanalysis_error_correction_wildtype"
+description: "Sequencing-error correction of single-codon variant counts using an additional deep wildtype-only sequencing sample to measure the position-specific error profile, which is then subtracted from each library sample."
+keywords:
+  - deep mutational scanning
+  - error correction
+  - wildtype sequencing
+  - variant counting
+tools:
+  - "r-base":
+      description: "The R programming language (base only)"
+      homepage: "https://www.r-project.org/"
+      licence: ["GPL-2.0-or-later"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', sample:'ORF1', type:'input', replicate:1 ]`
+    - filtered:
+        type: file
+        description: Library-filtered single-codon variant counts (annotated CSV) for this sample.
+        pattern: "*.csv"
+    - wt_counts:
+        type: file
+        description: Library-filtered variant counts of the matching wildtype-only sample.
+        pattern: "*.csv"
+    - completed:
+        type: file
+        description: Completed library table (all possible variants) to also correct.
+        pattern: "*.csv"
+  - - aa_seq:
+        type: file
+        description: Reference amino-acid sequence (one line).
+  - - min_counts:
+        type: integer
+        description: Minimum count threshold for the amino-acid-level heatmap table.
+
+output:
+  - corrected:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - variantCounts_filtered_by_library_error_corrected.csv:
+          type: file
+          description: Library-filtered counts with added `counts_corrected` / `counts_per_cov_corrected` columns.
+          pattern: "variantCounts_filtered_by_library_error_corrected.csv"
+      - variantCounts_for_heatmaps_error_corrected.csv:
+          type: file
+          description: Amino-acid-level heatmap table built from corrected counts (canonical `total_counts` columns).
+          pattern: "variantCounts_for_heatmaps_error_corrected.csv"
+      - library_completed_variantCounts_error_corrected.csv:
+          type: file
+          description: Completed library table with corrected counts propagated (for logdiff etc.).
+          pattern: "library_completed_variantCounts_error_corrected.csv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"
+maintainers:
+  - "@BenjaminWehnert1008"

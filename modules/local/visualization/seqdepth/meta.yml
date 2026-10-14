@@ -1,0 +1,55 @@
+name: "visualization_seqdepth"
+description: Performs a sequencing depth simulation to assess library coverage and saturation, helping to determine if the sequencing effort was sufficient to capture all intended variants.
+keywords:
+  - deep mutational scanning
+  - dms
+  - visualization
+  - sequencing depth
+  - saturation
+tools:
+  - "mutscan":
+      description: "R package for analysis of deep mutational scanning data"
+      homepage: "https://bioconductor.org/packages/release/bioc/html/mutscan.html"
+      documentation: "https://bioconductor.org/packages/release/bioc/manuals/mutscan/man/mutscan.pdf"
+      tool_dev_url: "https://github.com/csoneson/mutscan"
+      doi: "10.1186/s12859-023-05187-y"
+      licence: ["GPL-3.0-or-later"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - variantCounts_filtered_by_library:
+        type: file
+        description: CSV file containing variant counts filtered against the target library
+        pattern: "*.{csv}"
+  - - possible_mutations:
+        type: file
+        description: CSV file defining all theoretically possible mutations for the library design
+        pattern: "*.{csv}"
+  - - min_counts:
+        type: integer
+        description: Minimum count threshold used in the simulation logic
+
+output:
+  - SeqDepth:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', single_end:false ]`
+      - SeqDepth.pdf:
+          type: file
+          description: PDF plot showing the simulation of variant detection as a function of sequencing depth
+          pattern: "SeqDepth.pdf"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

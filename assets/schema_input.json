@@ -9,25 +9,46 @@
         "properties": {
             "sample": {
                 "type": "string",
-                "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces",
+                "pattern": "^[^\\s/]+$",
+                "errorMessage": "Sample name must be provided, cannot contain spaces, and must not include special characters",
                 "meta": ["id"]
             },
-            "fastq_1": {
+            "file1": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "pattern": "^\\S+\\.(bam|fastq|fq|fastq\\.gz|fq\\.gz)$",
+                "allOf": [
+                    {
+                        "if": {
+                            "pattern": "^\\S+\\.bam$"
+                        },
+                        "then": {
+                            "pattern": "^\\S+_(pe|se)\\.bam$",
+                            "errorMessage": "If file1 ends with .bam, it must contain '_pe.bam' or '_se.bam', defining paired-end or single-end"
+                        }
+                    }
+                ],
+                "errorMessage": "File 1 must be provided, cannot contain spaces, and must have an allowed extension (.bam, .fastq, .fq, .fastq.gz, .fq.gz)"
             },
-            "fastq_2": {
-                "type": "string",
+            "file2": {
+                "type": ["string", "null"],
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "pattern": "^\\S+\\.(fastq|fq|fastq\\.gz|fq\\.gz)$",
+                "errorMessage": "File 2 must have an allowed extension (.fastq, .fq, .fastq.gz, .fq.gz) or be null for single-end reads"
+            },
+            "type": {
+                "type": "string",
+                "enum": ["input", "output", "quality", "wildtype"],
+                "errorMessage": "Type must be one of: input, output, quality, or wildtype"
+            },
+            "replicate": {
+                "type": "integer",
+                "minimum": 1,
+                "errorMessage": "Replicate must be a positive integer"
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": ["sample", "file1", "type", "replicate"]
     }
 }

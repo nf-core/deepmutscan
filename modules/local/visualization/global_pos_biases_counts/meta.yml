@@ -1,0 +1,61 @@
+name: "visualization_global_pos_biases_counts"
+description: Calculates and visualizes the rolling mean of variant counts and counts normalized by coverage across the reference sequence to identify regional biases or mutation hotspots.
+keywords:
+  - deep mutational scanning
+  - dms
+  - visualization
+  - rolling mean
+  - sliding window
+  - bias
+tools:
+  - "mutscan":
+      description: "R package for analysis of deep mutational scanning data"
+      homepage: "https://bioconductor.org/packages/release/bioc/html/mutscan.html"
+      documentation: "https://bioconductor.org/packages/release/bioc/manuals/mutscan/man/mutscan.pdf"
+      tool_dev_url: "https://github.com/csoneson/mutscan"
+      doi: "10.1186/s12859-023-05187-y"
+      licence: ["GPL-3.0-or-later"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - variantCounts_filtered_by_library:
+        type: file
+        description: CSV file containing variant counts filtered against the target library
+        pattern: "*.{csv}"
+  - - aa_seq:
+        type: file
+        description: Text or FASTA file containing the reference amino acid sequence
+  - - sliding_window_size:
+        type: integer
+        description: The size of the window (number of amino acids) used for calculating the rolling mean
+
+output:
+  - rolling_counts:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - rolling_counts.pdf:
+          type: file
+          description: PDF plot showing the rolling mean of raw variant counts across positions
+          pattern: "rolling_counts.pdf"
+  - rolling_counts_per_cov:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - rolling_counts_per_cov.pdf:
+          type: file
+          description: PDF plot showing the rolling mean of counts normalized by local coverage
+          pattern: "rolling_counts_per_cov.pdf"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

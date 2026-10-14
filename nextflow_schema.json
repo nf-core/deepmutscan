@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/nf-core/deepmutscan/master/nextflow_schema.json",
     "title": "nf-core/deepmutscan pipeline parameters",
-    "description": "Until now, most Deep Mutational Scanning (DMS) experiments relied on variant-specific barcoded libraries for sequencing. This method enabled DMS on large proteins and led to many great publications. Recently, efforts have increased to make use of the classic and more simple random fragmentation-based short-read sequencing (“shotgun-sequencing”). This saves time and money and due to its simpler experimental design is less prone to mistakes. dmscore handles the essential computational steps, processing the raw FASTQ files and generating a count table of variants. Along the way, it provides multiple QC metrics, enabling users to quickly evaluate the success of their experimental setup.",
+    "description": "Processing and analysis of deep mutational scanning (DMS) data from shotgun and amplicon sequencing: read alignment, variant counting, sequencing-error correction, library QC and fitness estimation",
     "type": "object",
     "$defs": {
         "input_output_options": {
@@ -10,7 +10,7 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": ["input", "outdir", "fasta", "reading_frame"],
             "properties": {
                 "input": {
                     "type": "string",
@@ -20,7 +20,7 @@
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
-                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/deepmutscan/usage#samplesheet-input).",
+                    "help_text": "You will need to create a samplesheet with information about the sequencing libraries in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 5 columns (`sample`, `type`, `replicate`, `file1`, `file2`) and a header row. See [usage docs](https://nf-co.re/deepmutscan/usage#samplesheet-input).",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
@@ -40,6 +40,93 @@
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
                     "fa_icon": "fas fa-file-signature"
+                },
+                "reading_frame": {
+                    "type": "string",
+                    "description": "Nucleotide coordinates of the mutagenised open reading frame within the reference FASTA, in the format 'start-stop' (1-based, inclusive), e.g. '352-1383'.",
+                    "pattern": "^\\d+-\\d+$"
+                },
+                "min_counts": {
+                    "type": "integer",
+                    "description": "Minimum number of counts for a variant to be retained. Variants observed fewer times are removed from the count tables and shown as dropouts in the count heatmaps.",
+                    "minimum": 1,
+                    "default": 1
+                },
+                "base_qual": {
+                    "type": "integer",
+                    "description": "Minimum base quality (Phred) for a mismatch to be counted as a mutation, and for a base to contribute to sequencing coverage.",
+                    "minimum": 0,
+                    "default": 40
+                },
+                "min_flank": {
+                    "type": "integer",
+                    "description": "Minimum distance (nt) a mutation or covered base must be from a read edge; also excludes those bases from coverage. Set to 0 to disable edge trimming.",
+                    "minimum": 0,
+                    "default": 2
+                },
+                "error_correction": {
+                    "type": "string",
+                    "description": "Sequencing-error correction of variant counts. 'false_doubles' (default) estimates the error rate of every single-nucleotide variant from reads that carry it together with a nearby programmed multi-nucleotide codon variant; 'wildtype' subtracts the background measured by additional deep sequencing of the unmutated template (requires samplesheet rows with type 'wildtype'); 'none' disables correction.",
+                    "enum": ["false_doubles", "none", "wildtype"],
+                    "default": "false_doubles"
+                },
+                "false_doubles_method": {
+                    "type": "string",
+                    "description": "Estimator used by the false-doubles correction. 'mle' (default) is a per-variant maximum-likelihood error rate; 'eb' is an empirical-Bayes estimate that pools across variants and shrinks per substitution class (steadier for sparse variants). Only applies when error_correction = 'false_doubles'.",
+                    "enum": ["mle", "eb"],
+                    "default": "mle"
+                },
+                "false_doubles_codon_window": {
+                    "type": "integer",
+                    "description": "Window (in codons, upstream and downstream) within which programmed multi-nucleotide codon variants are used to estimate the error rate of a single-nucleotide variant during false-doubles correction.",
+                    "minimum": 1,
+                    "default": 40
+                },
+                "pdb": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "chemical/x-pdb",
+                    "description": "Optional wildtype 3D structure (PDB). When supplied together with `--fitness`, an interactive variant effect inspection tool (self-contained HTML) is built that projects fitness, counts and error-correction biases onto the structure.",
+                    "help_text": "Use a crystal structure, an AlphaFold DB model, or any precomputed PDB whose sequence matches the wildtype ORF. Structure prediction (nf-core/proteinfold) is not wired in this release."
+                },
+                "sliding_window_size": {
+                    "type": "integer",
+                    "description": "Sliding-window size (in codons) used to smooth the positional coverage and count profiles in the library QC plots.",
+                    "default": 10
+                },
+                "aimed_cov": {
+                    "type": "integer",
+                    "description": "Targeted number of counts per amino acid variant. Used to draw the sequencing coverage that would be required (assuming an even spread) in the positional coverage plots and the run report.",
+                    "default": 100
+                },
+                "mutagenesis_type": {
+                    "type": "string",
+                    "description": "Codons programmed at each position of the library. Choose from nnk, nns, nnh, nnn, nnk_nns, nnk_nns_nnh or custom. When using 'custom', also provide '--custom_codon_library'.",
+                    "default": "nnk"
+                },
+                "custom_codon_library": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to a .csv file defining a custom codon library. Required when '--mutagenesis_type custom' is set. Provide either one global comma-separated list of codons without header (e.g. 'AAA,AAC,AAG'), or a position-wise list with a header line containing 'Position', followed by one row per codon position with the position and its allowed codons (e.g. '1,ACG,AAA,ACA' and '2,AAA,TTT,ACA' on separate lines).",
+                    "default": "/NULL"
+                },
+                "dimsum": {
+                    "type": ["boolean", "string"],
+                    "description": "Additionally estimate fitness with DiMSum (Faure et al., 2020). Requires '--fitness'."
+                },
+                "mutscan": {
+                    "type": ["boolean", "string"],
+                    "description": "Additionally estimate variant enrichment with mutscan (Soneson et al., 2023), using edgeR and limma. Requires '--fitness'."
+                },
+                "fitness": {
+                    "type": ["boolean", "string"],
+                    "description": "Estimate variant fitness from matched 'input' and 'output' libraries of each sample, using the default log-ratio estimator."
+                },
+                "run_seqdepth": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Estimate sequencing-depth saturation of every library by closed-form hypergeometric rarefaction (on by default)."
                 }
             }
         },
@@ -51,7 +138,7 @@
             "properties": {
                 "genome": {
                     "type": "string",
-                    "description": "Name of iGenomes reference.",
+                    "description": "Name of iGenomes reference. Not used for typical deep mutational scanning runs; provide `--fasta` instead.",
                     "fa_icon": "fas fa-book",
                     "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
                 },
@@ -61,8 +148,8 @@
                     "exists": true,
                     "mimetype": "text/plain",
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
+                    "description": "Path to a FASTA file with the wildtype reference sequence of the mutagenised gene (exactly one sequence).",
+                    "help_text": "The reference may include flanking sequence around the open reading frame (set with `--reading_frame`). A BWA index is built automatically and saved under `intermediate_files/bwa/`.",
                     "fa_icon": "far fa-file-code"
                 },
                 "igenomes_ignore": {
@@ -216,10 +303,6 @@
                     "fa_icon": "far calendar",
                     "description": "Suffix to add to the trace report filename. Default is the date and time in the format yyyy-MM-dd_HH-mm-ss.",
                     "hidden": true
-                },
-                "help": {
-                    "type": ["boolean", "string"],
-                    "description": "Display the help message."
                 },
                 "help_full": {
                     "type": "boolean",

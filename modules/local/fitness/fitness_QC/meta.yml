@@ -1,0 +1,54 @@
+name: "fitness_qc"
+description: Generates quality control visualizations for fitness estimation results, including correlation plots of raw counts and calculated fitness scores to assess experimental reproducibility.
+keywords:
+  - deep mutational scanning
+  - dms
+  - quality control
+  - correlation
+  - fitness
+tools:
+  - "mutscan":
+      description: "R package for analysis of deep mutational scanning data"
+      homepage: "https://bioconductor.org/packages/release/bioc/html/mutscan.html"
+      documentation: "https://bioconductor.org/packages/release/bioc/manuals/mutscan/man/mutscan.pdf"
+      tool_dev_url: "https://github.com/csoneson/mutscan"
+      doi: "10.1186/s12859-023-05187-y"
+      licence: ["GPL-3.0-or-later"]
+
+input:
+  - - sample:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test' ]`
+    - fitness_estimation_tsv:
+        type: file
+        description: TSV file containing calculated fitness estimates and associated statistics
+        pattern: "*.{tsv}"
+
+output:
+  - counts_corr_pdf:
+      - sample:
+          type: map
+          description: Groovy Map containing sample information
+      - fitness_estimation_count_correlation.pdf:
+          type: file
+          description: PDF plot showing the correlation of variant counts between samples/replicates
+          pattern: "fitness_estimation_count_correlation.pdf"
+  - fitness_corr_pdf:
+      - sample:
+          type: map
+          description: Groovy Map containing sample information
+      - fitness_estimation_fitness_correlation.pdf:
+          type: file
+          description: PDF plot showing the correlation of fitness scores between samples/replicates
+          pattern: "fitness_estimation_fitness_correlation.pdf"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

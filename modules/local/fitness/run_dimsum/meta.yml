@@ -1,0 +1,49 @@
+name: "run_dimsum"
+description: Runs DiMSum to estimate fitness and functionality scores from Deep Mutational Scanning (DMS) count data.
+keywords:
+  - deep mutational scanning
+  - dms
+  - fitness
+  - dimsum
+tools:
+  - "dimsum":
+      description: "An error-model-enriched pipeline for analyzing deep mutational scanning data"
+      homepage: "https://github.com/lehner-lab/DiMSum"
+      documentation: "https://github.com/lehner-lab/DiMSum/blob/master/README.md"
+      doi: "10.1186/s12859-020-03709-3"
+      licence: ["GPL-3.0-or-later"]
+
+input:
+  - - sample:
+        type: map
+        description: |
+          Groovy Map containing sample information.
+          Matches the structure used in the pipeline (e.g., [ id:'test' ])
+    - counts_merged:
+        type: file
+        description: A TSV file containing variant counts merged across samples
+        pattern: "*.{tsv,csv}"
+  - - wt_txt:
+        type: file
+        description: A text file containing the wild-type DNA/amino acid sequence string
+        pattern: "*.{txt}"
+  - - exp_design:
+        type: file
+        description: DiMSum-specific experimental design file describing replicates and conditions
+        pattern: "*.{txt,csv}"
+
+output:
+  - results_dir:
+      - dimsum_results**:
+          type: directory
+          description: Directory containing the full suite of DiMSum output files, including fitness estimates and plots
+          pattern: "dimsum_results*"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

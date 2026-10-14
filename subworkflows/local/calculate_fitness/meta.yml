@@ -1,0 +1,42 @@
+name: "calculate_fitness"
+description: Consolidates variant counts and calculates fitness scores.
+keywords:
+  - "deep mutational scanning"
+  - "fitness estimation"
+  - "dms"
+  - "enrichment scores"
+components:
+  - "merge/counts"
+  - "fitness/calculation"
+  - "fitness/heatmap"
+  - "fitness/qc"
+  - "run/dimsum"
+  - "run/mutscan"
+  - "expdesign/fitness"
+  - "find/synonymous/mutation"
+input:
+  - ch_fitness_input:
+      type: channel
+      description: Variant count channels
+  - ch_samplesheet_csv:
+      type: channel
+      description: Pipeline samplesheet
+  - ch_fasta:
+      type: channel
+      description: Reference sequence channel
+  - val_reading_frame:
+      type: value
+      description: Reading frame parameter
+  - ch_aa_seq:
+      type: channel
+      description: Amino acid sequence channel
+output:
+  - fitness_estimation:
+      type: channel
+      description: Output fitness metrics
+  - versions:
+      type: channel
+      description: Software versions
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

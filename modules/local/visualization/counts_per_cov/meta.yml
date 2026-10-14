@@ -1,0 +1,49 @@
+name: "visualization_counts_per_cov"
+description: "Generates a heatmap visualizing the distribution of variant counts per coverage depth in Deep Mutational Scanning data."
+keywords:
+  - deep mutational scanning
+  - dms
+  - visualization
+  - heatmap
+  - coverage
+tools:
+  - "r-base":
+      description: "R is a free software environment for statistical computing and graphics"
+      homepage: "https://www.r-project.org/"
+      documentation: "https://cran.r-project.org/manuals.html"
+      licence: ["GPL-2.0-or-later"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - variantCounts_for_heatmaps:
+        type: file
+        description: CSV file containing processed variant counts formatted for heatmap generation
+        pattern: "*.{csv}"
+  - - min_counts:
+        type: integer
+        description: Minimum count threshold used to filter variants for visualization
+
+output:
+  - counts_per_cov_heatmap:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', single_end:false ]`
+      - counts_per_cov_heatmap.pdf:
+          type: file
+          description: PDF heatmap showing variant counts distributed across coverage depths
+          pattern: "counts_per_cov_heatmap.pdf"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

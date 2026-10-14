@@ -1,0 +1,60 @@
+name: "visualization_summary_report"
+description: Build the single self-contained all-in-one HTML report for a run (QC to fitness)
+keywords:
+  - report
+  - html
+  - quality control
+  - deep mutational scanning
+tools:
+  - "pandas":
+      description: "Powerful data structures for data analysis, time series, and statistics"
+      homepage: "https://pandas.pydata.org/"
+      licence: ["BSD-3-Clause"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', sample:'ORF1' ]`
+    - run_b64:
+        type: string
+        description: Base64-encoded JSON with run-level metadata (parameters, samples, versions).
+  - - manifest_b64:
+        type: string
+        description: |
+          Base64-encoded JSON array describing every staged asset as `{kind, group, name}`,
+          in the same order as `assets`. Base64 keeps the JSON free of quoting problems when it is
+          interpolated into the template.
+  - - assets:
+        type: file
+        description: |
+          Every artefact embedded in the report (plot PDFs, count tables, the fitness table and the
+          detail HTML reports). Staged into numbered directories because basenames repeat across
+          samples.
+  - - template_html:
+        type: file
+        description: The report's HTML shell; data, plots and assets are injected into it.
+        pattern: "*.html"
+
+output:
+  - report:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', sample:'ORF1' ]`
+      - "deepmutscan_report.html":
+          type: file
+          description: Self-contained all-in-one report; no sidecar files are needed to view or share it.
+          pattern: "deepmutscan_report.html"
+  - versions:
+      - "versions.yml":
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+maintainers:
+  - "@BenjaminWehnert1008"

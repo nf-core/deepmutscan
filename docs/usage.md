@@ -6,61 +6,67 @@
 
 ## Introduction
 
-<!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
+**nf-core/deepmutscan** is a workflow for the analysis of deep mutational scanning (DMS) data. It takes short-read next-generation DNA sequencing data of a site-saturation mutagenesis library – typically before (`input`) and after (`output`) a variant selection experiment – and turns them into quality-controlled, error-corrected variant frequencies and, optionally, relative variant fitness estimates.
+
+The pipeline was mainly designed for shotgun sequencing of long open reading frames (ORFs), where the mutated gene is randomly fragmented before sequencing and where resulting variant count signals are sparse, but it processes amplicon (tile) sequencing data in the same way.
+
+This page explains how to prepare the inputs, how to run the pipeline, and what each processing step does and why. It is intended both for new DMS users and for developers who want to understand the exact design choices.
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the sequencing libraries you would like to analyse before running the pipeline. Use the `--input` parameter to specify its location. It has to be a comma-separated file with 5 columns and a header row, as shown in the example below.
 
 ```bash
 --input '[path to samplesheet file]'
 ```
 
-### Multiple runs of the same sample
-
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
-
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
+sample,type,replicate,file1,file2
+ORF1,input,1,/reads/input1_R1.fastq.gz,/reads/input1_R2.fastq.gz
+ORF1,input,2,/reads/input2_R1.fastq.gz,/reads/input2_R2.fastq.gz
+ORF1,output,1,/reads/output1_R1.fastq.gz,/reads/output1_R2.fastq.gz
+ORF1,output,2,/reads/output2_R1.fastq.gz,/reads/output2_R2.fastq.gz
 ```
 
-### Full samplesheet
+| Column      | Description                                                                                                                                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sample`    | Name of the biological sample or experiment (e.g. the gene or condition). Must not contain spaces or `/`. Rows with the same `sample` are grouped for fitness estimation and for `wildtype` error correction. |
+| `type`      | Role of the library: `input` (before selection), `output` (after selection) or `wildtype` (deep sequencing of the unmutated template, used by `--error_correction wildtype`).                                 |
+| `replicate` | Replicate number (positive integer). For fitness estimation, `input` and `output` libraries are paired in order of their replicate numbers, so please number replicates consecutively (1, 2, 3, …).           |
+| `file1`     | Full path to the FASTQ file for read 1, with extension `.fastq.gz`, `.fq.gz`, `.fastq` or `.fq`.                                                                                                              |
+| `file2`     | Full path to the FASTQ file for read 2, with extension `.fastq.gz`, `.fq.gz`, `.fastq` or `.fq`.                                                                                                              |
 
-The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
+Each library gets an internal identifier `<sample>_<type>_<replicate>_pe`, which is used to name its output files and folders.
 
-A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
+## Reference and reading frame
 
-```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
-```
+As of v1.0.0, all libraries in one run of `nf-core/deepmutscan` must stem from the same gene. Provide its wildtype sequence as a FASTA file via `--fasta`. We recommend that the reference contains N- and C-terminal flanking sequences of approximately one read length (e.g. from surrounding vector regions amplified during the sequencing library preparation), which helps to align reads more uniformly at the ends of the ORF.
 
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+Use `--reading_frame` to give the position of the mutagenised ORF within that sequence, as 1-based, inclusive nucleotide coordinates in the format `start-stop`: `start` is the first nucleotide of the first codon and `stop` the last nucleotide of the last codon to be analysed, so the length of the range must be divisible by three. For example, `--reading_frame 151-450` analyses exactly 100 codons of the reference FASTA.
 
-An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+Use `--mutagenesis_type` to define which codons were programmed at each position (default `nnk`). This determines which observed variants count as library variants for filtering, QC and fitness estimation:
+
+- `nnk`, `nns`, `nnh`, `nnn`: degenerate codons, as used e.g. in nicking mutagenesis
+- `nnk_nns`, `nnk_nns_nnh`: position-dependent degenerate codons, chosen by the third base of the wildtype codon: NNS where it is T, NNH where it is G (`nnk_nns_nnh` only), and NNK otherwise
+- `custom`: a user-defined codon library, provided with `--custom_codon_library` as a `.csv` file. Either give one global comma-separated list of codons without a header (e.g. `AAA,AAC,AAG`), or a position-wise list: a header line containing the word `Position`, followed by one row per codon position with the position and its allowed codons (e.g. `1,ACG,AAA,ACA`).
+
+> [!IMPORTANT]
+> Shotgun sequencing cannot distinguish reads from unmutated plasmids from wildtype-matching fragments of mutated plasmids, so exact wildtype reads are not used as the fitness reference. Instead, the pipeline uses a synonymous variant as a wildtype proxy. We therefore highly recommend that your library design choice includes at least some synonymous wildtype amino acid codons – degenerate NNK/NNS codons do so at almost every position.
 
 ## Running the pipeline
 
-The typical command for running the pipeline is as follows:
+The typical command for running the pipeline (here on a hypothetical gene of exactly 100 codons) is as follows:
 
-```bash
-nextflow run nf-core/deepmutscan --input ./samplesheet.csv --outdir ./results --genome GRCh37 -profile docker
+```bash title="example_run.sh"
+nextflow run nf-core/deepmutscan \
+   -profile <docker/singularity/.../institute> \
+   --input ./samplesheet.csv \
+   --fasta ./ref.fa \
+   --reading_frame 151-450 \
+   --outdir ./results
 ```
 
-This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
+This will launch the pipeline with the `docker` configuration profile (or the profile of your choice, see [below](#-profile)). It performs the default read QC, alignment, filtering, merging, variant counting, sequencing-error correction and library QC for every library in the samplesheet. Add `--fitness` to also estimate variant fitness from matched input and output libraries, and `--dimsum` and/or `--mutscan` for the additional fitness estimators.
 
 Note that the pipeline will create the following files in your working directory:
 
@@ -76,7 +82,7 @@ If you wish to repeatedly use the same parameters for multiple runs, rather than
 Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <file>`.
 
 > [!WARNING]
-> Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/running/run-pipelines#configuring-pipelines), other infrastructural tweaks (such as output directories), or module arguments (args).
+> Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), other infrastructural tweaks (such as output directories), or module arguments (args).
 
 The above pipeline run specified with a params file in yaml format:
 
@@ -89,32 +95,109 @@ with:
 ```yaml title="params.yaml"
 input: './samplesheet.csv'
 outdir: './results/'
-genome: 'GRCh37'
+fasta: './ref.fa'
+reading_frame: '151-450'
+fitness: true
 <...>
 ```
 
 You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
 
-### Updating the pipeline
+## Pipeline steps in detail
 
-When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
+### 1. Alignment
+
+All paired-end raw reads are first quality-checked with [**FastQC**](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) and then aligned to the reference with [**BWA-MEM**](https://github.com/lh3/bwa). BWA-MEM is a highly efficient mapping algorithm for reads ≥ 70 bp.
+
+### 2. Filtering
+
+Alignments are filtered with [**samtools view**](https://www.htslib.org/doc/samtools-view.html): only mapped, non-secondary alignments with a mapping quality ≥ 30 and without insertions, deletions or splice gaps are kept before read merging, as indel-containing reads are most likely artefacts in substitution libraries.
+
+For long ORF site-saturation mutagenesis libraries, most aligned shotgun sequencing reads match the reference exactly. These wildtype reads are retained: they are ignored by the variant counter but contribute to the overall sequencing coverage and sequencing-error estimation.
+
+### 3. Read merging
+
+Even the highest-quality sequencing platforms do not have perfect base accuracy. To minimise the effect of base errors, which would otherwise be counted as false mutations, `nf-core/deepmutscan` uses the overlap of each read pair. As base errors on the forward and reverse read are largely independent, [**vsearch --fastq_mergepairs**](https://github.com/torognes/vsearch) converts each read pair into a single consensus read with adjusted base qualities. Read pairs that cannot be merged (overlap shorter than 10 bp), and reads whose mate was removed during filtering, are discarded. Merged reads are then re-aligned with BWA-MEM, coordinate-sorted and indexed with samtools.
+
+> [!TIP]
+> The merging benefit is largest if the average DNA fragment size matches the read length. For example, libraries sequenced with 150 bp paired-end reads should ideally also be sheared or tagmented to a mean size of about 150 bp.
+
+### 4. Variant counting
+
+Merged reads are screened for base-level mismatches against the reference. `nf-core/deepmutscan` uses a light-weight Python counter (built on [**pysam**](https://pysam.readthedocs.io) and [**polars**](https://pola.rs)) that counts all single, double, triple and higher-order nucleotide changes per read, together with the sequencing coverage of every position. This replaces the GATK `AnalyzeSaturationMutagenesis` tool used in earlier versions; a description of every column is written next to each count table (`variant_counts_columns.tsv`).
+
+Two parameters tune the counter:
+
+- `--base_qual` (default `40`): minimum Phred base quality for a mismatch to be counted, and for a base to contribute to coverage.
+- `--min_flank` (default `2`): minimum distance (in nucleotides) of a mismatch or covered base from the read end. Set to `0` to disable.
+
+### 5. Library annotation and filtering
+
+Variant counts are annotated with their codon and amino acid changes within `--reading_frame`, and filtered for the variants that were programmed by the chosen `--mutagenesis_type`. In addition, a library-completed table lists every programmed variant, including those that were not observed (with a near-zero placeholder count), for the count distribution plots.
+
+### 6. Single-nucleotide variant error correction
+
+Sequencing errors occur at typically low, but position- and substitution-specific rates. With very deep sequencing, they inflate the counts of variants that differ from the wildtype by only a single nucleotide. Variants with two or three nucleotide changes in one codon, however, are hardly affected. Select a correction strategy with `--error_correction`:
+
+- `false_doubles` (**default**): the library only contains single-codon changes, so reads carrying a programmed multi-nucleotide codon variant plus an unprogrammed single-nucleotide change in a nearby codon ("false double mutants") reveal the sequencing error rate of that single-nucleotide change. The error rate is estimated for every single-nucleotide variant from these read-linked observations within `--false_doubles_codon_window` codons (default `40`), and the expected number of erroneous counts is subtracted. No extra data are required. If a library contains too few false double mutants to model their coverage along the read (e.g. very small or shallow libraries), no correction is applied and a warning is written to the log. Two estimators are available via `--false_doubles_method`:
+  - `mle` (**default**): a per-variant maximum-likelihood error rate.
+  - `eb`: an empirical-Bayes estimate that shrinks the per-variant rate towards the mean of its substitution class. It is steadier for sparsely observed variants, e.g. in shallowly sequenced libraries.
+- `wildtype`: subtracts the variant-specific background measured by **additional deep sequencing of the unmutated template** from every library variant. Add these libraries to the samplesheet with `type` set to `wildtype` and the same `sample` name as the libraries they should correct. The pipeline stops with an error if a `sample` has no `wildtype` library. In this mode, the `wildtype` libraries themselves are not included in the library QC and fitness outputs.
+- `none`: no correction; counts are used as observed.
+
+Corrected counts are used for every count-dependent step downstream (count heatmaps, positional QC and fitness). The uncorrected tables are kept next to the corrected ones, and an interactive HTML report shows the effect of the correction across all libraries of the run.
+
+### 7. DMS library quality control
+
+Based on the library-filtered (and error-corrected) counts, `nf-core/deepmutscan` produces per-library visualisations to assess mutation efficiency, coverage and saturation along the ORF:
+
+- heatmaps of variant counts and counts per coverage, per position and amino acid
+- sorted, log-scale distributions of counts per coverage of all programmed variants, also stratified by the number of changed nucleotides, summarised by the log10 ratio of their 90th and 10th percentiles
+- sliding-window profiles of coverage and counts along the ORF (window size set by `--sliding_window_size`, default `10` codons), with a reference line for the coverage needed to observe every amino acid variant `--aimed_cov` times (default `100`)
+- a sequencing-depth rarefaction curve that estimates the fraction of programmed variants recovered at lower sequencing depths (`--run_seqdepth`, on by default)
+
+### 8. Fitness estimation (optional)
+
+With `--fitness`, libraries of each `sample` are grouped into a merged count table of all `input` and `output` replicates. Fitness is then estimated per replicate as the natural logarithm of each variant's output-to-input count ratio, relative to that of a synonymous wildtype proxy variant. As the proxy, the pipeline picks the synonymous variant with two nucleotide changes in one codon (or, if there is none, one nucleotide change) with the highest mean input count. Non-synonymous variants encoding the same amino acid sequence are aggregated. Per-replicate fitness values are linearly rescaled so that the median of synonymous variants is `0` and the median of stop codon variants is `-1` (if one of these anchors is missing, fitness values are only centred), and summarised as the mean and, with more than one replicate, the standard deviation across replicates.
+
+Two parameters control which variants are scored and how dropouts are treated:
+
+- `--min_counts` (default `10`): minimum number of reads a variant needs in every `input` replicate to receive a fitness estimate. Variants with fewer input reads are poorly measured and are excluded.
+- `--output_pseudocount` (default `1`): pseudocount added to `output` replicates in which a variant observed in the input was not detected ("dropouts"), so that strongly depleted variants still receive a finite fitness value. Set it to `0` to disable; dropout variants then receive no fitness estimate in that replicate.
+
+Two established statistical frameworks can be run on the same merged counts:
+
+- `--dimsum`: [DiMSum](https://github.com/lehner-lab/DiMSum) fitness estimates (stages 4–5 of DiMSum, without its own read processing). `--min_counts` and `--output_pseudocount` are passed on to DiMSum (`--fitnessMinInputCountAll`, `--fitnessDropoutPseudocount`).
+- `--mutscan`: [mutscan](https://github.com/fmicompbio/mutscan) enrichment estimates with edgeR and limma. Variants below `--min_counts` are removed before the analysis.
+
+### Interactive variant effect inspection tool (`--pdb`)
+
+When `--fitness` is set and a wildtype 3D structure is supplied via `--pdb <structure.pdb>` (an experimental structure, an AlphaFold DB model, or any PDB file matching the wildtype ORF), the pipeline additionally builds a portable, interactive HTML tool. It projects per-residue fitness, coverage, counts, counts per coverage and – when error correction is on – the positional error bias onto the structure; clicking a residue shows the effect of each substitution. Structure prediction is not part of the v1.0.0 release, so a user-specified structure file is required to enable the tool.
+
+### 9. Reporting
+
+`nf-core/deepmutscan` writes a single, self-contained `deepmutscan_report.html` to the top of the results directory. It embeds the library QC plots, the error-correction report, the fitness results (and DiMSum/mutscan output, if run), the [MultiQC](https://multiqc.info) report, run statistics and the citations of all tools that were used, so it can be shared as a single file.
+
+## Updating the pipeline
+
+When you run the original command above, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use this cached version if available - even if the pipeline has been updated since. To make sure that you are running the latest version of the pipeline, make sure that you regularly update the cached version:
 
 ```bash
 nextflow pull nf-core/deepmutscan
 ```
 
-### Reproducibility
+## Reproducibility
 
-It is a good idea to specify the pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
+It is a good idea to specify the pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used consistently. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
-First, go to the [nf-core/deepmutscan releases page](https://github.com/nf-core/deepmutscan/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
+First, go to the [nf-core/deepmutscan releases page](https://github.com/nf-core/deepmutscan/releases) and find the latest pipeline version - numeric only (eg. `1.0.0`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.0.0`.
 
-This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future. For example, at the bottom of the MultiQC reports.
+This version number will also be logged in reports when you run the pipeline, for example at the bottom of the MultiQC reports.
 
-To further assist in reproducibility, you can use share and reuse [parameter files](#running-the-pipeline) to repeat pipeline runs with the same settings without having to write out a command with every single parameter.
+To further assist in reproducibility, you can share and reuse [parameter files](#running-the-pipeline) to repeat pipeline runs with the same settings without having to write out a command with every single parameter.
 
 > [!TIP]
-> If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
+> If you wish to share such a profile (e.g. providing it as supplementary material for academic publications), make sure to _not_ include your cluster specific file paths or institutional specific profiles.
 
 ## Core Nextflow arguments
 
@@ -135,7 +218,7 @@ The pipeline also dynamically loads configurations from [https://github.com/nf-c
 Note that multiple profiles can be loaded, for example: `-profile test,docker` - the order of arguments is important!
 They are loaded in sequence, so later profiles can overwrite earlier profiles.
 
-If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it can lead to different results on different machines dependent on the computer environment.
+If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it may lead to varying or even irreproducible results across users' different computer environments.
 
 - `test`
   - A profile with a complete configuration for automated testing
@@ -149,7 +232,7 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
 - `shifter`
   - A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
 - `charliecloud`
-  - A generic configuration profile to be used with [Charliecloud](https://charliecloud.io/)
+  - A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
 - `apptainer`
   - A generic configuration profile to be used with [Apptainer](https://apptainer.org/)
 - `wave`
@@ -159,7 +242,7 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
 
 ### `-resume`
 
-Specify this when restarting a pipeline. Nextflow will use cached results from any pipeline steps where the inputs are the same, continuing from where it got to previously. For input to be considered the same, not only the names must be identical but the files' contents as well. For more info about this parameter, see [this blog post](https://www.nextflow.io/blog/2019/demystifying-nextflow-resume.html).
+Specify this when restarting a pipeline. Nextflow will use cached results (from within the `/work` directory) from any pipeline steps where the inputs are the same, continuing from where it got to previously. For input to be considered the same, not only the names must be identical but the files' contents as well. For more info about this parameter, see [this blog post](https://www.nextflow.io/blog/2019/demystifying-nextflow-resume.html).
 
 You can also supply a run name to resume a specific run: `-resume [run-name]`. Use the `nextflow log` command to show previous run names.
 
