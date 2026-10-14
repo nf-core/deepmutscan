@@ -18,15 +18,6 @@
 include { DEEPMUTSCAN  } from './workflows/deepmutscan'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_deepmutscan_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_deepmutscan_pipeline'
-include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_deepmutscan_pipeline'
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    GENOME PARAMETER VALUES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-params.fasta = getGenomeAttribute('fasta')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -103,25 +103,28 @@
                 "mutagenesis_type": {
                     "type": "string",
                     "description": "Codons programmed at each position of the library. Choose from nnk, nns, nnh, nnn, nnk_nns, nnk_nns_nnh or custom. When using 'custom', also provide '--custom_codon_library'.",
-                    "default": "nnk"
+                    "default": "nnk",
+                    "enum": ["nnk", "nns", "nnh", "nnn", "nnk_nns", "nnk_nns_nnh", "custom"]
                 },
                 "custom_codon_library": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "Path to a .csv file defining a custom codon library. Required when '--mutagenesis_type custom' is set. Provide either one global comma-separated list of codons without header (e.g. 'AAA,AAC,AAG'), or a position-wise list with a header line containing 'Position', followed by one row per codon position with the position and its allowed codons (e.g. '1,ACG,AAA,ACA' and '2,AAA,TTT,ACA' on separate lines).",
-                    "default": "/NULL"
+                    "description": "Path to a .csv file defining a custom codon library. Required when '--mutagenesis_type custom' is set. Provide either one global comma-separated list of codons without header (e.g. 'AAA,AAC,AAG'), or a position-wise list with a header line containing 'Position', followed by one row per codon position with the position and its allowed codons (e.g. '1,ACG,AAA,ACA' and '2,AAA,TTT,ACA' on separate lines)."
                 },
                 "dimsum": {
-                    "type": ["boolean", "string"],
-                    "description": "Additionally estimate fitness with DiMSum (Faure et al., 2020). Requires '--fitness'."
+                    "type": "boolean",
+                    "description": "Additionally estimate fitness with DiMSum (Faure et al., 2020). Requires '--fitness'.",
+                    "default": false
                 },
                 "mutscan": {
-                    "type": ["boolean", "string"],
-                    "description": "Additionally estimate variant enrichment with mutscan (Soneson et al., 2023), using edgeR and limma. Requires '--fitness'."
+                    "type": "boolean",
+                    "description": "Additionally estimate variant enrichment with mutscan (Soneson et al., 2023), using edgeR and limma. Requires '--fitness'.",
+                    "default": false
                 },
                 "fitness": {
-                    "type": ["boolean", "string"],
-                    "description": "Estimate variant fitness from matched 'input' and 'output' libraries of each sample, using the default log-ratio estimator."
+                    "type": "boolean",
+                    "description": "Estimate variant fitness from matched 'input' and 'output' libraries of each sample, using the default log-ratio estimator.",
+                    "default": false
                 },
                 "run_seqdepth": {
                     "type": "boolean",
@@ -136,12 +139,6 @@
             "fa_icon": "fas fa-dna",
             "description": "Reference genome related files and options required for the workflow.",
             "properties": {
-                "genome": {
-                    "type": "string",
-                    "description": "Name of iGenomes reference. Not used for typical deep mutational scanning runs; provide `--fasta` instead.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
-                },
                 "fasta": {
                     "type": "string",
                     "format": "file-path",
@@ -151,20 +148,6 @@
                     "description": "Path to a FASTA file with the wildtype reference sequence of the mutagenised gene (exactly one sequence).",
                     "help_text": "The reference may include flanking sequence around the open reading frame (set with `--reading_frame`). A BWA index is built automatically and saved under `intermediate_files/bwa/`.",
                     "fa_icon": "far fa-file-code"
-                },
-                "igenomes_ignore": {
-                    "type": "boolean",
-                    "description": "Do not load the iGenomes reference config.",
-                    "fa_icon": "fas fa-ban",
-                    "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
-                },
-                "igenomes_base": {
-                    "type": "string",
-                    "description": "The base path to the igenomes reference files",
-                    "fa_icon": "fas fa-ban",
-                    "hidden": true,
-                    "default": "s3://ngi-igenomes/igenomes/"
                 }
             }
         },
