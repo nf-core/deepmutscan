@@ -10,6 +10,7 @@
 
 include { UTILS_NFSCHEMA_PLUGIN     } from '../../nf-core/utils_nfschema_plugin'
 include { paramsSummaryMap          } from 'plugin/nf-schema'
+include { samplesheetToList        } from 'plugin/nf-schema'
 include { completionEmail           } from '../../nf-core/utils_nfcore_pipeline'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
@@ -75,16 +76,16 @@ workflow PIPELINE_INITIALISATION {
     command = "nextflow run ${workflow.manifest.name} -profile <docker/singularity/.../institute> --input samplesheet.csv --outdir <OUTDIR>"
 
     UTILS_NFSCHEMA_PLUGIN (
-        workflow,
-        validate_params,
-        params.help,
-        params.help_full,
-        params.show_hidden,
-        null,
-        before_text,
-        after_text,
-        command,
-        false
+        workflow,                                 // input_workflow
+        validate_params,                          // validate_params
+        "${projectDir}/nextflow_schema.json",     // parameters_schema
+        params.help,                              // help
+        params.help_full,                         // help_full
+        params.show_hidden,                       // show_hidden
+        before_text,                              // before_text
+        after_text,                               // after_text
+        command,                                  // command
+        true                                      // cli_typecast: cast CLI strings for validation
     )
 
     //
@@ -102,39 +103,25 @@ workflow PIPELINE_INITIALISATION {
     //
     // Create channel from input file provided through params.input
     //
+    // samplesheetToList validates against assets/schema_input.json and hands back proper
+    // file() objects (so relative paths in the samplesheet work), the meta mapping, and
+    // duplicate detection via the schema's uniqueEntries.
+    //
+    def samplesheet_rows = samplesheetToList(params.input, "${projectDir}/assets/schema_input.json")
 
-    Channel
-    .fromPath(params.input)
-    .splitCsv(header: true)
-    .filter { row ->
-        // Skip rows where file1 or file2 are BAM files
-        !(row.file1.endsWith('.bam') || (row.file2 && row.file2.endsWith('.bam')))
-    }
-    .map { row ->
-        // Determine suffix based on the presence of file2
-        def suffix = row.file2 ? "_pe" : "_se"
+    validateInputSamplesheet(samplesheet_rows)
 
-        // Construct metadata object with updated ID
-        def meta = [
-            id        : "${row.sample}_${row.type}_${row.replicate}${suffix}", // Base ID with suffix
-            sample    : row.sample,
-            type      : row.type,
-            replicate : row.replicate as int
-        ]
-
-        // Generate file paths based on the presence of file1 and file2
-        def reads = []
-        if (row.file1) {
-            reads << row.file1 // Add file1 path
+    def ch_samplesheet = Channel
+        .fromList(samplesheet_rows)
+        .map { meta, file1, file2 ->
+            // Every library is paired-end (the schema requires file2). The _pe suffix is kept
+            // because it is part of every published output name.
+            def row_meta = meta + [
+                id        : "${meta.sample}_${meta.type}_${meta.replicate}_pe".toString(),
+                replicate : meta.replicate as int,
+            ]
+            tuple(row_meta, [file1, file2])
         }
-        if (row.file2) {
-            reads << row.file2 // Add file2 path
-        }
-
-        // Return metadata and file paths as a tuple
-        return [meta, reads]
-    }
-    .set { ch_samplesheet }
 
     // Emit the samplesheet channel and an empty version channel for use in the workflow
     emit:
@@ -193,76 +180,182 @@ workflow PIPELINE_COMPLETION {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 //
+// Params given on the command line arrive as Strings, so `--fitness false` yields the String
+// "false", which is truthy in Groovy - `if (params.fitness)` would switch fitness ON. Values set
+// in a config or a -params-file keep their real type. These two helpers accept either shape.
+// nf-schema's cast_cli_params only casts for validation; it does not change params itself.
+//
+def asBool(value) {
+    if (value == null) {
+        return false
+    }
+    if (value instanceof Boolean) {
+        return value
+    }
+    return !(value.toString().trim().toLowerCase() in ['false', '0', 'no', 'null', ''])
+}
+
+def asInt(value) {
+    if (value == null) {
+        return null
+    }
+    if (value instanceof Number) {
+        return value as int
+    }
+    return value.toString().trim() as int
+}
+
+//
 // Check and validate pipeline parameters
 //
 def validateInputParameters() {
-    genomeExistsError()
+    validateReadingFrame()
+    validateCustomCodonLibrary()
 }
 
 //
-// Validate channels from input samplesheet
+// --reading_frame must describe whole codons and lie inside the reference. A partial last codon
+// otherwise surfaces as a KeyError inside a counter worker process, which is hard to read.
 //
-def validateInputSamplesheet(input) {
-    def (metas, fastqs) = input[1..2]
+def validateReadingFrame() {
+    def matcher = (params.reading_frame as String) =~ /^(\d+)-(\d+)$/
+    if (!matcher.matches()) {
+        error("--reading_frame must be given as '<start>-<end>', 1-based and inclusive (e.g. '352-1383'); got '${params.reading_frame}'.")
+    }
+    def start = matcher[0][1] as int
+    def end   = matcher[0][2] as int
 
-    // Check that multiple runs of the same sample are of the same datatype i.e. single-end / paired-end
-    def endedness_ok = metas.collect{ meta -> meta.single_end }.unique().size == 1
-    if (!endedness_ok) {
-        error("Please check input samplesheet -> Multiple runs of a sample must be of the same datatype i.e. single-end or paired-end: ${metas[0].id}")
+    if (start < 1) {
+        error("--reading_frame start must be >= 1 (1-based, inclusive); got '${params.reading_frame}'.")
+    }
+    if (end < start) {
+        error("--reading_frame end must not be smaller than its start; got '${params.reading_frame}'.")
+    }
+    if ((end - start + 1) % 3 != 0) {
+        error(
+            "--reading_frame '${params.reading_frame}' spans ${end - start + 1} nt, which is not a whole " +
+            "number of codons. Give a range whose length is divisible by 3."
+        )
     }
 
-    return [ metas[0], fastqs ]
-}
-//
-// Get attribute from genome config file e.g. fasta
-//
-def getGenomeAttribute(attribute) {
-    if (params.genomes && params.genome && params.genomes.containsKey(params.genome)) {
-        if (params.genomes[ params.genome ].containsKey(attribute)) {
-            return params.genomes[ params.genome ][ attribute ]
+    // Length check needs the sequence; plain FASTA only, so a gzipped reference simply skips it.
+    if (params.fasta && !(params.fasta as String).endsWith('.gz')) {
+        def ref = file(params.fasta)
+        if (ref.exists()) {
+            def n_seqs = 0
+            def seq_len = 0
+            ref.eachLine { line ->
+                if (line.startsWith('>')) {
+                    n_seqs = n_seqs + 1
+                }
+                else {
+                    seq_len += line.trim().length()
+                }
+            }
+            if (n_seqs > 1) {
+                error("--fasta must contain exactly one sequence (found ${n_seqs}); deepmutscan counts variants against a single ORF.")
+            }
+            if (seq_len > 0 && end > seq_len) {
+                error("--reading_frame '${params.reading_frame}' ends past the end of --fasta (${seq_len} nt).")
+            }
         }
     }
-    return null
 }
 
 //
-// Exit pipeline if incorrect --genome key provided
+// A custom library is the only way to describe a synthesised (non-degenerate) oligo library,
+// so asking for one without supplying it is always a mistake.
 //
-def genomeExistsError() {
-    if (params.genomes && params.genome && !params.genomes.containsKey(params.genome)) {
-        def error_string = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-            "  Genome '${params.genome}' not found in any config files provided to the pipeline.\n" +
-            "  Currently, the available genome keys are:\n" +
-            "  ${params.genomes.keySet().join(", ")}\n" +
-            "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        error(error_string)
+def validateCustomCodonLibrary() {
+    if (params.mutagenesis_type == 'custom' && !params.custom_codon_library) {
+        error("--mutagenesis_type custom requires --custom_codon_library <file>.")
+    }
+    if (params.custom_codon_library && params.mutagenesis_type != 'custom') {
+        log.warn("--custom_codon_library is ignored unless --mutagenesis_type custom is set.")
+    }
+}
+
+//
+// Validate the parsed samplesheet as a whole
+//
+def validateInputSamplesheet(rows) {
+    // One biological sample per run. The DiMSum experimental design, the fitness output names
+    // and the summary report are all run-level, so a second sample silently overwrites the
+    // first rather than producing a second set of results.
+    def samples = rows.collect { row -> row[0].sample }.unique()
+    if (samples.size() > 1) {
+        error(
+            "nf-core/deepmutscan ${workflow.manifest.version} supports one biological sample per run " +
+            "(found: ${samples.join(', ')}).\n" +
+            "  Please split the samplesheet and run the pipeline once per sample."
+        )
+    }
+
+    if (params.error_correction == 'wildtype') {
+        def wt_rows = rows.findAll { row -> row[0].type == 'wildtype' }
+        if (wt_rows.isEmpty()) {
+            error(
+                "[--error_correction wildtype] No 'wildtype' row found in the samplesheet.\n" +
+                "  Add a row with type 'wildtype' (deep sequencing of the unmutated template),\n" +
+                "  or use the internal correction instead (--error_correction false_doubles),\n" +
+                "  or disable error correction with --error_correction none."
+            )
+        }
+        if (wt_rows.size() > 1) {
+            error(
+                "[--error_correction wildtype] Found ${wt_rows.size()} 'wildtype' rows, but the correction " +
+                "pairs each library with exactly one wildtype profile.\n" +
+                "  Please supply a single wildtype library per run."
+            )
+        }
     }
 }
 //
 // Generate methods description for MultiQC
 //
 def toolCitationText() {
-    // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "Tool (Foo et al. 2023)" : "",
-    // Uncomment function in methodsDescriptionText to render in MultiQC report
-    def citation_text = [
-            "Tools used in the workflow included:",
-            "FastQC (Andrews 2010),",
-            "MultiQC (Ewels et al. 2016)",
-            "."
-        ].join(' ').trim()
+    // Only the tools this run actually used, so the methods text matches the command line.
+    def citations = [
+        "Tools used in the workflow included:",
+        "FastQC (Andrews 2010),",
+        "BWA-MEM (Li 2013),",
+        "SAMtools (Danecek et al. 2021),",
+        "VSEARCH (Rognes et al. 2016),",
+        "pysam (Heger et al.),",
+        "Polars (Vink et al.),",
+        "Biopython (Cock et al. 2009),",
+        "Biostrings (Pages et al.),",
+        asBool(params.dimsum) ? "DiMSum (Faure et al. 2020)," : "",
+        asBool(params.mutscan) ? "mutscan (Soneson et al. 2023)," : "",
+        asBool(params.mutscan) ? "edgeR (Robinson et al. 2010)," : "",
+        asBool(params.mutscan) ? "limma (Ritchie et al. 2015)," : "",
+        params.pdb ? "3Dmol.js (Rego and Koes 2015)," : "",
+        "MultiQC (Ewels et al. 2016)",
+        "."
+    ]
 
-    return citation_text
+    return citations.findAll { entry -> entry != "" }.join(' ').trim()
 }
 
 def toolBibliographyText() {
-    // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "<li>Author (2023) Pub name, Journal, DOI</li>" : "",
-    // Uncomment function in methodsDescriptionText to render in MultiQC report
-    def reference_text = [
-            "<li>Andrews S, (2010) FastQC, URL: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/).</li>",
-            "<li>Ewels, P., Magnusson, M., Lundin, S., & Käller, M. (2016). MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics , 32(19), 3047–3048. doi: /10.1093/bioinformatics/btw354</li>"
-        ].join(' ').trim()
+    def references = [
+        "<li>Andrews S, (2010) FastQC, URL: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/.</li>",
+        "<li>Li H. (2013) Aligning sequence reads, clone sequences and assembly contigs with BWA-MEM. arXiv:1303.3997. doi: 10.48550/arXiv.1303.3997</li>",
+        "<li>Danecek P, Bonfield JK, Liddle J, et al. (2021) Twelve years of SAMtools and BCFtools. Gigascience, 10(2), giab008. doi: 10.1093/gigascience/giab008</li>",
+        "<li>Rognes T, Flouri T, Nichols B, Quince C, Mahe F. (2016) VSEARCH: a versatile open source tool for metagenomics. PeerJ, 4, e2584. doi: 10.7717/peerj.2584</li>",
+        "<li>Heger A, Jacobs K, et al. pysam: a Python module for reading, manipulating and writing genomic data sets. URL: https://github.com/pysam-developers/pysam</li>",
+        "<li>Vink R, et al. Polars: a lightning-fast DataFrame library for Rust and Python. URL: https://github.com/pola-rs/polars</li>",
+        "<li>Cock PJ, Antao T, Chang JT, et al. (2009) Biopython: freely available Python tools for computational molecular biology and bioinformatics. Bioinformatics, 25(11), 1422-1423. doi: 10.1093/bioinformatics/btp163</li>",
+        "<li>Pages H, Aboyoun P, Gentleman R, DebRoy S. Biostrings: efficient manipulation of biological strings. R package. doi: 10.18129/B9.bioc.Biostrings</li>",
+        asBool(params.dimsum) ? "<li>Faure AJ, Schmiedel JM, Baeza-Centurion P, Lehner B. (2020) DiMSum: an error model and pipeline for analyzing deep mutational scanning data and diagnosing common experimental pathologies. Genome Biology, 21(1), 207. doi: 10.1186/s13059-020-02091-3</li>" : "",
+        asBool(params.mutscan) ? "<li>Soneson C, Bendel AM, Diss G, Stadler MB. (2023) mutscan - a flexible R package for efficient end-to-end analysis of multiplexed assays of variant effect data. Genome Biology, 24(1), 132. doi: 10.1186/s13059-023-02967-0</li>" : "",
+        asBool(params.mutscan) ? "<li>Robinson MD, McCarthy DJ, Smyth GK. (2010) edgeR: a Bioconductor package for differential expression analysis of digital gene expression data. Bioinformatics, 26(1), 139-140. doi: 10.1093/bioinformatics/btp616</li>" : "",
+        asBool(params.mutscan) ? "<li>Ritchie ME, Phipson B, Wu D, et al. (2015) limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Research, 43(7), e47. doi: 10.1093/nar/gkv007</li>" : "",
+        params.pdb ? "<li>Rego N, Koes D. (2015) 3Dmol.js: molecular visualization with WebGL. Bioinformatics, 31(8), 1322-1324. doi: 10.1093/bioinformatics/btu829</li>" : "",
+        "<li>Ewels, P., Magnusson, M., Lundin, S., & Kaller, M. (2016). MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics, 32(19), 3047-3048. doi: 10.1093/bioinformatics/btw354</li>"
+    ]
 
-    return reference_text
+    return references.findAll { entry -> entry != "" }.join(' ').trim()
 }
 
 def methodsDescriptionText(mqc_methods_yaml) {
