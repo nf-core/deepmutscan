@@ -19,7 +19,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from collections import defaultdict
+from collections import defaultdict, deque
 
 #-- functions --#
 def init_bam(bam_path):
@@ -82,9 +82,14 @@ def get_base_cov_in_chunk(bam_path, chrom, start, end, qual, sub_region_size, th
 
     return merged_dict
 
-def init_worker():
-    global global_dict_base_cov
-    global_dict_base_cov = dict_base_cov
+# Worker state is passed explicitly through initargs rather than inherited from the parent
+# address space. Relying on inheritance only works under the 'fork' start method: with 'spawn'
+# (macOS) or 'forkserver' (the Python >= 3.14 default on Linux) the child re-imports this file
+# with __name__ != "__main__", so names bound in the main block would be undefined.
+def init_worker(base_cov, codons):
+    global global_dict_base_cov, global_codon_dict
+    global_dict_base_cov = base_cov
+    global_codon_dict = codons
 
 def extract_read_info(read):
     read_seq = read.query_sequence
@@ -123,7 +128,7 @@ def parse_md(read):
 
     return variants
 
-def gatk_formating(variants):
+def gatk_formating(variants, orf_start):
     if not variants:
         return 0, 0, "", 0, "", "", ""
 
@@ -160,7 +165,9 @@ def gatk_formating(variants):
 
     for codon_idx in sorted(codon_changes):
         vars_in_codon = codon_changes[codon_idx]
-        ref_codon = str(codon_dict[chrom][codon_idx])
+        # parse_read already resolved the reference codon for every variant it kept, keyed on the
+        # read's own reference name - reuse it instead of a second lookup against a global.
+        ref_codon = str(vars_in_codon[0]['ref_codon'])
         codon_list = list(ref_codon)
 
         for v in vars_in_codon:
@@ -268,7 +275,7 @@ def parse_read(read, orf_start, orf_end, base_qual, min_flank):
                     read_idx = var['read_idx']
                     if read_idx < min_flank or read_idx >= qlen - min_flank:
                         continue
-                codons_tmp = codon_dict[var['ref_name']]
+                codons_tmp = global_codon_dict[var['ref_name']]
                 ref_codon = codons_tmp[var['codon_idx']]
                 variants_filtered.append({ 'var_type':  var['var_type'],
                                            'ref_name':  var['ref_name'],
@@ -280,7 +287,7 @@ def parse_read(read, orf_start, orf_end, base_qual, min_flank):
                                            'codon_idx': var['codon_idx'],
                                            'ref_codon': ref_codon })
 
-    return gatk_formating(variants_filtered)
+    return gatk_formating(variants_filtered, orf_start)
 
 def batch_parse_reads(batch_reads, orf_start, orf_end, base_qual, min_flank):
     cols = {
@@ -315,89 +322,80 @@ def batch_parse_reads(batch_reads, orf_start, orf_end, base_qual, min_flank):
 def function_for_processpool(args_tuple):
     return batch_parse_reads(*args_tuple)
 
-def empty_yield_df():
-    return pl.DataFrame([], schema={
-        "base_cov_avg": pl.Int64,
-        "varying_bases": pl.Int64,
-        "base_mut": pl.Utf8,
-        "varying_codons": pl.Int64,
-        "codon_mut": pl.Utf8,
-        "aa_mut": pl.Utf8,
-        "pos_mut": pl.Utf8,
-        "counts": pl.Int64
-    }, orient = "row")
+def aggregate_batch(table):
+    # Collapse a finished worker batch to one row per distinct variant straight away. Holding one
+    # row per variant-carrying read until the very end made peak memory scale with read depth;
+    # aggregating here bounds it by the number of distinct variants instead.
+    df = pl.from_arrow(table)
+    df = df.filter(pl.col("base_mut") != "")
+    if df.height == 0:
+        return None
+    return ( df.with_columns(pl.lit(1).alias("counts"))
+               .group_by("base_mut")
+               .agg([pl.col("counts").sum().alias("counts"),
+                     pl.all().exclude(["base_mut", "counts"]).first()]) )
 
-def build_yield_df(results):
-    if results:
-        df_yield = pl.from_arrow(pa.concat_tables(results))
-        df_yield = df_yield.filter(pl.col("base_mut") != "")
-        df_yield = df_yield.with_columns(pl.lit(1).alias("counts"))
-        return df_yield
-    return empty_yield_df()
+def fold_counts(acc, new):
+    # Every column other than counts is a function of base_mut, so first() is value-stable here.
+    if acc is None:
+        return new
+    return ( pl.concat([acc, new], how = "vertical")
+               .group_by("base_mut")
+               .agg([pl.col("counts").sum().alias("counts"),
+                     pl.all().exclude(["base_mut", "counts"]).first()]) )
 
-def read_bam_in_chunk(bam_path, orf_start, orf_end, base_qual, min_flank, chunk_size, threads):
+def read_bam_in_chunk(bam_path, orf_start, orf_end, base_qual, min_flank, batch_size, threads, base_cov, codons):
+    # Keep roughly two batches per worker in flight. The previous version submitted one batch,
+    # waited for it, then read the next, so only a single worker was ever busy no matter how many
+    # cpus the task was given.
+    max_inflight = max(2, threads * 2)
+
     with pysam.AlignmentFile(bam_path, "rb", threads = threads) as bam_file, \\
-        ProcessPoolExecutor(max_workers = threads, initializer = init_worker) as executor:
+        ProcessPoolExecutor(max_workers = threads,
+                            initializer = init_worker,
+                            initargs = (base_cov, codons)) as executor:
 
-        batch_size = min(chunk_size, 5000)
+        inflight = deque()
+        batch = []
 
-        read_chunk = []
+        def submit(reads):
+            inflight.append(
+                executor.submit(function_for_processpool,
+                                (reads, orf_start, orf_end, base_qual, min_flank))
+            )
+
+        def drain_one():
+            result = inflight.popleft().result()
+            if result is None:
+                return None
+            return aggregate_batch(result)
+
         for read in bam_file.fetch(until_eof=True):
-            if read.is_unmapped or not read.has_tag('MD'):
+            if read.is_unmapped or read.is_secondary or read.is_supplementary or not read.has_tag('MD'):
                 continue
 
             # perfectly-aligned (wildtype) reads carry no variants
             if re.fullmatch(r'\\d+', read.get_tag('MD')):
                 continue
 
-            read_chunk.append(extract_read_info(read))
+            batch.append(extract_read_info(read))
 
-            if len(read_chunk) >= chunk_size:
-                read_batches = [
-                    read_chunk[i:i + batch_size]
-                    for i in range(0, len(read_chunk), batch_size)
-                ]
+            if len(batch) >= batch_size:
+                submit(batch)
+                batch = []
+                while len(inflight) >= max_inflight:
+                    agg = drain_one()
+                    if agg is not None:
+                        yield agg
 
-                futures = [
-                    executor.submit(function_for_processpool, (batch, orf_start, orf_end, base_qual, min_flank))
-                    for batch in read_batches
-                ]
+        if batch:
+            submit(batch)
+            batch = []
 
-                results = []
-                for f in as_completed(futures):
-                    batch_result = f.result()
-                    if batch_result:
-                        results.append(batch_result)
-
-                df_yield = build_yield_df(results)
-                read_chunk = []
-                del read_batches, futures, results
-                gc.collect()
-
-                yield df_yield
-
-        if read_chunk:
-            read_batches = [
-                read_chunk[i:i + batch_size]
-                for i in range(0, len(read_chunk), batch_size)
-            ]
-
-            futures = [
-                executor.submit(function_for_processpool, (batch, orf_start, orf_end, base_qual, min_flank))
-                for batch in read_batches
-            ]
-
-            results = []
-            for f in as_completed(futures):
-                batch_result = f.result()
-                if batch_result:
-                    results.append(batch_result)
-
-            df_yield = build_yield_df(results)
-            del read_chunk, read_batches, futures, results
-            gc.collect()
-
-            yield df_yield
+        while inflight:
+            agg = drain_one()
+            if agg is not None:
+                yield agg
 
 def write_column_sheet(path):
     rows = [
@@ -425,8 +423,9 @@ class args:
     base_qual  = int("$base_qual")
     min_flank  = int("$min_flank")
     threads    = max(1, int("$task.cpus"))
-    chunk_size = 1000
+    batch_size = 5000
     out_file   = "${meta.id}.variant_counts.tsv"
+    prefilter_file = "${meta.id}.variant_counts_prefilter.tsv"
 
 #-- main execution --#
 if __name__ == "__main__":
@@ -460,29 +459,43 @@ if __name__ == "__main__":
     del ref_dict
     gc.collect()
 
+    # The counter is built for a single gene-sized reference. Picking one sequence implicitly
+    # (whatever the dict iteration happened to leave behind) would silently count against the
+    # wrong contig, so require exactly one.
+    if len(codon_dict) != 1:
+        sys.exit(
+            "ERROR: --fasta must contain exactly one sequence (found "
+            + str(len(codon_dict)) + "). deepmutscan counts variants against a single ORF."
+        )
+    ref_name = next(iter(codon_dict))
+
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Get the base coverage, please wait...", flush = True)
     sub_region_size = max(1, (orf_end - orf_start + 1) // args.threads)
-    dict_base_cov = get_base_cov_in_chunk(args.input_bam, chrom, orf_start, orf_end + 1, args.base_qual, sub_region_size, args.threads, args.min_flank)
+    dict_base_cov = get_base_cov_in_chunk(args.input_bam, ref_name, orf_start, orf_end + 1, args.base_qual, sub_region_size, args.threads, args.min_flank)
+
+    # Nothing aligned inside the reading frame at all. Left alone this writes an empty table and
+    # exits 0, and the run only dies much later in process_variant_counts.R with "no lines
+    # available". Common causes: a --reading_frame outside the reference, or single-end input.
+    if not dict_base_cov or sum(dict_base_cov.values()) == 0:
+        sys.exit(
+            "ERROR: no reads pass the quality filters inside the reading frame "
+            + args.orf_range + " of " + ref_name + " for sample ${meta.id}.\\n"
+            + "  Check that --reading_frame lies inside the reference, that the reads really "
+            + "come from this amplicon, and that --base_qual (currently "
+            + str(args.base_qual) + ") is not above the instrument quality of the data."
+        )
 
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Extracting read information, please wait...", flush = True)
-    list_results = []
-    for i, chunk_result in enumerate(read_bam_in_chunk(args.input_bam, orf_start, orf_end, args.base_qual, args.min_flank, args.chunk_size, args.threads)):
-        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} |--> Processed chunk {i+1}", flush = True)
-        list_results.append(chunk_result)
+    df_variants_counts = None
+    for i, batch_counts in enumerate(read_bam_in_chunk(args.input_bam, orf_start, orf_end, args.base_qual, args.min_flank, args.batch_size, args.threads, dict_base_cov, codon_dict)):
+        df_variants_counts = fold_counts(df_variants_counts, batch_counts)
+        if (i + 1) % 100 == 0:
+            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} |--> Processed batch {i+1}", flush = True)
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} |--> Finished.", flush = True)
+    gc.collect()
 
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Creating the variant matrix, please wait...", flush = True)
-    list_results_filtered = [df for df in list_results if df.height > 0]
-
-    if list_results_filtered:
-        df_variants = pl.concat(list_results_filtered, how = "vertical")
-        df_variants = df_variants.filter(pl.col("base_mut") != "")
-        df_variants_counts = ( df_variants.group_by("base_mut")
-                                          .agg([pl.col("counts").sum().alias("counts"),
-                                                pl.all().exclude(["base_mut", "counts"]).first()]) )
-        del list_results, list_results_filtered, df_variants
-        gc.collect()
-    else:
+    if df_variants_counts is None:
         df_variants_counts = pl.DataFrame([], schema={
             "base_mut": pl.Utf8,
             "counts": pl.Int64,
@@ -494,9 +507,6 @@ if __name__ == "__main__":
             "pos_mut": pl.Utf8
         }, orient = "row")
 
-    # matches GATK --min-variant-obs
-    df_variants_counts = df_variants_counts.filter(pl.col("counts") >= args.min_counts)
-
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Creating the output file, please wait...", flush = True)
     df_variants_counts = df_variants_counts.select([pl.col("counts"),
                                                     pl.col("base_cov_avg").alias("cov"),
@@ -507,7 +517,25 @@ if __name__ == "__main__":
                                                     pl.col("codon_mut"),
                                                     pl.col("aa_mut"),
                                                     pl.col("pos_mut")])
+    # polars group_by does not promise an output order, and with several worker threads the order
+    # genuinely varies between runs. That makes byte-identical reruns impossible (breaking nf-test
+    # snapshots on correct data) and, worse, makes the error correction - which walks this table in
+    # file order - non-reproducible. Sort on the leading reference position, then on the full
+    # variant string, so the file comes out in genomic order every time.
+    df_variants_counts = ( df_variants_counts
+        .with_columns(pl.col("base_mut").str.extract(r"^(\\d+)", 1).cast(pl.Int64).alias("sort_pos"))
+        .sort(["sort_pos", "base_mut"], nulls_last = True)
+        .drop("sort_pos") )
+
+    # The pre-filter table, written before --min_counts is applied. The false-doubles error
+    # correction estimates its error rate from exactly the low-count variants that min_counts
+    # removes (false doubles are typically seen 1-2 times), so feeding it the filtered table
+    # would starve the estimator and silently fall through to its no-op guard.
     # GATK variantCounts has no header line
+    df_variants_counts.write_csv(args.prefilter_file, separator = "\\t", include_header = False)
+
+    # matches GATK --min-variant-obs
+    df_variants_counts = df_variants_counts.filter(pl.col("counts") >= args.min_counts)
     df_variants_counts.write_csv(args.out_file, separator = "\\t", include_header = False)
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Done.", flush = True)
 

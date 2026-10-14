@@ -57,6 +57,14 @@ output:
           type: file
           description: Tab-separated variant count table (no header), GATK-compatible 9 columns.
           pattern: "*.variant_counts.tsv"
+  - variant_counts_prefilter:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.variant_counts_prefilter.tsv":
+          type: file
+          description: Same table before --min_counts is applied, for the sequencing-error correction.
+          pattern: "*.variant_counts_prefilter.tsv"
   - columns:
       - variant_counts_columns.tsv:
           type: file
