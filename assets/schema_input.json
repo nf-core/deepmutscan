@@ -11,44 +11,36 @@
                 "type": "string",
                 "pattern": "^[^\\s/]+$",
                 "errorMessage": "Sample name must be provided, cannot contain spaces, and must not include special characters",
-                "meta": ["id"]
+                "meta": ["sample"]
             },
             "file1": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^\\S+\\.(bam|fastq|fq|fastq\\.gz|fq\\.gz)$",
-                "allOf": [
-                    {
-                        "if": {
-                            "pattern": "^\\S+\\.bam$"
-                        },
-                        "then": {
-                            "pattern": "^\\S+_(pe|se)\\.bam$",
-                            "errorMessage": "If file1 ends with .bam, it must contain '_pe.bam' or '_se.bam', defining paired-end or single-end"
-                        }
-                    }
-                ],
-                "errorMessage": "File 1 must be provided, cannot contain spaces, and must have an allowed extension (.bam, .fastq, .fq, .fastq.gz, .fq.gz)"
+                "pattern": "^\\S+\\.(fastq|fq)(\\.gz)?$",
+                "errorMessage": "file1 must be provided, cannot contain spaces, and must be a FASTQ file (.fastq, .fq, .fastq.gz, .fq.gz)"
             },
             "file2": {
-                "type": ["string", "null"],
+                "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^\\S+\\.(fastq|fq|fastq\\.gz|fq\\.gz)$",
-                "errorMessage": "File 2 must have an allowed extension (.fastq, .fq, .fastq.gz, .fq.gz) or be null for single-end reads"
+                "pattern": "^\\S+\\.(fastq|fq)(\\.gz)?$",
+                "errorMessage": "file2 must be provided and be a FASTQ file (.fastq, .fq, .fastq.gz, .fq.gz). nf-core/deepmutscan requires paired-end reads: the read-pair merging step (vsearch) is what gives the overlapping bases their recalculated quality."
             },
             "type": {
                 "type": "string",
-                "enum": ["input", "output", "quality", "wildtype"],
-                "errorMessage": "Type must be one of: input, output, quality, or wildtype"
+                "enum": ["input", "output", "wildtype"],
+                "errorMessage": "type must be one of: input, output, wildtype",
+                "meta": ["type"]
             },
             "replicate": {
                 "type": "integer",
                 "minimum": 1,
-                "errorMessage": "Replicate must be a positive integer"
+                "errorMessage": "Replicate must be a positive integer",
+                "meta": ["replicate"]
             }
         },
-        "required": ["sample", "file1", "type", "replicate"]
-    }
+        "required": ["sample", "file1", "file2", "type", "replicate"]
+    },
+    "uniqueEntries": ["sample", "type", "replicate"]
 }
