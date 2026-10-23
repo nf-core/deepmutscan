@@ -1,0 +1,47 @@
+name: "visualization_logdiff"
+description: Generates diagnostic plots to visualize the logarithmic differences in variant counts, specifically focusing on the distribution of variants across different nucleotide compositions.
+keywords:
+  - deep mutational scanning
+  - dms
+  - visualization
+  - diagnostics
+  - logdiff
+tools:
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - library_completed_variantCounts:
+        type: file
+        description: CSV file containing processed variant counts, including zero-count entries from the library
+        pattern: "*.{csv}"
+
+output:
+  - logdiff_plot:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - logdiff_plot.pdf:
+          type: file
+          description: PDF plot showing the overall logarithmic differences in variant counts
+          pattern: "logdiff_plot.pdf"
+  - logdiff_varying_bases:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - logdiff_varying_bases.pdf:
+          type: file
+          description: PDF plot showing logarithmic differences categorized by varying nucleotide bases
+          pattern: "logdiff_varying_bases.pdf"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

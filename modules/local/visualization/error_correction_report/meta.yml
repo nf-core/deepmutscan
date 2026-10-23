@@ -1,0 +1,56 @@
+name: "visualization_error_correction_report"
+description: Build a self-contained, per-sample HTML report visualising the effect of the sequencing-error correction (positional error bias, correction magnitude, and per-variant raw-vs-corrected counts).
+keywords:
+  - deep mutational scanning
+  - error correction
+  - report
+  - visualisation
+tools:
+  - "pandas":
+      description: "Fast, powerful data structures for data analysis in Python."
+      homepage: "https://pandas.pydata.org/"
+      licence: ["BSD-3-Clause"]
+
+input:
+  - - sample:
+        type: string
+        description: Run-level sample name, used for the report heading.
+  - - ids_b64:
+        type: string
+        description: |
+          Base64-encoded JSON array of the library identifiers, in the same order as `corrected`.
+          Base64 keeps the JSON free of quoting problems when it is interpolated into the template.
+  - - corrected:
+        type: file
+        description: |
+          Error-corrected, library-filtered counts for every library of the run (with `counts`
+          corrected and `counts_raw` preserved). Staged into numbered directories because the
+          basenames repeat across libraries.
+        pattern: "*.csv"
+  - - method:
+        type: string
+        description: Error-correction method label (`false_doubles` or `wildtype`).
+  - - false_doubles_method:
+        type: string
+        description: Estimator naming in the report heading, `mle` or `eb`.
+  - - template_html:
+        type: file
+        description: The report's HTML shell; data and plots are injected into it.
+        pattern: "*.html"
+
+output:
+  - report:
+      - error_correction_report.html:
+          type: file
+          description: Self-contained, run-level error-correction report.
+          pattern: "error_correction_report.html"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+maintainers:
+  - "@BenjaminWehnert1008"

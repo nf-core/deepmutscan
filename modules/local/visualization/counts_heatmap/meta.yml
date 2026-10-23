@@ -1,0 +1,41 @@
+name: "visualization_counts_heatmap"
+description: Generates a comprehensive heatmap of variant counts, visualizing the mutation landscape across the entire reference sequence.
+keywords:
+  - deep mutational scanning
+  - dms
+  - visualization
+  - heatmap
+  - mutation landscape
+tools:
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - variantCounts_for_heatmaps:
+        type: file
+        description: CSV file containing processed variant counts formatted for heatmap generation
+        pattern: "*.{csv}"
+
+output:
+  - counts_heatmap:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', single_end:false ]`
+      - counts_heatmap.pdf:
+          type: file
+          description: PDF heatmap visualizing mutation frequencies across the sequence positions
+          pattern: "counts_heatmap.pdf"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"

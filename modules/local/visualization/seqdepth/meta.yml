@@ -1,0 +1,53 @@
+name: "visualization_seqdepth"
+description: Performs a sequencing depth simulation to assess library coverage and saturation, helping to determine if the sequencing effort was sufficient to capture all intended variants.
+keywords:
+  - deep mutational scanning
+  - dms
+  - visualization
+  - sequencing depth
+  - saturation
+tools:
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - variantCounts_filtered_by_library:
+        type: file
+        description: CSV file containing variant counts filtered against the target library
+        pattern: "*.{csv}"
+  - - possible_mutations:
+        type: file
+        description: CSV file defining all theoretically possible mutations for the library design
+        pattern: "*.{csv}"
+
+output:
+  - SeqDepth:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', single_end:false ]`
+      - SeqDepth.pdf:
+          type: file
+          description: PDF plot showing the simulation of variant detection as a function of sequencing depth
+          pattern: "SeqDepth.pdf"
+  - curve:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - seqdepth_curve.csv:
+          type: file
+          description: Rarefaction curve points, re-plotted interactively by the summary report.
+          pattern: "seqdepth_curve.csv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"
