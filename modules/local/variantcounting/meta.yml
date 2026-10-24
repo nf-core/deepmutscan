@@ -25,7 +25,7 @@ input:
         description: Groovy Map containing sample information, e.g. `[ id:'sample1' ]`
     - bam:
         type: file
-        description: Coordinate-sorted, indexed BAM of premerged reads aligned to the reference.
+        description: Coordinate-sorted, indexed BAM of merged reads aligned to the reference.
         pattern: "*.bam"
     - bai:
         type: file

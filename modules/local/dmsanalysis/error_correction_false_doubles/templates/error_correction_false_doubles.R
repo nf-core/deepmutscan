@@ -532,7 +532,7 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
   mu_global <- sum(out.summary\$False_double_variant_count) / sum(out.summary\$Exposure_m)
   mu_global <- max(mu_global, 1e-12) ##
 
-  ##### marginal log-likelihood under Gamma-Poisson with fixed mean mu (ChatGPT function, adapted)
+  ##### marginal log-likelihood under Gamma-Poisson with fixed mean mu
   ## prior: e ~ Gamma(shape = nu * mu, rate = nu)
   ## mean = mu, variance = mu / nu
   gp_loglik_nu <- function(log_nu, y, m, mu) {
@@ -568,7 +568,7 @@ seq_error_correct_by_false_doubles_EB <- function(wt_path, input_count_path_raw,
   mu_cat_raw <- do.call(c, mu_cat_raw)
   mu_cat <- do.call(c, mu_cat)
 
-  ##### category-specific prior strength nu_cat (ChatGPT function, adapted)
+  ##### category-specific prior strength nu_cat, by maximum marginal likelihood
   ## with fallback to global if category is too small
   nu_cat <- rep(NA, 6)
   names(nu_cat) <- names(mu_cat)

@@ -9,9 +9,9 @@ process VISUALIZATION_ERROR_CORRECTION_REPORT {
 
     conda "${moduleDir}/environment.yml"
 
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://depot.galaxyproject.org/singularity/pandas:2.2.1'
-        : 'quay.io/biocontainers/pandas:2.2.1' }"
+    container "${ workflow.containerEngine == 'singularity'
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/97/977734114fdf9ecc0fbe96d3b2f09901eb1c4490de64d863a18679d926a028c4/data'
+        : 'community.wave.seqera.io/library/numpy_pandas_python:43a80707feb1fac3' }"
 
     input:
     val sample                               // run-level name, for the heading

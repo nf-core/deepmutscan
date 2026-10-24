@@ -7,7 +7,7 @@ include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { FASTQ_CHECK            } from '../modules/local/fastq_check/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { BWA_INDEX              } from '../modules/nf-core/bwa/index/main'
-include { PREMERGE               } from '../modules/local/bamprocessing/premerge/main'
+include { MERGE_ALIGN            } from '../modules/local/bamprocessing/merge_align/main'
 include { VARIANTCOUNTING            } from '../modules/local/variantcounting/main'
 include { DMSANALYSIS_AASEQ      } from '../modules/local/dmsanalysis/aa_seq/main'
 include { DMSANALYSIS_POSSIBLE_MUTATIONS      } from '../modules/local/dmsanalysis/possible_mutations/main'
@@ -128,13 +128,13 @@ workflow DEEPMUTSCAN {
     // (BWA-MEM), filter the alignments, and coordinate-sort and index them (samtools), streamed in
     // one task per library. The sorted, indexed BAM is what the read-based counter needs.
     //
-    PREMERGE(
+    MERGE_ALIGN(
       ch_reads,                        // tuple(val(meta), path(reads)): checked raw paired-end FASTQ
       BWA_INDEX.out.index.first()      // tuple(val(meta2), path(index)), as a value channel
     )
 
     // Sorted BAM with its index -> tuple(val(meta), path(bam), path(bai))
-    def ch_sorted_indexed = PREMERGE.out.bam
+    def ch_sorted_indexed = MERGE_ALIGN.out.bam
 
     // Broadcast singletons to N (one per sample), anchored on the sorted+indexed channel
     def ch_fasta_for_counts = ch_fasta.combine(ch_sorted_indexed).map { it[1] }          // path -- N
@@ -515,7 +515,7 @@ workflow DEEPMUTSCAN {
     multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
     bwa_index      = BWA_INDEX.out.index
-    premerged_bam  = PREMERGE.out.bam
+    merged_bam     = MERGE_ALIGN.out.bam
 }
 
 /*

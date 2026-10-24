@@ -130,7 +130,7 @@ Alignments are filtered with [**samtools view**](https://www.htslib.org/doc/samt
 
 For long ORF site-saturation mutagenesis libraries, most aligned shotgun sequencing reads match the reference exactly. These wildtype reads are retained: they are ignored by the variant counter but contribute to the overall sequencing coverage and sequencing-error estimation.
 
-Merging, alignment, filtering, sorting and indexing run as one streamed, multi-threaded task per library (`PREMERGE`, using its `task.cpus`). The vsearch options (`ext.args`) and the samtools filter flags (`ext.args2`) can be changed in a custom config.
+Merging, alignment, filtering, sorting and indexing run as one streamed, multi-threaded task per library (`MERGE_ALIGN`, using its `task.cpus`). The vsearch options (`ext.args`) and the samtools filter flags (`ext.args2`) can be changed in a custom config.
 
 > [!TIP]
 > The merging benefit is largest if the average DNA fragment size matches the read length. For example, libraries sequenced with 150 bp paired-end reads should ideally also be sheared or tagmented to a mean size of about 150 bp.

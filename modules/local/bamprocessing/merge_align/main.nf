@@ -1,10 +1,12 @@
 
-process PREMERGE {
+process MERGE_ALIGN {
     tag "$meta.id"
     label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
-    container "community.wave.seqera.io/library/bwa_samtools_vsearch:28e8640725d3d8e9"
+    container "${ workflow.containerEngine == 'singularity'
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/85/856173edaf176a724c7e5fe23987e42e5ab0bc476d20e458bf2a68d738e74293/data'
+        : 'community.wave.seqera.io/library/bwa_samtools_vsearch:593a959d25ab8798' }"
 
     input:
     tuple val(meta), path(reads)

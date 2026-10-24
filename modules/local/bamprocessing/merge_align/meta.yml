@@ -1,4 +1,4 @@
-name: "premerge"
+name: "merge_align"
 description: Merges the overlapping mates of raw paired-end reads into consensus reads using VSEARCH, aligns the merged reads to the reference using BWA-MEM, filters the alignments with samtools (no unmapped, secondary, supplementary, low mapping-quality or indel-containing alignments), and coordinate-sorts and indexes them, streamed in one step.
 keywords:
   - paired-end merging
