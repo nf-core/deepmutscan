@@ -27,7 +27,20 @@ process MERGE_ALIGN {
     def args2 = task.ext.args2 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    INDEX=`find -L ./ -name "*.amb" | sed 's/\\.amb\$//'`
+    # The BWA index prefix, resolved with a glob and bash parameter expansion instead of `find`.
+    # Seqera Containers builds the Docker image of a conda spec on an Ubuntu base but the
+    # Singularity image on an Amazon Linux 2023 one, and that base ships no findutils, so the usual
+    # `find -L ./ -name "*.amb"` fails with exit 127 under -profile singularity. Globbing needs no
+    # external binary. The leading ./ is kept so the prefix, which bwa records in the BAM's @PG
+    # header, stays exactly what find returned.
+    INDEX=''
+    for amb in ./${index}/*.amb; do
+        if [ -e "\$amb" ]; then INDEX="\${amb%.amb}"; fi
+    done
+    if [ -z "\$INDEX" ]; then
+        echo "No BWA index (*.amb) found in './${index}'" >&2
+        exit 1
+    fi
 
     # Merge the overlapping mates of each raw read pair into one consensus read, so the overlap is
     # counted once and its bases carry a recalculated quality. Merging comes first, before any
