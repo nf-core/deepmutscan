@@ -1,0 +1,88 @@
+name: "visualization_summary_report"
+description: Build the single self-contained all-in-one HTML report for a run (QC to fitness)
+keywords:
+  - report
+  - html
+  - quality control
+  - deep mutational scanning
+tools:
+  - "pandas":
+      description: "Powerful data structures for data analysis, time series, and statistics"
+      homepage: "https://pandas.pydata.org/"
+      licence: ["BSD-3-Clause"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', sample:'ORF1' ]`
+    - run_b64:
+        type: string
+        description: Base64-encoded JSON with run-level metadata (parameters, samples, versions).
+  - - manifest_b64:
+        type: string
+        description: |
+          Base64-encoded JSON array describing every staged asset as `{kind, group, name}`,
+          in the same order as `assets`. Base64 keeps the JSON free of quoting problems when it is
+          interpolated into the template.
+  - - assets:
+        type: file
+        description: |
+          Every artefact embedded in the report (plot PDFs, count tables, the fitness table and the
+          detail HTML reports). Staged into numbered directories because basenames repeat across
+          samples.
+  - - template_html:
+        type: file
+        description: The report's HTML shell; data, plots and assets are injected into it.
+        pattern: "*.html"
+  - - threedmol_js:
+        type: file
+        description: 3Dmol.js library, inlined only when the run has a structure (`--pdb`).
+        pattern: "*.js"
+
+output:
+  - report:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'test', sample:'ORF1' ]`
+      - "deepmutscan_report.html":
+          type: file
+          description: Self-contained all-in-one report; no sidecar files are needed to view or share it.
+          pattern: "deepmutscan_report.html"
+  - versions:
+      - "versions.yml":
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+maintainers:
+  - "@BenjaminWehnert1008"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/numpy_pandas_python:cfb38dbf0574e16d
+      build_id: bd-cfb38dbf0574e16d_1
+      scan_id: sc-fae0cdb4b6c51968_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/numpy_pandas_python:a15c6f547e2083b8
+      build_id: bd-a15c6f547e2083b8_1
+      scan_id: sc-931239170a8e2353_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/numpy_pandas_python:7f16bcac97973062
+      build_id: bd-7f16bcac97973062_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f7/f727259d394cff047a26f3e3fa3a43e1a7a1c9dc51a35e6def7aa90a2085bb7b/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/numpy_pandas_python:648dc1860698d21b
+      build_id: bd-648dc1860698d21b_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/22/229745e9be125462f1850ac75f13afb0738d30241558908657bfc802c2c6681f/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/visualization/summary_report/.conda-lock/linux_amd64-bd-cfb38dbf0574e16d_1.txt
+    linux/arm64:
+      lock_file: modules/local/visualization/summary_report/.conda-lock/linux_arm64-bd-a15c6f547e2083b8_1.txt
