@@ -18,6 +18,7 @@
 include { DEEPMUTSCAN  } from './workflows/deepmutscan'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_deepmutscan_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_deepmutscan_pipeline'
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOWS FOR PIPELINE
@@ -47,6 +48,7 @@ workflow NFCORE_DEEPMUTSCAN {
     emit:
     multiqc_report = DEEPMUTSCAN.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -65,10 +67,7 @@ workflow {
         params.monochrome_logs,
         args,
         params.outdir,
-        params.input,
-        params.help,
-        params.help_full,
-        params.show_hidden
+        params.input
     )
 
     //

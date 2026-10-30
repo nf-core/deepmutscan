@@ -15,7 +15,8 @@ repos:
               .*ro-crate-metadata.json$|
               modules/(?!local/).*|
               subworkflows/(?!local/).*|
-              .*\.snap$
+              .*\.snap$|
+              assets/variant_effect_inspection_tool/3Dmol-min\.js.*
           )$
       - id: end-of-file-fixer
         exclude: |
@@ -23,7 +24,8 @@ repos:
               .*ro-crate-metadata.json$|
               modules/(?!local/).*|
               subworkflows/(?!local/).*|
-              .*\.snap$
+              .*\.snap$|
+              assets/variant_effect_inspection_tool/3Dmol-min\.js.*
           )$
       - id: check-added-large-files
         args: [--maxkb=5000]

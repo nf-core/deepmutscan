@@ -12,3 +12,4 @@ bin/
 ro-crate-metadata.json
 modules/nf-core/
 subworkflows/nf-core/
+assets/variant_effect_inspection_tool/3Dmol-min.js

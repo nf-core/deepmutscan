@@ -1,0 +1,74 @@
+name: "fastq_check"
+description: Checks that the two FASTQ files of a paired-end library are complete and consistent with fq lint (gzip integrity, FASTQ record format, equal read numbers, matching read names in the same order), and reports PASS or FAIL with a plain-language reason instead of failing the task.
+keywords:
+  - fastq
+  - validation
+  - lint
+  - paired-end
+tools:
+  - "fq":
+      description: "FASTQ manipulation and validation tool"
+      homepage: "https://github.com/stjude-rust-labs/fq"
+      documentation: "https://github.com/stjude-rust-labs/fq"
+      tool_dev_url: "https://github.com/stjude-rust-labs/fq"
+      licence: ["MIT"]
+      identifier: ""
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'GID1A_input_1_pe', sample:'GID1A', type:'input', replicate:1 ]`
+    - reads:
+        type: file
+        description: Forward and reverse FASTQ files of one paired-end library
+        pattern: "*.{fastq,fq}{,.gz}"
+
+output:
+  - report:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - "*.fastq_check.tsv":
+          type: file
+          description: One line, tab-separated - PASS or FAIL, and the reason
+          pattern: "*.fastq_check.tsv"
+  - versions_fq:
+      - ${task.process}:
+          type: string
+          description: The name of the process
+      - fq:
+          type: string
+          description: The name of the tool
+      - "fq lint --version | sed 's/fq-lint //; s/ .*//'":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+authors:
+  - "@MaximilianStammnitz"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/fq:0.12.0--b3082ff93d0ccff0
+      build_id: bd-b3082ff93d0ccff0_1
+      scan_id: sc-f21a88680f9cdf16_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/fq:0.12.0--41c3b62452310f82
+      build_id: bd-41c3b62452310f82_1
+      scan_id: sc-55cb6598f426fae1_1
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/fq:0.12.0--8bfef4392e820de8
+      build_id: bd-8bfef4392e820de8_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/80/80ba09e7d98be1120310df58960280440253953eaba0da00d71cd6b3f13211f9/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/fq:0.12.0--2eebf4e58a46525e
+      build_id: bd-2eebf4e58a46525e_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/1e/1edbe701f591caa7f7a930781d0364392706d291016f1028b5b9fe501ec6ef8c/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/fastq_check/.conda-lock/linux_amd64-bd-b3082ff93d0ccff0_1.txt
+    linux/arm64:
+      lock_file: modules/local/fastq_check/.conda-lock/linux_arm64-bd-41c3b62452310f82_1.txt

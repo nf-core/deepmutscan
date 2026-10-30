@@ -2,6 +2,8 @@ lint:
   files_exist:
     - conf/igenomes.config
     - conf/igenomes_ignored.config
+  # The two logos are intentionally the project's own artwork rather than the template's
+  # generated versions, so files_unchanged must not flag them.
   files_unchanged:
     - assets/nf-core-deepmutscan_logo_light.png
     - docs/images/nf-core-deepmutscan_logo_dark.png
