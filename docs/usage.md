@@ -139,7 +139,7 @@ Merging, alignment, filtering, sorting and indexing run as one streamed, multi-t
 
 ### 4. Variant counting
 
-Merged reads are screened for base-level mismatches against the reference. `nf-core/deepmutscan` uses a light-weight Python counter (built on [**pysam**](https://pysam.readthedocs.io) and [**polars**](https://pola.rs)) that counts all single, double, triple and higher-order nucleotide changes per read, together with the sequencing coverage of every position. This replaces the GATK `AnalyzeSaturationMutagenesis` tool used in earlier versions; a description of every column is written next to each count table (`variant_counts_columns.tsv`).
+Merged reads are screened for base-level mismatches against the reference. `nf-core/deepmutscan` uses a single-pass counter written in C on [**htslib**](https://www.htslib.org) ([**dms_count**](https://github.com/MaximilianStammnitz/dms-count)) that counts all single, double, triple and higher-order nucleotide changes per read from the alignment's CIGAR and MD strings, together with the sequencing coverage of every position. It produces the same, byte-identical table as the Python counter of v1.0.0 in about 2% of its CPU time and 14 MB of memory. This replaces the GATK `AnalyzeSaturationMutagenesis` tool used in earlier versions; a description of every column is written next to each count table (`variant_counts_columns.tsv`).
 
 Two parameters tune the counter:
 
