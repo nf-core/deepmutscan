@@ -1,6 +1,6 @@
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
-# Shared by 17 R modules (all except RUN_MUTSCAN, RUN_DIMSUM and the false-doubles error correction).
+# Shared by 6 R modules (all except RUN_MUTSCAN, RUN_DIMSUM and the false-doubles error correction).
 # Keep the copies identical:
 # the one container image these modules use is built from exactly this list.
 channels:

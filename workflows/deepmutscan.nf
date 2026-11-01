@@ -7,20 +7,14 @@ include { RAW_DATA_QC            } from '../modules/local/raw_data_qc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { PREPARE_REFERENCE      } from '../modules/local/prepare_reference/main'
 include { MERGE_ALIGN_COUNT      } from '../modules/local/merge_align_count/main'
-include { DMSANALYSIS_AASEQ      } from '../modules/local/dmsanalysis/aa_seq/main'
-include { DMSANALYSIS_POSSIBLE_MUTATIONS      } from '../modules/local/dmsanalysis/possible_mutations/main'
+include { DMSANALYSIS_REFERENCE_TABLES } from '../modules/local/dmsanalysis/reference_tables/main'
 include { DMSANALYSIS_PROCESS_VARIANT_COUNTS      } from '../modules/local/dmsanalysis/process_variant_counts/main'
 include { DMSANALYSIS_FDM_EVIDENCE                  } from '../modules/local/dmsanalysis/fdm_evidence/main'
 include { DMSANALYSIS_FDM_ESTIMATE                  } from '../modules/local/dmsanalysis/fdm_estimate/main'
 include { DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES } from '../modules/local/dmsanalysis/error_correction_false_doubles/main'
 include { DMSANALYSIS_ERROR_CORRECTION_WILDTYPE      } from '../modules/local/dmsanalysis/error_correction_wildtype/main'
 include { DMSANALYSIS_ERROR_SIGNATURES              } from '../modules/local/dmsanalysis/error_signatures/main'
-include { VISUALIZATION_COUNTS_PER_COV      } from '../modules/local/visualization/counts_per_cov/main'
-include { VISUALIZATION_COUNTS_HEATMAP      } from '../modules/local/visualization/counts_heatmap/main'
-include { VISUALIZATION_GLOBAL_POS_BIASES_COUNTS      } from '../modules/local/visualization/global_pos_biases_counts/main'
-include { VISUALIZATION_GLOBAL_POS_BIASES_COV      } from '../modules/local/visualization/global_pos_biases_cov/main'
-include { VISUALIZATION_LOGDIFF      } from '../modules/local/visualization/logdiff/main'
-include { VISUALIZATION_SEQDEPTH      } from '../modules/local/visualization/seqdepth/main'
+include { VISUALIZATION_LIBRARY_QC          } from '../modules/local/visualization/library_qc/main'
 include { VISUALIZATION_ERROR_CORRECTION_REPORT } from '../modules/local/visualization/error_correction_report/main'
 include { VISUALIZATION_SUMMARY_REPORT } from '../modules/local/visualization/summary_report/main'
 include { VARIANT_EFFECT_INSPECTION_TOOL } from '../modules/local/structure/variant_effect_inspection_tool/main'
@@ -66,7 +60,7 @@ workflow DEEPMUTSCAN {
     // Define input channels from parameters. The reference and the samplesheet are one file per run,
     // so they are value channels: every task that needs them reads the same value, however many
     // libraries there are. Outputs of processes whose inputs are all value channels (PREPARE_REFERENCE,
-    // DMSANALYSIS_AASEQ, DMSANALYSIS_POSSIBLE_MUTATIONS, EXPDESIGN_FITNESS) are value channels too.
+    // DMSANALYSIS_REFERENCE_TABLES, EXPDESIGN_FITNESS) are value channels too.
     //
     // MODULE: the reference, prepared once per run: in upper case, before any step reads it, and its
     // bwa-mem3 index. Lower-case (soft-masked) bases are the same bases, but the counter, the error
@@ -149,23 +143,21 @@ workflow DEEPMUTSCAN {
       asBool(params.save_bam)          // val(save_bam)
     )
 
-    DMSANALYSIS_AASEQ (
-      ch_fasta,
-      reading_frame_ch
-    )
-    ch_versions = ch_versions.mix(DMSANALYSIS_AASEQ.out.versions)
-
-    DMSANALYSIS_POSSIBLE_MUTATIONS(
+    //
+    // MODULE: the two reference tables of the run - the wildtype amino-acid sequence of the reading
+    // frame and the table of all programmed codon variants - in one task
+    //
+    DMSANALYSIS_REFERENCE_TABLES(
       ch_fasta,
       reading_frame_ch,           // pos_range (as val)
       mutagenesis_type_ch,        // mutagenesis_type (as val)
       custom_codon_library_ch     // custom_codon_library (path, or [] if not given)
     )
-    ch_versions = ch_versions.mix(DMSANALYSIS_POSSIBLE_MUTATIONS.out.versions)
+    ch_versions = ch_versions.mix(DMSANALYSIS_REFERENCE_TABLES.out.versions)
 
     // Run-level reference tables, as value channels (paths only)
-    def ch_aa_seq             = DMSANALYSIS_AASEQ.out.aa_seq.map { _meta, f -> f }
-    def ch_possible_mutations = DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map { _meta, f -> f }
+    def ch_aa_seq             = DMSANALYSIS_REFERENCE_TABLES.out.aa_seq.map { _meta, f -> f }
+    def ch_possible_mutations = DMSANALYSIS_REFERENCE_TABLES.out.possible_mutations.map { _meta, f -> f }
 
     // One item per library
     def ch_vc = MERGE_ALIGN_COUNT.out.variant_counts // tuple(val(meta), path)
@@ -321,68 +313,47 @@ workflow DEEPMUTSCAN {
       )
     }
 
-    VISUALIZATION_COUNTS_PER_COV(
-      variantCounts_for_heatmaps_ch
-    )
+    //
+    // MODULE: library QC - the count and counts-per-coverage heatmaps, the sliding-window count and
+    // coverage profiles, the LogDiff distributions and (with --run_seqdepth) the sequencing-depth
+    // rarefaction of every library, in one task per library. The plots take seconds; scheduling six
+    // tasks per library for them took longer than drawing them.
+    //
+    def ch_qc_in = variantCounts_filtered_by_library_ch
+      .join(variantCounts_for_heatmaps_ch)
+      .join(library_completed_variantCounts_ch)                   // (meta, filtered, heatmap table, completed)
 
-    VISUALIZATION_COUNTS_HEATMAP(
-      variantCounts_for_heatmaps_ch
-    )
-
-    VISUALIZATION_GLOBAL_POS_BIASES_COUNTS(
-      variantCounts_filtered_by_library_ch,
-      ch_aa_seq,
-      sliding_window_size_ch
-    )
-
-    VISUALIZATION_GLOBAL_POS_BIASES_COV(
-      variantCounts_filtered_by_library_ch,
-      ch_aa_seq,
+    VISUALIZATION_LIBRARY_QC(
+      ch_qc_in,
+      ch_aa_seq,                    // path(aa_seq)
+      ch_possible_mutations,        // path(possible_mutations)
       sliding_window_size_ch,
-      aimed_cov_ch
+      aimed_cov_ch,
+      run_seqdepth
     )
-
-    VISUALIZATION_LOGDIFF(
-      library_completed_variantCounts_ch
-    )
-
-    ch_versions = ch_versions
-      .mix(VISUALIZATION_COUNTS_PER_COV.out.versions)
-      .mix(VISUALIZATION_COUNTS_HEATMAP.out.versions)
-      .mix(VISUALIZATION_GLOBAL_POS_BIASES_COUNTS.out.versions)
-      .mix(VISUALIZATION_GLOBAL_POS_BIASES_COV.out.versions)
-      .mix(VISUALIZATION_LOGDIFF.out.versions)
+    ch_versions = ch_versions.mix(VISUALIZATION_LIBRARY_QC.out.versions)
 
     // library QC plots (original R PDFs) + the tables the report re-plots interactively
     ch_report_assets = ch_report_assets
-      .mix(VISUALIZATION_GLOBAL_POS_BIASES_COV.out.rolling_coverage.map          { meta, f -> [['qc', meta.id, 'rolling_coverage.pdf'], f] })
-      .mix(VISUALIZATION_GLOBAL_POS_BIASES_COUNTS.out.rolling_counts.map         { meta, f -> [['qc', meta.id, 'rolling_counts.pdf'], f] })
-      .mix(VISUALIZATION_GLOBAL_POS_BIASES_COUNTS.out.rolling_counts_per_cov.map { meta, f -> [['qc', meta.id, 'rolling_counts_per_cov.pdf'], f] })
-      .mix(VISUALIZATION_COUNTS_HEATMAP.out.counts_heatmap.map                   { meta, f -> [['qc', meta.id, 'counts_heatmap.pdf'], f] })
-      .mix(VISUALIZATION_COUNTS_PER_COV.out.counts_per_cov_heatmap.map           { meta, f -> [['qc', meta.id, 'counts_per_cov_heatmap.pdf'], f] })
-      .mix(VISUALIZATION_LOGDIFF.out.logdiff_plot.map                            { meta, f -> [['qc', meta.id, 'logdiff_plot.pdf'], f] })
-      .mix(VISUALIZATION_LOGDIFF.out.logdiff_varying_bases.map                   { meta, f -> [['qc', meta.id, 'logdiff_varying_bases.pdf'], f] })
-      .mix(variantCounts_filtered_by_library_ch.map                              { meta, f -> [['filtered', meta.id, 'counts.csv'], f] })
-      .mix(variantCounts_for_heatmaps_ch.map                                     { meta, f -> [['heatmap', meta.id, 'heatmap.csv'], f] })
+      .mix(VISUALIZATION_LIBRARY_QC.out.rolling_coverage.map       { meta, f -> [['qc', meta.id, 'rolling_coverage.pdf'], f] })
+      .mix(VISUALIZATION_LIBRARY_QC.out.rolling_counts.map         { meta, f -> [['qc', meta.id, 'rolling_counts.pdf'], f] })
+      .mix(VISUALIZATION_LIBRARY_QC.out.rolling_counts_per_cov.map { meta, f -> [['qc', meta.id, 'rolling_counts_per_cov.pdf'], f] })
+      .mix(VISUALIZATION_LIBRARY_QC.out.counts_heatmap.map         { meta, f -> [['qc', meta.id, 'counts_heatmap.pdf'], f] })
+      .mix(VISUALIZATION_LIBRARY_QC.out.counts_per_cov_heatmap.map { meta, f -> [['qc', meta.id, 'counts_per_cov_heatmap.pdf'], f] })
+      .mix(VISUALIZATION_LIBRARY_QC.out.logdiff_plot.map           { meta, f -> [['qc', meta.id, 'logdiff_plot.pdf'], f] })
+      .mix(VISUALIZATION_LIBRARY_QC.out.logdiff_varying_bases.map  { meta, f -> [['qc', meta.id, 'logdiff_varying_bases.pdf'], f] })
+      // The rarefaction curve (only with --run_seqdepth; the channel is empty otherwise) travels to the
+      // summary report, which re-plots it per file under Sequencing QC (the PDF is still written to
+      // the results folder for the record).
+      .mix(VISUALIZATION_LIBRARY_QC.out.curve.map                  { meta, f -> [['seqdepth', meta.id, 'seqdepth.csv'], f] })
+      .mix(variantCounts_filtered_by_library_ch.map                { meta, f -> [['filtered', meta.id, 'counts.csv'], f] })
+      .mix(variantCounts_for_heatmaps_ch.map                       { meta, f -> [['heatmap', meta.id, 'heatmap.csv'], f] })
       // Fixes the ORF axis at the wildtype length: positions with no library coverage still have to
       // occupy a slot, or every rolling window downstream is computed over the wrong neighbourhood.
-      .mix(ch_aa_seq.map                                                         { f -> [['aa_seq', 'run', 'aa_seq.txt'], f] })
+      .mix(ch_aa_seq.map                                           { f -> [['aa_seq', 'run', 'aa_seq.txt'], f] })
       // Needed to name the exact nucleotide change behind each heatmap cell: the fitness table gives
       // the variant ORFs, and the wildtype to diff them against only exists in the reference.
-      .mix(ch_fasta.map                                                          { _meta, f -> [['fasta', 'run', 'reference.fasta'], f] })
-
-    if (run_seqdepth) {
-      VISUALIZATION_SEQDEPTH(
-        variantCounts_filtered_by_library_ch,
-        ch_possible_mutations
-      )
-      ch_versions = ch_versions.mix(VISUALIZATION_SEQDEPTH.out.versions)
-      // The rarefaction curve travels to the summary report, which re-plots it per file under
-      // Sequencing QC (the PDF is still written to the results folder for the record).
-      ch_report_assets = ch_report_assets.mix(
-        VISUALIZATION_SEQDEPTH.out.curve.map { meta, f -> [['seqdepth', meta.id, 'seqdepth.csv'], f] }
-      )
-    }
+      .mix(ch_fasta.map                                            { _meta, f -> [['fasta', 'run', 'reference.fasta'], f] })
 
     // Execution of fitness estimation, if --fitness true
     if (run_fitness) {
@@ -400,7 +371,7 @@ workflow DEEPMUTSCAN {
             ch_samplesheet_csv,                   // Path to samplesheet
             ch_fasta,                             // The original Fasta tuple
             reading_frame_ch,                     // Reading frame value channel
-            DMSANALYSIS_AASEQ.out.aa_seq,         // Amino Acid Sequence (for Heatmap)
+            DMSANALYSIS_REFERENCE_TABLES.out.aa_seq, // Amino acid sequence (for the heatmap)
             run_dimsum,                           // Boolean: run DiMSum
             run_mutscan                           // Boolean: run mutscan
         )
