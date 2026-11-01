@@ -37,8 +37,6 @@ process FITNESS_ESTIMATION {
   cat <<-END_VERSIONS > versions.yml
   "${task.process}":
       r-base: "0.0.0"
-      r-Biostrings: "0.0.0"
-      r-dplyr: "0.0.0"
       r-ggplot2: "0.0.0"
   END_VERSIONS
   """

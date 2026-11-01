@@ -1,6 +1,26 @@
 #!/usr/bin/env Rscript
 
-suppressMessages(library(Biostrings))
+####################################################################################################
+# Base-R replacements for Biostrings (readDNAStringSet, subseq), with Biostrings' results
+####################################################################################################
+
+# Sequences of a FASTA file, as readDNAStringSet() reads them: one string per record, sequence lines
+# joined, upper case, letters outside the DNA alphabet (IUPAC codes, "-", "+", ".") dropped
+read_fasta <- function(path) {
+  lines <- readLines(path, warn = FALSE)
+  starts <- grep("^>", lines)
+  if (length(starts) == 0) stop("no FASTA record in ", path)
+  ends <- c(starts[-1] - 1L, length(lines))
+  seqs <- mapply(function(s, e) if (e > s) paste(lines[(s + 1L):e], collapse = "") else "", starts, ends)
+  gsub("[^ACGTMRWSYKVHDBN.+-]", "", toupper(seqs))
+}
+
+# subseq(): stops on a range outside the sequence, as Biostrings does
+subseq_checked <- function(x, start, end) {
+  if (is.na(start) || is.na(end) || start < 1 || end > nchar(x) || end < start - 1)
+    stop("Invalid sequence coordinates: ", start, "-", end, " in a sequence of length ", nchar(x))
+  substr(x, start, end)
+}
 
 generate_fitness_input <- function(wt_seq_path, counts_file, pos_range, output_file_path) {
   # Parse the position range
@@ -9,12 +29,8 @@ generate_fitness_input <- function(wt_seq_path, counts_file, pos_range, output_f
   stop_pos <- as.numeric(positions[2])
 
   # Load the wild-type sequence
-  seq_data <- Biostrings::readDNAStringSet(filepath = wt_seq_path)
-  wt_seq <- seq_data[[1]]  # Extract the sequence
-  wt_seq <- subseq(wt_seq, start = start_pos, end = stop_pos)
-
-  # Convert wt_seq to a character string
-  wt_seq <- as.character(wt_seq)
+  wt_seq <- read_fasta(wt_seq_path)[1]  # the first sequence
+  wt_seq <- subseq_checked(wt_seq, start = start_pos, end = stop_pos)
 
   # Split the wild-type sequence into codons (groups of 3 bases)
   wt_codons <- substring(wt_seq, seq(1, nchar(wt_seq), 3), seq(3, nchar(wt_seq), 3))
@@ -87,17 +103,14 @@ generate_fitness_input(
 # create versions.yml
 #####
 r_version <- strsplit(version[['version.string']], ' ')[[1]][3]
-Biostrings_version <- as.character(packageVersion("Biostrings"))
 
 if (is.null(r_version)) r_version <- "unknown"
-if (length(Biostrings_version) == 0) Biostrings_version <- "unknown"
 
 f <- file("versions.yml", "w")
 writeLines(
   c(
     '"${task.process}":',
-    paste('    r-base:', r_version),
-    paste('    r-Biostrings:', Biostrings_version)
+    paste('    r-base:', r_version)
   ),
   f
 )

@@ -3,8 +3,9 @@
 # Library QC of one library in one task: the six plot sets that used to be six processes
 # (VISUALIZATION_COUNTS_HEATMAP, _COUNTS_PER_COV, _GLOBAL_POS_BIASES_COUNTS, _GLOBAL_POS_BIASES_COV,
 # _LOGDIFF and _SEQDEPTH), run in sequence in one R session. Each plot function below is that
-# process's script, unchanged; only the two sliding-window functions were renamed (both were called
-# `position_biases`). Every output file is the same as before.
+# process's script; the two sliding-window functions were renamed (both were called `position_biases`),
+# and the dplyr and zoo calls are base R (helpers below, with the same results). Every output file is
+# the same as before.
 #
 # Inputs:  variantCounts_filtered_by_library (per-variant counts, coverage and counts per coverage
 #          of the programmed variants), variantCounts_for_heatmaps (amino-acid level table),
@@ -15,10 +16,72 @@
 #          rolling_counts_per_cov.pdf, rolling_coverage.pdf, logdiff_plot.pdf,
 #          logdiff_varying_bases.pdf and - with run_seqdepth - SeqDepth.pdf and seqdepth_curve.csv
 
-library(zoo) # sliding window
-library(dplyr)
 library(ggplot2)
 library(scales)
+
+####################################################################################################
+# Base-R helpers (for what dplyr and zoo did before, with the same results)
+####################################################################################################
+
+# dplyr::bind_rows(a, b): the columns of both in order of appearance, missing ones as NA; a factor
+# combined with a character column becomes character
+bind_rows_base <- function(a, b) {
+  cols <- union(names(a), names(b))
+  out <- lapply(cols, function(cn) {
+    va <- a[[cn]]; vb <- b[[cn]]
+    if (is.factor(va) && is.character(vb)) va <- as.character(va)
+    if (is.factor(vb) && is.character(va)) vb <- as.character(vb)
+    if (is.null(va)) va <- vb[rep(NA_integer_, nrow(a))]
+    if (is.null(vb)) vb <- va[rep(NA_integer_, nrow(b))]
+    c(va, vb)
+  })
+  names(out) <- cols
+  as.data.frame(out, stringsAsFactors = FALSE, optional = TRUE)
+}
+
+# The rows of d in a stable ascending order of x, NA last (dplyr::arrange)
+arrange_base <- function(d, x) {
+  d <- d[order(x, method = "radix"), , drop = FALSE]
+  rownames(d) <- NULL
+  d
+}
+
+# The rows of d where cond is TRUE, NA dropping the row (dplyr::filter)
+filter_base <- function(d, cond) {
+  d <- d[which(cond), , drop = FALSE]
+  rownames(d) <- NULL
+  d
+}
+
+# zoo::rollapply(x, width, FUN, fill = "extend"): FUN over each centred window that lies fully
+# inside x (offsets floor(width/2) - width + 1 ... floor(width/2)), then zoo::na.fill(, "extend"):
+# the first result repeated before, the last after, and inside the range a linear interpolation
+# over the windows whose result is not NA (stats::approx), exactly as zoo 1.8 does it
+roll_extend <- function(x, width, FUN) {
+  n <- length(x)
+  if (n < 1L) return(x)
+  w <- trunc(width)
+  offsets <- seq(to = floor(w / 2), length.out = w)
+  res <- vector("list", n)
+  for (i in seq_len(n)) {
+    p <- i + offsets
+    if (all(p >= 1 & p <= n)) res[[i]] <- FUN(x[p])
+  }
+  ix <- !vapply(res, is.null, logical(1))
+  out <- do.call("c", lapply(res, function(r) if (is.null(r)) NA else r))
+  if (any(ix)) {
+    wix <- which(ix)
+    lo <- wix[1]
+    hi <- wix[length(wix)]
+    rng <- seq(lo, length.out = hi - lo + 1)
+    out[seq_len(lo - 1)] <- out[[lo]]
+    out[rng] <- approx(wix, out[wix], xout = rng)\$y
+    out[seq(hi + 1, length.out = n - hi)] <- out[[hi]]
+  } else {
+    out[is.na(out)] <- NA
+  }
+  out
+}
 
 ####################################################################################################
 # 1. Heatmap of counts per variant (counts_heatmap.pdf)
@@ -53,7 +116,7 @@ counts_heatmap <- function(input_csv_path, threshold = 3, output_pdf_path, img_f
       padding_data\$row_group <- max(heatmap_data_long\$row_group)  # Set row group to the current last group
 
       # Add the new padding rows to heatmap_data_long
-      heatmap_data_long <- dplyr::bind_rows(heatmap_data_long, padding_data)
+      heatmap_data_long <- bind_rows_base(heatmap_data_long, padding_data)
     }
 
     return(heatmap_data_long)
@@ -68,44 +131,40 @@ counts_heatmap <- function(input_csv_path, threshold = 3, output_pdf_path, img_f
   }
 
   # Create heatmap_data_long by selecting necessary columns
-  heatmap_data_long <- heatmap_data %>%
-    select(mut_aa, position, total_counts, wt_aa)  # Use 'total_counts'
+  heatmap_data_long <- heatmap_data[, c("mut_aa", "position", "total_counts", "wt_aa")]  # Use 'total_counts'
 
   # Find the smallest non-NA value in total_counts
   min_non_na_value <- min(heatmap_data_long\$total_counts, na.rm = TRUE)
 
   # Group positions by rows (75 positions per row) and calculate row_group
-  heatmap_data_long <- heatmap_data_long %>%
-    mutate(row_group = ((position - 1) %/% 75) + 1)  # Grouping positions into rows
+  heatmap_data_long\$row_group <- ((heatmap_data_long\$position - 1) %/% 75) + 1  # Grouping positions into rows
 
   # Apply padding to add missing positions at the end of the last row, using the calculated min value
   heatmap_data_long <- pad_heatmap_data_long(heatmap_data_long, min_non_na_value)
 
   # Convert positions to numeric, sort them, and create wt_aa_pos for the plot
-  heatmap_data_long <- heatmap_data_long %>%
-    mutate(position = as.numeric(position)) %>%  # Ensure position is numeric
-    arrange(position) %>%  # Sort by position
-    mutate(wt_aa_pos = factor(paste0(wt_aa, position), levels = unique(paste0(wt_aa, position))))  # Create sorted factor levels for wt_aa_pos
+  heatmap_data_long\$position <- as.numeric(heatmap_data_long\$position)  # Ensure position is numeric
+  heatmap_data_long <- arrange_base(heatmap_data_long, heatmap_data_long\$position)  # Sort by position
+  heatmap_data_long\$wt_aa_pos <- factor(paste0(heatmap_data_long\$wt_aa, heatmap_data_long\$position),
+                                       levels = unique(paste0(heatmap_data_long\$wt_aa, heatmap_data_long\$position)))  # Create sorted factor levels for wt_aa_pos
 
   # Add a column to identify synonymous mutations (where mut_aa == wt_aa)
-  heatmap_data_long <- heatmap_data_long %>%
-    mutate(synonymous = mut_aa == wt_aa)
+  heatmap_data_long\$synonymous <- heatmap_data_long\$mut_aa == heatmap_data_long\$wt_aa
 
   # Definiere die korrekte Reihenfolge der Aminosäuren
   amino_acid_order <- rev(c("G", "A", "V", "L", "M", "I", "F",
                          "Y", "W", "K", "R", "H", "D", "E",
                          "S", "T", "C", "N", "Q", "P", "*"))
 
-  heatmap_data_long <- heatmap_data_long %>%
-  mutate(mut_aa = factor(mut_aa, levels = amino_acid_order))
+  heatmap_data_long\$mut_aa <- factor(heatmap_data_long\$mut_aa, levels = amino_acid_order)
 
   # Bearbeite heatmap_data_long und erstelle syn_positions gleichzeitig
-  syn_positions <- heatmap_data_long %>%
-    mutate(mut_aa = factor(mut_aa, levels = amino_acid_order),
-           # Berechne die x-Koordinate, die pro Gruppe immer von 1 bis 75 verläuft
-           x = as.numeric(factor(wt_aa_pos, levels = unique(wt_aa_pos))) - ((row_group - 1) * 75),
-           y = as.numeric(factor(mut_aa, levels = amino_acid_order))) %>%
-    filter(synonymous == TRUE)
+  syn_positions <- heatmap_data_long
+  syn_positions\$mut_aa <- factor(syn_positions\$mut_aa, levels = amino_acid_order)
+  # Berechne die x-Koordinate, die pro Gruppe immer von 1 bis 75 verläuft
+  syn_positions\$x <- as.numeric(factor(syn_positions\$wt_aa_pos, levels = unique(syn_positions\$wt_aa_pos))) - ((syn_positions\$row_group - 1) * 75)
+  syn_positions\$y <- as.numeric(factor(syn_positions\$mut_aa, levels = amino_acid_order))
+  syn_positions <- filter_base(syn_positions, syn_positions\$synonymous == TRUE)
 
   # Calculate the number of row groups and adjust plot height dynamically
   num_row_groups <- max(heatmap_data_long\$row_group)
@@ -206,7 +265,7 @@ counts_per_cov_heatmap <- function(input_csv_path, threshold = 3, output_pdf_pat
       padding_data\$row_group <- max(heatmap_data_long\$row_group)  # Set row group to the current last group
 
       # Add the new padding rows to heatmap_data_long
-      heatmap_data_long <- dplyr::bind_rows(heatmap_data_long, padding_data)
+      heatmap_data_long <- bind_rows_base(heatmap_data_long, padding_data)
     }
 
     return(heatmap_data_long)
@@ -221,44 +280,40 @@ counts_per_cov_heatmap <- function(input_csv_path, threshold = 3, output_pdf_pat
   }
 
   # Create heatmap_data_long by selecting necessary columns
-  heatmap_data_long <- heatmap_data %>%
-    select(mut_aa, position, total_counts_per_cov, wt_aa)  # Use 'total_counts_per_cov'
+  heatmap_data_long <- heatmap_data[, c("mut_aa", "position", "total_counts_per_cov", "wt_aa")]  # Use 'total_counts_per_cov'
 
   # Find the smallest non-NA value in total_counts_per_cov
   min_non_na_value <- min(heatmap_data_long\$total_counts_per_cov, na.rm = TRUE)
 
   # Group positions by rows (75 positions per row) and calculate row_group
-  heatmap_data_long <- heatmap_data_long %>%
-    mutate(row_group = ((position - 1) %/% 75) + 1)  # Grouping positions into rows
+  heatmap_data_long\$row_group <- ((heatmap_data_long\$position - 1) %/% 75) + 1  # Grouping positions into rows
 
   # Apply padding to add missing positions at the end of the last row, using the calculated min value
   heatmap_data_long <- pad_heatmap_data_long(heatmap_data_long, min_non_na_value)
 
   # Convert positions to numeric, sort them, and create wt_aa_pos for the plot
-  heatmap_data_long <- heatmap_data_long %>%
-    mutate(position = as.numeric(position)) %>%  # Ensure position is numeric
-    arrange(position) %>%  # Sort by position
-    mutate(wt_aa_pos = factor(paste0(wt_aa, position), levels = unique(paste0(wt_aa, position))))  # Create sorted factor levels for wt_aa_pos
+  heatmap_data_long\$position <- as.numeric(heatmap_data_long\$position)  # Ensure position is numeric
+  heatmap_data_long <- arrange_base(heatmap_data_long, heatmap_data_long\$position)  # Sort by position
+  heatmap_data_long\$wt_aa_pos <- factor(paste0(heatmap_data_long\$wt_aa, heatmap_data_long\$position),
+                                       levels = unique(paste0(heatmap_data_long\$wt_aa, heatmap_data_long\$position)))  # Create sorted factor levels for wt_aa_pos
 
   # Add a column to identify synonymous mutations (where mut_aa == wt_aa)
-  heatmap_data_long <- heatmap_data_long %>%
-    mutate(synonymous = mut_aa == wt_aa)
+  heatmap_data_long\$synonymous <- heatmap_data_long\$mut_aa == heatmap_data_long\$wt_aa
 
   # Definiere die korrekte Reihenfolge der Aminosäuren
   amino_acid_order <- rev(c("G", "A", "V", "L", "M", "I", "F",
                          "Y", "W", "K", "R", "H", "D", "E",
                          "S", "T", "C", "N", "Q", "P", "*"))
 
-  heatmap_data_long <- heatmap_data_long %>%
-  mutate(mut_aa = factor(mut_aa, levels = amino_acid_order))
+  heatmap_data_long\$mut_aa <- factor(heatmap_data_long\$mut_aa, levels = amino_acid_order)
 
   # Bearbeite heatmap_data_long und erstelle syn_positions gleichzeitig
-  syn_positions <- heatmap_data_long %>%
-    mutate(mut_aa = factor(mut_aa, levels = amino_acid_order),
-           # Berechne die x-Koordinate, die pro Gruppe immer von 1 bis 75 verläuft
-           x = as.numeric(factor(wt_aa_pos, levels = unique(wt_aa_pos))) - ((row_group - 1) * 75),
-           y = as.numeric(factor(mut_aa, levels = amino_acid_order))) %>%
-    filter(synonymous == TRUE)
+  syn_positions <- heatmap_data_long
+  syn_positions\$mut_aa <- factor(syn_positions\$mut_aa, levels = amino_acid_order)
+  # Berechne die x-Koordinate, die pro Gruppe immer von 1 bis 75 verläuft
+  syn_positions\$x <- as.numeric(factor(syn_positions\$wt_aa_pos, levels = unique(syn_positions\$wt_aa_pos))) - ((syn_positions\$row_group - 1) * 75)
+  syn_positions\$y <- as.numeric(factor(syn_positions\$mut_aa, levels = amino_acid_order))
+  syn_positions <- filter_base(syn_positions, syn_positions\$synonymous == TRUE)
 
   # Calculate the number of row groups and adjust plot height dynamically
   num_row_groups <- max(heatmap_data_long\$row_group)
@@ -350,24 +405,28 @@ position_biases_counts <- function(prefiltered_gatk_path, aa_seq_path, window_si
   means_counts_per_cov_triple <- rep(NA, nchar(aa_seq))
 
 
+  # The rows of each position, in table order (one pass instead of one scan of the table per position)
+  rows_by_position <- split(seq_len(nrow(prefiltered_gatk)),
+                            factor(match(prefiltered_gatk\$pos, aa_positions), levels = seq_along(aa_positions)))
+
   # Loop through each position in the amino acid sequence
   for (i in 1:(nchar(aa_seq))) {
 
     # Filter the data for the current position in aa_positions
-    window_data <- prefiltered_gatk %>% filter(prefiltered_gatk\$pos %in% aa_positions[i])
+    window_data <- prefiltered_gatk[rows_by_position[[i]], , drop = FALSE]
 
     # Calculate mean for Single mutations (where varying_bases == 1)
-    window_data_single <- window_data %>% filter(varying_bases == 1)
+    window_data_single <- filter_base(window_data, window_data\$varying_bases == 1)
     means_counts_single[i] <- mean(window_data_single\$counts, na.rm = FALSE)
     means_counts_per_cov_single[i] <- mean(window_data_single\$counts_per_cov, na.rm = FALSE)
 
     # Calculate mean for Double mutations (where varying_bases == 2)
-    window_data_double <- window_data %>% filter(varying_bases == 2)
+    window_data_double <- filter_base(window_data, window_data\$varying_bases == 2)
     means_counts_double[i] <- mean(window_data_double\$counts, na.rm = FALSE)
     means_counts_per_cov_double[i] <- mean(window_data_double\$counts_per_cov, na.rm = FALSE)
 
     # Calculate mean for Triple mutations (where varying_bases == 3)
-    window_data_triple <- window_data %>% filter(varying_bases == 3)
+    window_data_triple <- filter_base(window_data, window_data\$varying_bases == 3)
     means_counts_triple[i] <- mean(window_data_triple\$counts, na.rm = FALSE)
     means_counts_per_cov_triple[i] <- mean(window_data_triple\$counts_per_cov, na.rm = FALSE)
   }
@@ -375,19 +434,19 @@ position_biases_counts <- function(prefiltered_gatk_path, aa_seq_path, window_si
   pos_bias_df <- data.frame(pos = seq(nchar(aa_seq)))
 
 
-  pos_bias_df\$rolling_mean_counts_single <- rollapply(means_counts_single, width = window_size,
-                                               FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001), fill = "extend")
-  pos_bias_df\$rolling_mean_counts_double <- rollapply(means_counts_double, width = window_size,
-                                                      FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001), fill = "extend")
-  pos_bias_df\$rolling_mean_counts_triple <- rollapply(means_counts_triple, width = window_size,
-                                                      FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001), fill = "extend")
+  pos_bias_df\$rolling_mean_counts_single <- roll_extend(means_counts_single, width = window_size,
+                                               FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001))
+  pos_bias_df\$rolling_mean_counts_double <- roll_extend(means_counts_double, width = window_size,
+                                                      FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001))
+  pos_bias_df\$rolling_mean_counts_triple <- roll_extend(means_counts_triple, width = window_size,
+                                                      FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001))
 
-  pos_bias_df\$rolling_mean_counts_per_cov_single <- rollapply(means_counts_per_cov_single, width = window_size,
-                                                       FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001), fill = "extend")
-  pos_bias_df\$rolling_mean_counts_per_cov_double <- rollapply(means_counts_per_cov_double, width = window_size,
-                                                              FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001), fill = "extend")
-  pos_bias_df\$rolling_mean_counts_per_cov_triple <- rollapply(means_counts_per_cov_triple, width = window_size,
-                                                              FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001), fill = "extend")
+  pos_bias_df\$rolling_mean_counts_per_cov_single <- roll_extend(means_counts_per_cov_single, width = window_size,
+                                                       FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001))
+  pos_bias_df\$rolling_mean_counts_per_cov_double <- roll_extend(means_counts_per_cov_double, width = window_size,
+                                                              FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001))
+  pos_bias_df\$rolling_mean_counts_per_cov_triple <- roll_extend(means_counts_per_cov_triple, width = window_size,
+                                                              FUN = function(x) (mean(x, na.rm = TRUE) + 0.00001))
 
 
   # Replace NAs with 0 for rolling means and SE
@@ -490,16 +549,18 @@ position_biases_cov <- function(prefiltered_gatk_path, aa_seq_path, window_size 
   means_cov <- rep(NA, nchar(aa_seq))
 
   # Calculate means for cov (should be the same over all variants in one position)
+  rows_by_position <- split(seq_len(nrow(prefiltered_gatk)),
+                            factor(match(prefiltered_gatk\$pos, aa_positions), levels = seq_along(aa_positions)))
   for (i in 1:(nchar(aa_seq))) {
-    window_data <- prefiltered_gatk %>% filter(prefiltered_gatk\$pos %in% aa_positions[i])
+    window_data <- prefiltered_gatk[rows_by_position[[i]], , drop = FALSE]
     means_cov[i] <- mean(window_data\$cov, na.rm = FALSE)
   }
 
   pos_bias_df <- data.frame(pos = seq(nchar(aa_seq)))
 
   # Log-transform the rolling means to avoid issues with zeros (log(y + 0.001))
-  pos_bias_df\$rolling_mean_cov <- rollapply(means_cov, width = window_size,
-                                            FUN = function(x) (mean(x, na.rm = TRUE)), fill = "extend")
+  pos_bias_df\$rolling_mean_cov <- roll_extend(means_cov, width = window_size,
+                                            FUN = function(x) (mean(x, na.rm = TRUE)))
 
   # Generate the plot
   plots_theme <- list(
@@ -592,10 +653,10 @@ logdiff_plot <- function(completed_path) {
   }
   floor_value <- min(nonzero) / 2
 
-  sorted_counts <- completed %>%
-    mutate(counts_per_cov_plot = ifelse(cpc > 0, cpc, floor_value),
-           category = ifelse(cpc > 0, as.character(varying_bases), "none")) %>%
-    arrange(counts_per_cov_plot)
+  sorted_counts <- completed
+  sorted_counts\$counts_per_cov_plot <- ifelse(cpc > 0, cpc, floor_value)
+  sorted_counts\$category <- ifelse(cpc > 0, as.character(sorted_counts\$varying_bases), "none")
+  sorted_counts <- arrange_base(sorted_counts, sorted_counts\$counts_per_cov_plot)
   sorted_counts\$ids <- seq_len(nrow(sorted_counts))
 
   Q3 <- quantile(sorted_counts\$counts_per_cov_plot, 0.90, na.rm = TRUE)
@@ -804,26 +865,20 @@ if (as.logical("$run_seqdepth")) {
 # create versions.yml
 ####
 r_version <- strsplit(version[['version.string']], ' ')[[1]][3]
-dplyr_version <- as.character(packageVersion("dplyr"))
 ggplot2_version <- as.character(packageVersion("ggplot2"))
 scales_version <- as.character(packageVersion("scales"))
-zoo_version <- as.character(packageVersion("zoo"))
 
 if (is.null(r_version)) r_version <- "unknown"
-if (length(dplyr_version) == 0) dplyr_version <- "unknown"
 if (length(ggplot2_version) == 0) ggplot2_version <- "unknown"
 if (length(scales_version) == 0) scales_version <- "unknown"
-if (length(zoo_version) == 0) zoo_version <- "unknown"
 
 f <- file("versions.yml", "w")
 writeLines(
   c(
     '"${task.process}":',
     paste('    r-base:', r_version),
-    paste('    r-dplyr:', dplyr_version),
     paste('    r-ggplot2:', ggplot2_version),
-    paste('    r-scales:', scales_version),
-    paste('    r-zoo:', zoo_version)
+    paste('    r-scales:', scales_version)
   ),
   f
 )

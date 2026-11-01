@@ -44,10 +44,8 @@ process VISUALIZATION_LIBRARY_QC {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         r-base: "0.0.0"
-        r-dplyr: "0.0.0"
         r-ggplot2: "0.0.0"
         r-scales: "0.0.0"
-        r-zoo: "0.0.0"
     END_VERSIONS
     """
 }

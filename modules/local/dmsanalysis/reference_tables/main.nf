@@ -31,7 +31,6 @@ process DMSANALYSIS_REFERENCE_TABLES {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         r-base: "0.0.0"
-        r-Biostrings: "0.0.0"
     END_VERSIONS
     """
 }

@@ -100,21 +100,9 @@
 
   > R Core Team. R: A Language and Environment for Statistical Computing. R Foundation for Statistical Computing, Vienna, Austria. https://www.R-project.org/
 
-- [Biostrings](https://bioconductor.org/packages/Biostrings/)
-
-  > Pagès H, Aboyoun P, Gentleman R, DebRoy S. Biostrings: Efficient manipulation of biological strings. R package. doi: 10.18129/B9.bioc.Biostrings.
-
 - [ggplot2](https://ggplot2.tidyverse.org/)
 
   > Wickham H. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York; 2016. ISBN: 978-3-319-24277-4.
-
-- [tidyverse](https://www.tidyverse.org/) (dplyr, tidyr, stringr)
-
-  > Wickham H, Averick M, Bryan J, et al. Welcome to the tidyverse. Journal of Open Source Software. 2019;4(43):1686. doi: 10.21105/joss.01686.
-
-- [zoo](https://cran.r-project.org/package=zoo)
-
-  > Zeileis A, Grothendieck G. zoo: S3 Infrastructure for Regular and Irregular Time Series. Journal of Statistical Software. 2005;14(6):1-27. doi: 10.18637/jss.v014.i06.
 
 - [DiMSum](https://link.springer.com/article/10.1186/s13059-020-02091-3)
 

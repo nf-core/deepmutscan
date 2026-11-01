@@ -3,14 +3,68 @@
 # The two reference tables of a run, in one task: the wildtype amino-acid sequence of the reading
 # frame (aa_seq.txt) and the table of all programmed codon variants (possible_mutations.csv). They
 # used to be two processes (DMSANALYSIS_AASEQ and DMSANALYSIS_POSSIBLE_MUTATIONS) on the same FASTA,
-# reading frame and R image; the two functions below are those scripts, unchanged.
+# reading frame and R image; the two functions below are those scripts, with the reference read and
+# translated in base R (the Biostrings calls they made, with the same results).
 #
 # Inputs:  wt_seq (reference FASTA), pos_range ("start-stop", 1-based inclusive), mutagenesis_type,
 #          custom_codon_library (a file, or empty when --custom_codon_library is not given)
 # Outputs: aa_seq.txt, possible_mutations.csv
 
-suppressMessages(library(Biostrings))
-suppressMessages(library(methods))
+####################################################################################################
+# Base-R replacements for Biostrings (readDNAStringSet, subseq, translate), with Biostrings' results
+####################################################################################################
+
+# The standard genetic code (Biostrings::GENETIC_CODE); stop codons are "*"
+GENETIC_CODE_STANDARD <- c(
+  TTT = "F", TTC = "F", TTA = "L", TTG = "L", CTT = "L", CTC = "L", CTA = "L", CTG = "L",
+  ATT = "I", ATC = "I", ATA = "I", ATG = "M", GTT = "V", GTC = "V", GTA = "V", GTG = "V",
+  TCT = "S", TCC = "S", TCA = "S", TCG = "S", CCT = "P", CCC = "P", CCA = "P", CCG = "P",
+  ACT = "T", ACC = "T", ACA = "T", ACG = "T", GCT = "A", GCC = "A", GCA = "A", GCG = "A",
+  TAT = "Y", TAC = "Y", TAA = "*", TAG = "*", CAT = "H", CAC = "H", CAA = "Q", CAG = "Q",
+  AAT = "N", AAC = "N", AAA = "K", AAG = "K", GAT = "D", GAC = "D", GAA = "E", GAG = "E",
+  TGT = "C", TGC = "C", TGA = "*", TGG = "W", CGT = "R", CGC = "R", CGA = "R", CGG = "R",
+  AGT = "S", AGC = "S", AGA = "R", AGG = "R", GGT = "G", GGC = "G", GGA = "G", GGG = "G"
+)
+
+# Sequences of a FASTA file, as readDNAStringSet() reads them: one string per record, sequence lines
+# joined, upper case, letters outside the DNA alphabet (IUPAC codes, "-", "+", ".") dropped
+read_fasta <- function(path) {
+  lines <- readLines(path, warn = FALSE)
+  starts <- grep("^>", lines)
+  if (length(starts) == 0) stop("no FASTA record in ", path)
+  ends <- c(starts[-1] - 1L, length(lines))
+  seqs <- mapply(function(s, e) if (e > s) paste(lines[(s + 1L):e], collapse = "") else "", starts, ends)
+  gsub("[^ACGTMRWSYKVHDBN.+-]", "", toupper(seqs))
+}
+
+# subseq(): stops on a range outside the sequence, as Biostrings does
+subseq_checked <- function(x, start, end) {
+  if (is.na(start) || is.na(end) || start < 1 || end > nchar(x) || end < start - 1)
+    stop("Invalid sequence coordinates: ", start, "-", end, " in a sequence of length ", nchar(x))
+  substr(x, start, end)
+}
+
+# translate(x, no.init.codon = TRUE): the codons of each sequence by the standard code, trailing
+# bases beyond the last full codon ignored. A codon with a letter outside ACGT stops the run, as
+# Biostrings does (fuzzy = "error"), or becomes "X" (fuzzy = "X", Biostrings' if.fuzzy.codon = "X").
+translate_dna <- function(x, fuzzy = c("error", "X")) {
+  fuzzy <- match.arg(fuzzy)
+  x <- toupper(x)
+  n <- nchar(x) %/% 3L
+  out <- character(length(x))
+  for (len in unique(n)) {
+    i <- which(n == len)
+    if (len == 0L) next
+    aa <- lapply(seq_len(len), function(k) GENETIC_CODE_STANDARD[substr(x[i], 3L * k - 2L, 3L * k)])
+    bad <- vapply(aa, anyNA, logical(1))
+    if (any(bad)) {
+      if (fuzzy == "error") stop("not a base in codon ", which(bad)[1], " of a sequence to translate")
+      aa <- lapply(aa, function(a) { a[is.na(a)] <- "X"; a })
+    }
+    out[i] <- do.call(paste0, unname(aa))
+  }
+  out
+}
 
 ####################################################################################################
 # 1. Wildtype amino-acid sequence (aa_seq.txt)
@@ -28,21 +82,20 @@ aa_seq <- function(wt_seq_input, pos_range, output_file) {
   # Check if the input is a file or a string
   if (file.exists(wt_seq_input)) {
     # If it's a file, read the sequence from the fasta file
-    seq_data <- readDNAStringSet(filepath = wt_seq_input)
-    wt_seq <- seq_data[[1]]  # Extract the sequence
+    wt_seq <- read_fasta(wt_seq_input)[1]  # the first sequence
   } else {
     # Otherwise, treat the input as a sequence string
-    wt_seq <- DNAString(wt_seq_input)
+    wt_seq <- toupper(wt_seq_input)
   }
 
   # Extract the sequence between start and stop codons
-  coding_seq <- subseq(wt_seq, start = start_pos, end = stop_pos)
+  coding_seq <- subseq_checked(wt_seq, start = start_pos, end = stop_pos)
 
   # Translate the coding sequence into an amino acid sequence
-  aa_seq <- translate(coding_seq, no.init.codon = TRUE)
+  aa_seq <- translate_dna(coding_seq)
 
   # Write the amino acid sequence to a .txt file
-  write(as.character(aa_seq), file = output_file)
+  write(aa_seq, file = output_file)
 }
 
 ####################################################################################################
@@ -73,15 +126,13 @@ generate_possible_variants <- function(wt_seq_input, start_stop_pos, mutagenesis
 
   # Load sequence from file or process as a direct string
   if (file.exists(wt_seq_input)) {
-    seq_data <- Biostrings::readDNAStringSet(filepath = wt_seq_input)
-    wt_seq <- seq_data[[1]]
+    wt_seq <- read_fasta(wt_seq_input)[1]
   } else {
-    wt_seq <- Biostrings::DNAString(wt_seq_input)
+    wt_seq <- toupper(wt_seq_input)
   }
 
   # Extract the target coding sequence
-  coding_seq <- Biostrings::subseq(wt_seq, start = start_pos, end = stop_pos)
-  coding_seq <- as.character(coding_seq)
+  coding_seq <- subseq_checked(wt_seq, start = start_pos, end = stop_pos)
 
   # Predefined codon dictionaries
   nnk_codons <- c('AAG', 'AAT', 'ATG', 'ATT', 'AGG', 'AGT', 'ACG', 'ACT', 'TAG', 'TAT', 'TTG', 'TTT', 'TGG', 'TGT', 'TCG', 'TCT', 'GAG', 'GAT', 'GTG', 'GTT', 'GGG', 'GGT', 'GCG', 'GCT', 'CAG', 'CAT', 'CTG', 'CTT', 'CGG', 'CGT', 'CCG', 'CCT')
@@ -246,17 +297,14 @@ generate_possible_variants(
 # create versions.yml
 ####
 r_version <- strsplit(version[['version.string']], ' ')[[1]][3]
-Biostrings_version <- as.character(packageVersion("Biostrings"))
 
 if (is.null(r_version)) r_version <- "unknown"
-if (length(Biostrings_version) == 0) Biostrings_version <- "unknown"
 
 f <- file("versions.yml", "w")
 writeLines(
   c(
     '"${task.process}":',
-    paste('    r-base:', r_version),
-    paste('    r-Biostrings:', Biostrings_version)
+    paste('    r-base:', r_version)
   ),
   f
 )
