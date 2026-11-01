@@ -26,6 +26,10 @@
 
   > Andrews S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].
 
+- [GNU Awk](https://www.gnu.org/software/gawk/) (upper-casing the reference)
+
+  > Robbins AD. GAWK: Effective AWK Programming. Free Software Foundation. https://www.gnu.org/software/gawk/manual/
+
 - [bwa-mem3](https://github.com/fg-labs/bwa-mem3)
 
   > Fulcrum Genomics. bwa-mem3: a short-read aligner derived from bwa-mem2 with correctness fixes and performance improvements. https://bwa-mem3.readthedocs.io

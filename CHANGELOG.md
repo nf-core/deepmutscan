@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Fixed`
 
+- Translation of the first codon of the mutagenised window: `Biostrings::translate()` reads TTG and CTG at position 1 as methionine (its initiation-codon rule). The default fitness estimation and the reference tables now translate every codon by the genetic code (`no.init.codon = TRUE`), so a TTG/CTG variant at the first position is reported as L
 - False-doubles correction: single-nucleotide variants without an observed false double (_F_ = 0) are no longer dropped from the error-rate fit and left uncorrected when false doubles were seen for them that did not pair with a programmed variant; this made the fitted error rate depend on sequencing depth
 - False-doubles correction: the maximum possible joint coverage of a false double is the numeric, not the alphabetical, minimum of the two codons' coverages
 - False-doubles correction: wildtype-template libraries are no longer corrected with rates estimated from their handful of chance false doubles
@@ -38,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - False-doubles correction: a library without double mutants or without usable anchors, or with an empty count table, no longer stops the evidence, estimation or correction step; its pool is estimated from the other libraries, or left uncorrected with a message in the log
 - False-doubles correction: the libraries of a pool are combined in the order of their names rather than the order in which their tasks finished, so the pooled rates and priors no longer change in the last digits from one run to the next
 - False-doubles correction: `--false_doubles_method mle` needs at least 1,000 false-double reads in a pool (`eb`: 100); measured on GID1A and OsTIR1 pools thinned to 0.02-30 % of their reads, the per-variant _F_/_M_ is worse than no correction below that, while `eb` beats no correction at every depth
+- A reference FASTA with lower-case (soft-masked) bases no longer stops the false-doubles correction with a reference/counts coordinate mismatch, nor gives its positions substitution classes outside the 6 types and 96 contexts: the reference is converted to upper case (`REFERENCE_UPPERCASE`, the nf-core `gawk` module) before any step reads it
 
 ### `Dependencies`
 
@@ -57,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 | `pyarrow`         | 24.0.0 (removed)    |
 | `biopython`       | 1.87 (removed)      |
 | `vsearch`         | 2.32.0 (was 2.30.0) |
+| `gawk`            | 5.3.1 (new)         |
 
 ## v1.0.0 - Puyol - [2026-11-14]
 

@@ -34,7 +34,7 @@ compute_nt_hamming <- function(merged.counts, wt.seq) {
 
 # translate sequences and add aa_seq
 add_aa_seq <- function(merged.counts) {
-  merged.counts <- cbind("aa_seq" = as.character(translate(DNAStringSet(merged.counts\$nt_seq))), merged.counts)
+  merged.counts <- cbind("aa_seq" = as.character(translate(DNAStringSet(merged.counts\$nt_seq), no.init.codon = TRUE)), merged.counts)
   merged.counts
 }
 
@@ -275,7 +275,7 @@ run_fitness_estimation <- function(counts_path,
   merged.counts <- read.table(counts_path, sep = "\t", header = TRUE, check.names = FALSE)
   exp.design   <- read.table(design_path, sep = "\t", header = TRUE, check.names = FALSE)
   wt.seq       <- DNAString(as.character(read.table(wt_seq_path)))
-  wt.seq.aa    <- translate(wt.seq)
+  wt.seq.aa    <- translate(wt.seq, no.init.codon = TRUE)
 
   ## 2. Pre-processing the count table ##
   #######################################

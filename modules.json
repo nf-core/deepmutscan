@@ -10,6 +10,11 @@
                         "git_sha": "2d590fdee3e25a93d4757ca14159a42e1406970b",
                         "installed_by": ["modules"]
                     },
+                    "gawk": {
+                        "branch": "master",
+                        "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
+                        "installed_by": ["modules"]
+                    },
                     "multiqc": {
                         "branch": "master",
                         "git_sha": "98403d15b0e50edae1f3fec5eae5e24982f1fade",
