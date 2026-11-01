@@ -305,7 +305,7 @@ def validateSamplesheet(metas) {
 //
 // Quick start-up checks of the input FASTQ files, before any process runs. Reads only the first
 // record of each file, so it takes a moment even for remote files. The complete files are checked
-// by FASTQ_CHECK (fq lint) at the start of the workflow. All problems are reported together.
+// by RAW_DATA_QC (fq lint) at the start of the workflow. All problems are reported together.
 //
 def validateInputFiles(rows) {
     def problems = []
@@ -398,7 +398,7 @@ def firstFastqRecord(fastq) {
 }
 
 //
-// Results of FASTQ_CHECK (fq lint over each complete read pair): stop the run with one message
+// Results of RAW_DATA_QC (fq lint over each complete read pair): stop the run with one message
 // listing every library that failed, otherwise log a short summary
 //
 def checkFastqReports(rows) {
@@ -429,7 +429,7 @@ def toolCitationText() {
     def citations = [
         "Tools used in the workflow included:",
         "fq (St. Jude Rust Labs),",
-        "FastQC (Andrews 2010),",
+        "Falco (de Sena Brandine and Smith 2019),",
         "BWA-MEM (Li 2013),",
         "SAMtools (Danecek et al. 2021),",
         "VSEARCH (Rognes et al. 2016),",
@@ -452,7 +452,7 @@ def toolCitationText() {
 def toolBibliographyText() {
     def references = [
         "<li>St. Jude Rust Labs. fq: FASTQ file manipulation and validation. URL: https://github.com/stjude-rust-labs/fq</li>",
-        "<li>Andrews S, (2010) FastQC, URL: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/.</li>",
+        "<li>de Sena Brandine G, Smith AD. (2019) Falco: high-speed FastQC emulation for quality control of sequencing data. F1000Research, 8, 1874. doi: 10.12688/f1000research.21142.2</li>",
         "<li>Li H. (2013) Aligning sequence reads, clone sequences and assembly contigs with BWA-MEM. arXiv:1303.3997. doi: 10.48550/arXiv.1303.3997</li>",
         "<li>Danecek P, Bonfield JK, Liddle J, et al. (2021) Twelve years of SAMtools and BCFtools. Gigascience, 10(2), giab008. doi: 10.1093/gigascience/giab008</li>",
         "<li>Rognes T, Flouri T, Nichols B, Quince C, Mahe F. (2016) VSEARCH: a versatile open source tool for metagenomics. PeerJ, 4, e2584. doi: 10.7717/peerj.2584</li>",
