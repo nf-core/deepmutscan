@@ -5,13 +5,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.1.0dev - [unreleased]
 
+### `Changed`
+
+- Nextflow >= 26.10.0 is required (was 25.10.4)
+
 ### `Added`
 
-### `Fixed`
+- Carbon-footprint estimate of every run with the [nf-co2footprint](https://nextflow-io.github.io/nf-co2footprint/) plugin: `pipeline_info/co2footprint_{report,summary,trace}_<timestamp>.*`, with `--co2_location` for the compute site's grid zone
 
 ### `Dependencies`
 
-### `Deprecated`
+| Dependency        | Version     |
+| ----------------- | ----------- |
+| `nf-co2footprint` | 1.4.1 (new) |
 
 ## v1.0.0 - Puyol - [2026-11-14]
 

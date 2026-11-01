@@ -330,6 +330,13 @@
                     "description": "Suffix to add to the trace report filename. Default is the date and time in the format yyyy-MM-dd_HH-mm-ss.",
                     "hidden": true
                 },
+                "co2_location": {
+                    "type": "string",
+                    "fa_icon": "fas fa-leaf",
+                    "description": "Electricity Maps zone code of the compute site for the carbon-footprint estimate (e.g. `ES`, `DE`, `US-CAL-CISO`).",
+                    "help_text": "Used by the nf-co2footprint plugin to pick the carbon intensity of the local grid (yearly 2024 average without an API key). Unset, the plugin uses a global average. Best set once in a site profile or custom config.",
+                    "hidden": true
+                },
                 "help_full": {
                     "type": "boolean",
                     "description": "Display the full detailed help message."
