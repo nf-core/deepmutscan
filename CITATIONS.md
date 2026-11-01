@@ -42,6 +42,10 @@
 
   > Stammnitz MR, Wehnert B. dms_count: a single-pass variant counter for deep mutational scanning alignments (C, htslib). https://github.com/MaximilianStammnitz/dms-count
 
+- [dms-fdmcorrect](https://github.com/MaximilianStammnitz/dms-fdmcorrect)
+
+  > Stammnitz MR. dms-fdmcorrect: sequencing-error correction of deep mutational scanning counts by false double mutants (R package fdmcorrect). https://github.com/MaximilianStammnitz/dms-fdmcorrect
+
 - [HTSlib](https://doi.org/10.1093/gigascience/giab007)
 
   > Bonfield JK, Marshall J, Danecek P, Li H, Ohan V, Whitwham A, Keane T, Davies RM. HTSlib: C library for reading/writing high-throughput sequencing data. Gigascience. 2021 Feb 16;10(2):giab007. doi: 10.1093/gigascience/giab007.
@@ -75,6 +79,18 @@
 - [pandas](https://pandas.pydata.org/)
 
   > McKinney W. Data Structures for Statistical Computing in Python. Proceedings of the 9th Python in Science Conference. 2010;56-61. doi: 10.25080/Majora-92bf1922-00a.
+
+- [COSMIC mutational signatures](https://cancer.sanger.ac.uk/signatures/) (default error-spectrum candidates)
+
+  > Alexandrov LB, Kim J, Haradhvala NJ, et al. The repertoire of mutational signatures in human cancer. Nature. 2020;578(7793):94-101. doi: 10.1038/s41586-020-1943-3.
+
+- [FFPE signatures](https://github.com/QingliGuo/FFPEsig) (default error-spectrum candidates)
+
+  > Guo Q, Lakatos E, Bakir IA, Curtius K, Graham TA, Mustonen V. The mutational signatures of formalin fixation on the human genome. Nature Communications. 2022;13:4487. doi: 10.1038/s41467-022-32041-5.
+
+- [SigProfilerMatrixGenerator](https://github.com/AlexandrovLab/SigProfilerMatrixGenerator) (GRCh37 trinucleotide counts)
+
+  > Bergstrom EN, Huang MN, Mahto U, et al. SigProfilerMatrixGenerator: a tool for visualizing and exploring patterns of small mutational events. BMC Genomics. 2019;20:685. doi: 10.1186/s12864-019-6041-2.
 
 - [R](https://www.r-project.org/)
 

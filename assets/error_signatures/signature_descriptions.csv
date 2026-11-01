@@ -1,0 +1,24 @@
+signature,label,description
+SBS46,sequencing artefact,"T>C across most contexts. COSMIC: possible sequencing artefact, common in colorectal cancers from TCGA releases before 2013 and absent from later ones."
+SBS45,8-oxo-guanine,C>A from 8-oxo-guanine introduced during sequencing. COSMIC: experimentally confirmed in vitro (Costello et al. 2013).
+SBS18,reactive oxygen species,C>A damage by reactive oxygen species. COSMIC: experimentally confirmed (Kucab et al. 2019); similar to SBS36 (defective base-excision repair).
+SBS27,sequencing artefact,T>A dominated. COSMIC: possible sequencing artefact; the mutations could not be validated visually.
+SBS43,sequencing artefact,"C>A and T>G. COSMIC: unknown aetiology, possible sequencing artefact; the mutations could not be validated."
+SBS47,sequencing artefact,T>A dominated. COSMIC: found in samples later blacklisted for poor sequencing quality.
+SBS50,sequencing artefact,C>A dominated. COSMIC: found in samples later blacklisted for poor sequencing quality.
+SBS51,sequencing artefact,C>A and T>C. COSMIC: possible sequencing artefact; the mutations could not be validated.
+SBS53,sequencing artefact,C>A at C[C>A]A. COSMIC: found in samples later blacklisted for poor sequencing quality.
+SBS55,sequencing artefact,T>G at G[T>G]G. COSMIC: possible sequencing artefact; the mutations could not be validated.
+SBS57,sequencing artefact,"T>C, concentrated at T[T>C]T. COSMIC: possible sequencing artefact; the mutations could not be validated."
+SBS58,sequencing artefact,"C>T, concentrated at T[C>T]T. COSMIC: potential sequencing artefact; the mutations could not be validated."
+FFPE_unrepaired,cytosine deamination,"C>T from hydrolytic deamination of cytosine, the unrepaired formalin-fixation signature of Guo et al. 2022. The closest COSMIC shape is SBS30 (cosine 0.92)."
+FFPE_repaired,deamination after repair,The formalin-fixation signature of Guo et al. 2022 after uracil-DNA-glycosylase repair: the CpG part of the deamination spectrum survives.
+SBS30,base-excision-repair deficiency,"C>T from defective base-excision repair (NTHL1 loss). An endogenous process, kept only in the extended set: its shape stands in for unrepaired cytosine deamination (cosine 0.92 to FFPE unrepaired)."
+SBS95,sequencing artefact,"Broad C>A. COSMIC: possible sequencing artefact from one study of liver cancers, with no replication in other cohorts, callers or centres; cosine 0.90 to SBS18."
+SBS54,germline contamination,COSMIC: possible contamination with germline variants - the spectrum of common human polymorphisms rather than a damage process.
+SBS48,sequencing artefact,"71 % of it is one channel, T[C>A]G. COSMIC: found in samples later blacklisted for poor sequencing quality."
+SBS49,sequencing artefact,Concentrated at C[C>A]G. COSMIC: found in samples later blacklisted for poor sequencing quality.
+SBS52,sequencing artefact,Concentrated at T[C>A]A. COSMIC: found in samples later blacklisted for poor sequencing quality.
+SBS56,sequencing artefact,Concentrated at T[C>A]T. COSMIC: possible sequencing artefact; the mutations could not be validated.
+SBS59,sequencing artefact,Concentrated at G[C>A]T. COSMIC: possible sequencing artefact; the mutations could not be validated.
+SBS60,sequencing artefact,"66 % of it is one channel, G[T>G]G. COSMIC: possible sequencing artefact."

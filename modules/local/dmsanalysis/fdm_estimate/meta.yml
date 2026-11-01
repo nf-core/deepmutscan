@@ -1,0 +1,63 @@
+name: "dmsanalysis_fdm_estimate"
+description: "Estimates per-variant sequencing error rates for one pool of libraries from their false-double-mutant evidence, by maximum likelihood or by Gamma-Poisson empirical Bayes with substitution-type or trinucleotide-context priors."
+keywords:
+  - deep mutational scanning
+  - error correction
+  - false doubles
+  - empirical Bayes
+tools:
+  - "dms-fdmcorrect":
+      description: "Sequencing-error correction of deep mutational scanning counts by false double mutants (R package fdmcorrect)"
+      homepage: "https://github.com/MaximilianStammnitz/dms-fdmcorrect"
+      licence: ["MIT"]
+  - "r-base":
+      description: "The R programming language"
+      homepage: "https://www.r-project.org/"
+      licence: ["GPL-2.0-or-later"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map with the pool identifier and whether the pool is a wildtype-template library
+          e.g. `[ id:'ORF1_input', wildtype:false ]`
+    - evidence:
+        type: file
+        description: One `fdm_evidence.csv` per library of the pool.
+        pattern: "fdm_evidence.csv"
+  - - method:
+        type: string
+        description: Estimator, `eb` or `mle`.
+  - - prior:
+        type: string
+        description: Empirical-Bayes prior classes, `trinucleotide_context` or `substitution_type`.
+
+output:
+  - rates:
+      - meta:
+          type: map
+          description: Groovy Map with the pool identifier
+      - fdm_rates.csv:
+          type: file
+          description: Per single-nucleotide variant - pooled `F` and `M`, prior mean and strength, shrinkage weight and error rate `e` (NA = no rate, variant left uncorrected).
+          pattern: "fdm_rates.csv"
+  - prior_fit:
+      - meta:
+          type: map
+          description: Groovy Map with the pool identifier
+      - fdm_prior_fit.csv:
+          type: file
+          description: Fitted prior per level and class - pooled rate, prior mean and strength (nu), whether nu was fitted or inherited, and the pool's median shrinkage weight.
+          pattern: "fdm_prior_fit.csv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@MaximilianStammnitz"
+  - "@BenjaminWehnert1008"
+maintainers:
+  - "@MaximilianStammnitz"
+  - "@BenjaminWehnert1008"

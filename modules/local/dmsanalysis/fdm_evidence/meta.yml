@@ -1,0 +1,79 @@
+name: "dmsanalysis_fdm_evidence"
+description: "Collects the false-double-mutant (FDM) error evidence of one library: for every observed single-nucleotide library variant, the number of reads carrying it together with a nearby programmed multi-nucleotide codon variant (false-double reads, F) and the number of such anchor reads spanning its codon (exposure, M)."
+keywords:
+  - deep mutational scanning
+  - error correction
+  - false doubles
+  - sequencing error
+tools:
+  - "dms-fdmcorrect":
+      description: "Sequencing-error correction of deep mutational scanning counts by false double mutants (R package fdmcorrect)"
+      homepage: "https://github.com/MaximilianStammnitz/dms-fdmcorrect"
+      licence: ["MIT"]
+  - "r-base":
+      description: "The R programming language"
+      homepage: "https://www.r-project.org/"
+      licence: ["GPL-2.0-or-later"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', sample:'ORF1', type:'input', replicate:1 ]`
+    - raw_counts:
+        type: file
+        description: Raw (pre-library-filter) variant count table from MERGE_ALIGN_COUNT.
+        pattern: "*.variant_counts.tsv"
+    - filtered:
+        type: file
+        description: Library-filtered single-codon variant counts (annotated CSV).
+        pattern: "*.csv"
+  - - wt_fasta:
+        type: file
+        description: Reference the reads were aligned to (coordinate frame of `base_mut`).
+        pattern: "*.{fa,fasta,fna}"
+  - - max_fd_dist:
+        type: integer
+        description: Anchors farther than this many codons from the variant are not used (`--max_FDdist`); beyond it the joint coverage of the two sites is thin and the evidence carries a distance-dependent background.
+  - - min_fd_dist:
+        type: integer
+        description: Anchors closer than this many codons to the variant are not used (`--min_FDdist`); inside a mutagenesis primer's footprint the false doubles carry that primer's own recurrent errors.
+
+output:
+  - evidence:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - fdm_evidence.csv:
+          type: file
+          description: Per single-nucleotide variant - substitution type, trinucleotide context, counts, coverage, false-double reads `F`, exposure `M`, and the numbers of anchor codons and false-double candidates in the window.
+          pattern: "fdm_evidence.csv"
+  - summary:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - fdm_evidence_summary.csv:
+          type: file
+          description: One-row library summary - false doubles used, outlier threshold, coverage-decay fit, totals of F and M, the numbers of variants with F = 0 and M = 0, the genuine-double measurement (gd_reads, gd_exposure, gd_kappa) on reads carrying two programmed multi-nucleotide variants, and the false-double rate inside versus outside the min_FDdist exclusion (near_*, far_*).
+          pattern: "fdm_evidence_summary.csv"
+  - profile:
+      - meta:
+          type: map
+          description: Groovy Map with the library identifier
+      - fdm_distance_profile.csv:
+          type: file
+          description: Per codon distance between a variant and its anchor - false-double reads and exposure, and genuine-double reads and their expectation under independent integration.
+          pattern: "fdm_distance_profile.csv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@MaximilianStammnitz"
+  - "@BenjaminWehnert1008"
+maintainers:
+  - "@MaximilianStammnitz"
+  - "@BenjaminWehnert1008"

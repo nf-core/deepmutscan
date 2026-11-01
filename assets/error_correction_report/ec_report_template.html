@@ -183,6 +183,20 @@
         font-weight: 500;
         color: var(--muted);
       }
+      /* tiles that sit in a row of three to five: one line for the name, one for the number, always */
+      .tiles.tight .k,
+      .tiles.tight .v {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tiles.tight .k {
+        font-size: 11px;
+        letter-spacing: -0.01em;
+      }
+      .tiles.tight .v {
+        font-size: 20px;
+      }
       .sechead {
         display: flex;
         align-items: baseline;
@@ -229,6 +243,11 @@
         grid-template-columns: 1fr 1fr;
         gap: 18px;
       }
+      .gridn {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 18px;
+      }
       @media (max-width: 760px) {
         .grid2 {
           grid-template-columns: 1fr;
@@ -251,6 +270,30 @@
       .tick {
         fill: var(--muted);
         font-size: 10px;
+      }
+      .sub2lbl {
+        font-size: 11px;
+        fill: var(--ink2);
+        font-weight: 600;
+      }
+      .bands {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 2px;
+      }
+      .band {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+      }
+      .band b {
+        font-size: 18px;
+        font-weight: 650;
+      }
+      .band span {
+        font-size: 11px;
+        color: var(--ink2);
       }
       .albl {
         fill: var(--ink2);
@@ -347,6 +390,45 @@
         font-weight: 600;
         color: var(--ink2);
         margin: 0 0 8px;
+      }
+      .gloss {
+        list-style: none;
+        margin: 6px 0 14px;
+        padding: 0;
+        font-size: 12px;
+        color: var(--ink2);
+        line-height: 1.5;
+      }
+      .gloss li {
+        margin: 2px 0;
+      }
+      .gloss .sw {
+        margin-right: 6px;
+      }
+      /* the whole candidate set, folded away until a reader wants to audit what was on offer */
+      details.cands {
+        margin: 2px 0 14px;
+        font-size: 12px;
+        color: var(--ink2);
+      }
+      details.cands > summary {
+        cursor: pointer;
+        color: var(--accent);
+        font-weight: 500;
+      }
+      details.cands .gloss {
+        margin-top: 8px;
+      }
+      details.cands .gloss li.fitted {
+        color: var(--ink);
+      }
+      details.cands .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+        vertical-align: baseline;
       }
       .legend {
         display: flex;
@@ -542,63 +624,102 @@
   <body>
     <div class="wrap">
       <header>
-        <h1>Sequencing-error correction</h1>
+        <h1>Sequencing SNV-error correction</h1>
         <span class="sub">sample <b id="h-sample"></b></span>
         <span class="badge" id="h-method"></span>
       </header>
       <p class="lead" id="h-lead"></p>
 
-      <div class="tiles" id="tiles"></div>
+      <div class="tiles tight" id="tiles"></div>
 
       <!-- ============ SECTION 1 · comparison across files ============ -->
       <div class="sechead">
-        <span class="n">1 · COMPARE</span>
+        <span class="n">1 · ERROR REPRODUCIBILITY</span>
         <h2>
-          Reproducibility of the error signature
+          Reproducibility of the SNV error signature
           <button
             class="ibtn"
             type="button"
-            data-info="Upper triangle: Pearson r between two files of the per-variant removed error frequency (raw − corrected counts-per-coverage) over shared SNVs. Lower triangle: the same pair as a scatter — click to enlarge, hover a point for its variant."
+            data-info="A single-nucleotide variant (SNV) is one base changed against the reference. With false-doubles correction: per-SNV error rates — the pooled rate of each pool (bold, top rows; the rate the correction uses) and the same estimator applied to each library alone. Otherwise: the per-SNV removed error frequency (raw − corrected counts-per-coverage). Upper triangle: Pearson r over shared SNVs. Lower triangle: the same pair as a scatter — click to enlarge, hover a point for its SNV."
           >
             i
           </button>
         </h2>
       </div>
       <p class="secsub">
-        Where errors recur. The upper triangle scores how strongly two files agree on which variants are error-prone;
-        the lower triangle shows each pair as a scatter (click to enlarge). Higher agreement means the correction
-        reflects sequencing chemistry rather than chance.
+        Where SNV errors recur. With false-doubles correction the top row(s) hold the pooled SNV error rate the
+        correction uses, and every library's own estimate is set against it and against each other. The upper triangle
+        scores how strongly two series agree on which SNVs are error-prone; the lower triangle shows each pair as a
+        scatter (click to enlarge).
       </p>
       <div class="panel">
         <div id="c-corr"></div>
       </div>
 
+      <!-- ============ SECTION · anchors: what the false doubles are made of ============ -->
+      <div id="anc-section" hidden>
+        <div class="sechead">
+          <span class="n">· ERROR EVIDENCE</span>
+          <h2>
+            Which anchors the SNV error rate is read from
+            <button class="ibtn" type="button" id="anc-info" data-info="">i</button>
+          </h2>
+        </div>
+        <p class="secsub" id="anc-sub"></p>
+        <div class="seg" id="anc-seg"></div>
+        <div class="tiles tight" id="anc-tiles"></div>
+        <div class="panel" id="anc-panel"></div>
+      </div>
+
+      <!-- ============ SECTION · error spectrum and its signatures (false doubles) ============ -->
+      <div id="sig-section" hidden>
+        <div class="sechead">
+          <span class="n">· ERROR SPECTRUM</span>
+          <h2>
+            What the SNV errors are made of
+            <button
+              class="ibtn"
+              type="button"
+              data-info='The 96-channel SNV spectrum of the errors this run corrects, after the genuine doubles have been taken out, put on GRCh37 trinucleotide composition (rate per site × GRCh37 count) so that it compares with COSMIC-style SBS signatures (&lt;a href="https://cancer.sanger.ac.uk/signatures/sbs/" target="_blank" rel="noopener"&gt;cancer.sanger.ac.uk/signatures/sbs&lt;/a&gt;). Coloured bars: measured, in the COSMIC substitution colours. Grey stacks: the reconstruction. Signatures are chosen by a NNLS fit of the candidate COSMIC SBS signatures, then forward selection with only orthogonal SBS signatures, stopped at the elbow of the cosine curve to select the minimal number of signatures needed for reconstructing the spectrum. Signature aetiologies and the full SBS signature candidate set are listed under the plot.'
+            >
+              i
+            </button>
+          </h2>
+        </div>
+        <p class="secsub" id="sig-sub"></p>
+        <div class="seg" id="sig-seg"></div>
+        <div class="tiles tight" id="sig-tiles"></div>
+        <div class="panel" id="sig-panel"></div>
+      </div>
+
       <!-- ============ SECTION 2 · raw vs corrected, input / output ============ -->
       <div class="sechead">
-        <span class="n">2 · SELECTION</span>
+        <span class="n">2 · ERROR IMPACT</span>
         <h2>
-          Raw versus corrected frequency
+          Raw versus corrected SNV frequency
           <button
             class="ibtn"
             type="button"
-            data-info="Per-SNV raw vs corrected frequency (counts ÷ coverage); dashed y = x marks no change. The 'removed' lane holds variants floored to zero, which the log axis cannot place. Error bars span the spread across selected files."
+            data-info="Per-SNV raw vs corrected frequency (counts ÷ coverage) in one sequencing file; dashed y = x marks no change. The 'removed' lane holds SNVs floored to zero, which the log axis cannot place. Both axes run 10⁻⁷ to 10⁻² in every panel, so the panels compare directly."
           >
             i
           </button>
         </h2>
       </div>
       <p class="secsub">
-        Effect of correction on measured variants, split by input and output libraries. Toggle files; with two or more,
-        the bars span their spread.
+        Effect of the correction on measured SNVs, one panel per corrected sequencing file, all on the same axes. Points
+        are coloured by SNV class, as in the SINGLE FILE section below. Wildtype-template libraries are not corrected
+        and are not shown.
       </p>
-      <div class="grid2" id="scatter-groups"></div>
+      <div class="legend" id="sel-legend"></div>
+      <div class="gridn" id="scatter-groups"></div>
 
       <!-- ============ SECTION 3 · one file at a time ============ -->
       <!-- header + file selector stay pinned while scrolling this section, so it is always clear which
            file the panels below are showing -->
       <div class="stick">
         <div class="sechead">
-          <span class="n">3 · DETAIL</span>
+          <span class="n">3 · SINGLE FILE</span>
           <h2>
             One sequencing file in detail
             <button
@@ -610,7 +731,7 @@
             </button>
           </h2>
         </div>
-        <p class="secsub">Choose one file; every panel below recomputes for it alone.</p>
+        <p class="secsub">Choose one file; every panel below recomputes its SNVs for that file alone.</p>
         <div class="seg" id="file-seg"></div>
       </div>
 
@@ -619,11 +740,11 @@
         <div class="grid2">
           <div>
             <div class="sub2">
-              Sequencing-error frequency by substitution class
+              Sequencing SNV-error frequency by SNV class
               <button
                 class="ibtn"
                 type="button"
-                data-info="Per-SNV removed error frequency (raw − corrected counts-per-coverage ≈ per-nt error rate) in the selected file, by strand-symmetric substitution class; tick = class median."
+                data-info="Per-SNV removed error frequency (raw − corrected counts-per-coverage ≈ per-nucleotide SNV error rate) in the selected file, by strand-symmetric SNV class; tick = class median."
               >
                 i
               </button>
@@ -636,7 +757,7 @@
               <button
                 class="ibtn"
                 type="button"
-                data-info="Percentage of each SNV's counts removed in the selected file; untouched variants are omitted."
+                data-info="Percentage of each SNV's counts removed in the selected file; untouched SNVs are omitted."
               >
                 i
               </button>
@@ -648,26 +769,26 @@
 
       <div class="panel">
         <h3>
-          Where errors concentrate along the ORF
+          Where SNV errors concentrate along the ORF
           <button
             class="ibtn"
             type="button"
-            data-info="Fraction of counts removed per residue along the reading frame, selected file."
+            data-info="The removed SNV error frequency (raw − corrected counts ÷ coverage ≈ the per-nucleotide SNV error rate) at every NUCLEOTIDE of the reading frame in the selected file - nothing is averaged within a codon - one line per SNV class: the mean over the SNVs of that class at that base, which is at most one. The legend can sum the six class lines into one, the SNV error rate of that base over all its substitution channels, which therefore sits above every class line. Lines are drawn as steps, so a value holds across the nucleotide it was measured at. The x axis carries two rows: nucleotide position in reference coordinates, and the codon each one belongs to. The y axis is the same 10⁻⁷ to 10⁻² used elsewhere. Click a class in the legend above to isolate it."
           >
             i
           </button>
         </h3>
-        <p class="desc">Fraction of counts removed at each residue position.</p>
+        <p class="desc">SNV error rate at each nucleotide of the reading frame, by SNV class.</p>
         <div id="c-bias"></div>
       </div>
 
       <div class="panel">
         <h3>
-          Single-nucleotide substitutions by position
+          Single-nucleotide variants (SNVs) by position
           <button
             class="ibtn"
             type="button"
-            data-info="One row per SNV of the selected file, in reference (base_mut) coordinates; frequencies are counts ÷ coverage."
+            data-info="One row per SNV of the selected file, in reference (base_mut) coordinates; frequencies are counts ÷ coverage. A substitution is named by its pyrimidine-centric trinucleotide channel, as in the mutational spectrum - hover the cell for the raw position:ref&gt;alt."
           >
             i
           </button>
@@ -676,7 +797,7 @@
           <input
             type="search"
             id="snvq"
-            placeholder="Filter (e.g. K181M, 893, T&gt;A)…"
+            placeholder="Filter (e.g. K181M, 893, C[T&gt;C]G)…"
             aria-label="Filter single-nucleotide substitutions"
           />
           <span class="sub" id="snvcount"></span>
@@ -686,7 +807,7 @@
             <thead>
               <tr>
                 <th data-k="ntpos">Position</th>
-                <th data-k="nt">Substitution</th>
+                <th data-k="nt">Substitution (context)</th>
                 <th data-k="pos_mut">Residue change</th>
                 <th data-k="cls">Class</th>
                 <th data-k="f_raw">Raw freq</th>
@@ -712,6 +833,20 @@
       const DATA = JSON.parse(document.getElementById("ec-data").textContent);
       const FILES = (DATA.files || []).map((f) => (typeof f === "string" ? { id: f } : f));
       const V = DATA.variants || [];
+      // The COSMIC / SigProfiler SBS-96 convention for the six substitution classes. Used for the
+      // mutational spectrum, the selection scatter and the detail panels, so a class is one colour
+      // throughout the report and matches a published signature plot.
+      // T>A and T>G are darkened from the COSMIC values (#cbcaca, #ecc7c5), which are too faint to read as
+      // lines and points on white; the hues are kept so the plot still reads as a COSMIC-style one.
+      const SBS_COL = {
+        "C>A": "#03bdef",
+        "C>G": "#010101",
+        "C>T": "#e42926",
+        "T>A": "#9a9ca1",
+        "T>C": "#a2cf63",
+        "T>G": "#d98b86",
+      };
+      const SIG_GREY = ["#17171a", "#8a8a93", "#d2d2d9", "#51515b", "#aeaeb6", "#e6e6ea"];
       const CLASSES = DATA.classes || [];
       const V_BY_KEY = {}; // variant lookup for the correlation-matrix scatter point annotations
       for (const v of V) V_BY_KEY[v.key] = v;
@@ -734,8 +869,37 @@
         for (const k in a) e.setAttribute(k, a[k]);
         return e;
       };
-      const clsColor = (k) => `var(--c${CLASSES.findIndex((c) => c.cls === k) + 1})`;
+      const clsColor = (k) => SBS_COL[k] || `var(--c${CLASSES.findIndex((c) => c.cls === k) + 1})`;
       const clsLabel = (k) => (CLASSES.find((c) => c.cls === k) || {}).label || k;
+      // How a substitution is named everywhere a single variant is identified. The estimator stores the
+      // pyrimidine-centric channel, "A[C>A]G", which is what the mutational spectrum plots - but a reader
+      // looking for a variant knows it as it reads on the reference strand. So the name leads with the call
+      // in its own trinucleotide context, and only adds the folded channel when folding changed it:
+      // "T[G>T]T -> A[C>A]A". Without a stored channel (a wildtype-only run) the raw "<pos>:<ref>><alt>" is
+      // all there is.
+      const COMP = { A: "T", C: "G", G: "C", T: "A" };
+      const CTXRE = /^([ACGT])\[([ACGT])>([ACGT])\]([ACGT])$/;
+      const rcCtx = (c) => {
+        const m = String(c).match(CTXRE);
+        return m ? `${COMP[m[4]]}[${COMP[m[2]]}>${COMP[m[3]]}]${COMP[m[1]]}` : null;
+      };
+      const ntNative = (v) => {
+        if (!v) return "";
+        if (!v.ctx) return v.nt;
+        const m = String(v.nt).match(/^(\d+):([ACGT])>([ACGT])$/i),
+          f = String(v.ctx).match(CTXRE);
+        if (!m || !f) return v.ctx;
+        return m[2].toUpperCase() === f[2] ? v.ctx : rcCtx(v.ctx) || v.ctx;
+      };
+      const ntName = (v) => {
+        const nat = ntNative(v);
+        return v && v.ctx && nat !== v.ctx ? `${nat} → ${v.ctx}` : nat;
+      };
+      const ntTitle = (v) => {
+        if (!v) return "";
+        const nat = ntNative(v);
+        return v.ctx && nat !== v.ctx ? `${v.nt} · ${nat} · spectrum channel ${v.ctx}` : `${v.nt} · ${nat}`;
+      };
 
       // One tooltip handler per chart instead of two listeners on each of the thousands of points.
       // The tip text rides on the element as data-tip, so a single delegated mousemove serves the
@@ -778,7 +942,8 @@
             : DATA.method;
       document.getElementById("h-method").textContent = methodLabel;
       document.getElementById("h-lead").textContent =
-        `How ${methodLabel.toLowerCase()} estimated the sequencing-error background in single-nucleotide counts and ` +
+        `A single-nucleotide variant (SNV) is one base changed against the reference. This report shows how ` +
+        `${methodLabel.toLowerCase()} estimated the sequencing SNV-error background in the SNV counts of this run, and ` +
         `what it removed, across ${FILES.length} file${FILES.length === 1 ? "" : "s"} of sample ${DATA.sample}.`;
 
       /* ---------- per-file, per-variant quantities ---------- */
@@ -786,6 +951,25 @@
       // per-nucleotide error rate at that site (coverage cancels): counts and coverage are what the
       // report already carries, so nothing extra has to be threaded through the pipeline for this.
       const removed = (v, fi) => (v.f_raw[fi] != null && v.f_cor[fi] != null ? v.f_raw[fi] - v.f_cor[fi] : null);
+
+      /* ---------- what the reproducibility matrix compares ---------- */
+      // With false-doubles correction the pipeline ships the error rate of every pool and the same
+      // estimator run on each library alone: the matrix then sets them against each other, pooled
+      // series first (top rows), so each library's own estimate reads against the rate actually used.
+      // Otherwise (wildtype correction) it compares the error frequency removed from each file.
+      const RS = DATA.rate_series || [];
+      const USE_RATES = RS.length > 1;
+      const N_POOLS = USE_RATES ? RS.filter((s) => s.kind === "pool").length : 0;
+      const CORR_LABELS = USE_RATES
+        ? (() => {
+            const libs = shortLabels(RS.filter((s) => s.kind === "library").map((s) => s.id));
+            const pools = RS.filter((s) => s.kind === "pool").map((s) => "pooled · " + s.id);
+            return pools.concat(libs);
+          })()
+        : SHORT;
+      const CORR_N = USE_RATES ? RS.length : FILES.length;
+      const corrValue = (v, i) => (USE_RATES ? (v.rates ? v.rates[i] : null) : removed(v, i));
+      const CORR_WHAT = USE_RATES ? "SNV error rate" : "removed SNV error frequency";
 
       /* ---------- axis helpers ---------- */
       function textW(svg, s, cls) {
@@ -800,7 +984,7 @@
         LBL_PX = 11;
 
       /* =========================================================
-         SECTION 1 — cross-file correlation of the error signature
+         SECTION 1 — cross-file correlation of the SNV error signature
          ========================================================= */
       function pearson(pairs) {
         const n = pairs.length;
@@ -834,18 +1018,18 @@
       function drawCorr() {
         const host = document.getElementById("c-corr");
         host.innerHTML = "";
-        const N = FILES.length;
+        const N = CORR_N;
         if (N < 2) {
           host.innerHTML =
             '<div class="empty">A single sequencing file — cross-file reproducibility needs at least two.</div>';
           return;
         }
         // per file: map variant key -> removed error frequency (SNVs only)
-        const maps = FILES.map((_, fi) => {
+        const maps = Array.from({ length: N }, (_, fi) => {
           const m = new Map();
           for (const v of V) {
             if (!v.cls) continue;
-            const e = removed(v, fi);
+            const e = corrValue(v, fi);
             if (e != null) m.set(v.key, e);
           }
           return m;
@@ -877,7 +1061,7 @@
         }
         R_LAST = R;
         closeScatter(); // a rebuild (e.g. theme change) invalidates any open cell
-        const off = Math.max(...SHORT.map((s) => s.length)) * 6 + 14;
+        const off = Math.max(...CORR_LABELS.map((s) => s.length)) * 6 + 14;
         const cell = Math.max(30, Math.min(64, Math.floor((980 - off) / N)));
         const W = off + N * cell + 12,
           H = off + N * cell + 34;
@@ -885,7 +1069,8 @@
         host.appendChild(svg);
         for (let i = 0; i < N; i++) {
           const rl = el("text", { class: "tick", x: off - 6, y: off + i * cell + cell / 2 + 3, "text-anchor": "end" });
-          rl.textContent = SHORT[i];
+          if (i < N_POOLS) rl.setAttribute("font-weight", "700");
+          rl.textContent = CORR_LABELS[i];
           svg.appendChild(rl);
           const cl = el("text", {
             class: "tick",
@@ -894,7 +1079,8 @@
             "text-anchor": "start",
             transform: `rotate(-45 ${off + i * cell + cell / 2} ${off - 6})`,
           });
-          cl.textContent = SHORT[i];
+          cl.textContent = CORR_LABELS[i];
+          if (i < N_POOLS) cl.setAttribute("font-weight", "700");
           svg.appendChild(cl);
         }
         for (let i = 0; i < N; i++)
@@ -930,8 +1116,8 @@
               hit.addEventListener("mousemove", (e) =>
                 showTT(
                   e,
-                  `<b>${esc(SHORT[i])} × ${esc(SHORT[j])}</b><br>` +
-                    (c.r == null ? "too few shared variants" : `r = ${c.r.toFixed(3)} · ${fmt(c.n)} shared variants`) +
+                  `<b>${esc(CORR_LABELS[i])} × ${esc(CORR_LABELS[j])}</b><br>` +
+                    (c.r == null ? "too few shared SNVs" : `r = ${c.r.toFixed(3)} · ${fmt(c.n)} shared SNVs`) +
                     (c.pairs && c.pairs.length >= 3 ? "<br><span style='opacity:.7'>click to enlarge</span>" : ""),
                 ),
               );
@@ -967,12 +1153,12 @@
             hit.addEventListener("mousemove", (e) =>
               showTT(
                 e,
-                `<b>${esc(SHORT[i])} × ${esc(SHORT[j])}</b><br>` +
+                `<b>${esc(CORR_LABELS[i])} × ${esc(CORR_LABELS[j])}</b><br>` +
                   (i === j
-                    ? `${fmt(c.n)} variants`
+                    ? `${fmt(c.n)} SNVs`
                     : c.r == null
-                      ? "too few shared variants"
-                      : `r = ${c.r.toFixed(3)} · ${fmt(c.n)} shared variants`),
+                      ? "too few shared SNVs"
+                      : `r = ${c.r.toFixed(3)} · ${fmt(c.n)} shared SNVs`),
               ),
             );
             hit.addEventListener("mouseleave", hideTT);
@@ -1000,12 +1186,12 @@
         svg.appendChild(kl);
       }
 
-      // A shared log scale for a set of {x,y} error-frequency pairs (both axes use it, so y=x reads true).
+      // A fixed log scale, 10^-7 to 10^-3, shared by both axes of every pairwise scatter so that y = x
+      // reads true and the cells compare with each other. Anything outside is clamped to the edge.
       function pairScale(pairs) {
-        const vals = pairs.flatMap((p) => [p.x, p.y]).filter((v) => v > 0);
-        const lo = vals.length ? Math.min(...vals) : 1e-6;
-        const hi = vals.length ? Math.max(...vals) : 1;
-        const l10 = (v) => Math.log10(Math.max(v, lo / 2));
+        const lo = 1e-7,
+          hi = 1e-2;
+        const l10 = (v) => Math.log10(Math.max(v, 1e-12));
         const span = l10(hi) - l10(lo) || 1;
         // Normalised 0..1 position, CLAMPED: a variant the correction left alone removes 0, which on a log
         // axis falls below the floor and would otherwise plot at a negative coordinate - outside the cell.
@@ -1054,16 +1240,16 @@
             "stroke-width": 1,
           }),
         );
-        [0, 1, 2, 3].forEach((k) => {
-          const gv = Math.pow(10, sc.l10(sc.lo) + (sc.span * k) / 3);
+        for (let e = -7; e <= -2; e++) {
+          const gv = Math.pow(10, e);
           svg.appendChild(el("line", { class: "grid", x1: m.l, x2: m.l + iw, y1: py(gv), y2: py(gv) }));
           const ty = el("text", { class: "tick", x: m.l - 6, y: py(gv) + 3, "text-anchor": "end" });
-          ty.textContent = gv.toExponential(0);
+          ty.textContent = "1e" + e;
           svg.appendChild(ty);
           const tx = el("text", { class: "tick", x: px(gv), y: m.t + ih + TICK_PX + 4, "text-anchor": "middle" });
-          tx.textContent = gv.toExponential(0);
+          tx.textContent = "1e" + e;
           svg.appendChild(tx);
-        });
+        }
         for (const p of cell.pairs) {
           const vv = V_BY_KEY[p.key];
           svg.appendChild(
@@ -1073,12 +1259,12 @@
               r: 2.2,
               fill: "var(--accent)", // stay blue like the thumbnail; class colour is not the point here
               "fill-opacity": 0.7,
-              "data-tip": `<b>${esc(vv ? vv.pos_mut : p.key)}</b>${vv ? ` · <code>${esc(vv.nt)}</code>` : ""}<br>${esc(SHORT[j])} ${sci(p.x)}<br>${esc(SHORT[i])} ${sci(p.y)}`,
+              "data-tip": `<b>${esc(vv ? vv.pos_mut : p.key)}</b>${vv ? ` · <code>${esc(ntName(vv))}</code>` : ""}<br>${esc(CORR_LABELS[j])} ${sci(p.x)}<br>${esc(CORR_LABELS[i])} ${sci(p.y)}`,
             }),
           );
         }
         const xl = el("text", { class: "albl", x: m.l + iw / 2, y: S - 6, "text-anchor": "middle" });
-        xl.textContent = SHORT[j] + " — removed error frequency";
+        xl.textContent = CORR_LABELS[j] + " — " + CORR_WHAT;
         svg.appendChild(xl);
         const yl = el("text", {
           class: "albl",
@@ -1087,9 +1273,9 @@
           transform: "rotate(-90)",
           "text-anchor": "middle",
         });
-        yl.textContent = SHORT[i] + " — removed error frequency";
+        yl.textContent = CORR_LABELS[i] + " — " + CORR_WHAT;
         svg.appendChild(yl);
-        zoom.innerHTML = `<div class="cz-head">${esc(SHORT[i])} × ${esc(SHORT[j])} · r = ${cell.r == null ? "–" : cell.r.toFixed(3)} · ${fmt(cell.pairs.length)} shared variants<button class="cz-x" type="button" aria-label="close">×</button></div>`;
+        zoom.innerHTML = `<div class="cz-head">${esc(CORR_LABELS[i])} × ${esc(CORR_LABELS[j])} · r = ${cell.r == null ? "–" : cell.r.toFixed(3)} · ${fmt(cell.pairs.length)} shared SNVs<button class="cz-x" type="button" aria-label="close">×</button></div>`;
         zoom.appendChild(svg);
         zoom.classList.add("on");
         zoom.querySelector(".cz-x").addEventListener("click", closeScatter);
@@ -1118,191 +1304,103 @@
       /* =========================================================
          SECTION 2 — raw vs corrected, split by library type
          ========================================================= */
-      // one independent selection set per type group
-      const groupSel = {};
-      function typeGroups() {
-        const order = ["input", "output", "quality"];
-        const present = [];
-        for (const t of order) {
-          const idx = FILES.map((f, i) => i).filter((i) => (FILES[i].type || "") === t);
-          if (idx.length) present.push({ type: t, idx });
-        }
-        // any unforeseen type still gets a panel rather than vanishing
-        const known = new Set(order);
-        const rest = FILES.map((f, i) => i).filter((i) => !known.has(FILES[i].type || ""));
-        if (rest.length) present.push({ type: FILES[rest[0]].type || "other", idx: rest });
-        return present;
-      }
-      const GROUPS = typeGroups();
-      GROUPS.forEach((g) => (groupSel[g.type] = new Set(g.idx)));
-
-      function groupTitle(t) {
-        return (
-          { input: "Input libraries", output: "Output libraries", quality: "Quality controls" }[t] || t + " libraries"
+      // One small panel per corrected sequencing file, all on the same axes (10^-7 to 10^-3), so the
+      // panels compare directly. Wildtype-template libraries are never corrected and are left out.
+      const SEL_LO = 1e-7,
+        SEL_HI = 1e-2;
+      const selPos = (v) =>
+        Math.max(
+          0,
+          Math.min(
+            1,
+            (Math.log10(Math.max(v, 1e-12)) - Math.log10(SEL_LO)) / (Math.log10(SEL_HI) - Math.log10(SEL_LO)),
+          ),
         );
-      }
+      const CORRECTED_FILES = FILES.map((f, i) => i).filter((i) => (FILES[i].type || "") !== "wildtype");
 
       function buildGroups() {
         const host = document.getElementById("scatter-groups");
         host.innerHTML = "";
-        GROUPS.forEach((g) => {
+        if (!CORRECTED_FILES.length) {
+          host.innerHTML = '<div class="empty">No corrected libraries in this run.</div>';
+          return;
+        }
+        CORRECTED_FILES.forEach((i) => {
           const box = document.createElement("div");
-          box.innerHTML =
-            `<div class="sub2">${esc(groupTitle(g.type))}</div>` +
-            `<div class="row" data-grp="${esc(g.type)}">` +
-            g.idx
-              .map(
-                (i) =>
-                  `<span class="chip${groupSel[g.type].has(i) ? "" : " off"}" data-f="${i}">${esc(SHORT[i])}</span>`,
-              )
-              .join("") +
-            `</div><div id="scat-${esc(g.type)}"></div>`;
+          box.innerHTML = `<div class="sub2">${esc(SHORT[i])}</div><div id="scat-f${i}"></div>`;
           host.appendChild(box);
         });
       }
-      document.getElementById("scatter-groups").addEventListener("click", (e) => {
-        const c = e.target.closest("[data-f]");
-        if (!c) return;
-        const grp = c.closest("[data-grp]").dataset.grp;
-        const i = +c.dataset.f;
-        const set = groupSel[grp];
-        if (set.has(i)) set.delete(i);
-        else set.add(i);
-        if (!set.size) GROUPS.find((g) => g.type === grp).idx.forEach((k) => set.add(k));
-        buildGroups();
-        GROUPS.forEach((g) => drawScatter(g));
-      });
 
-      // mean and sample-SD of a per-file quantity over the selected files of a group
-      function aggSel(v, field, set) {
-        const vals = [];
-        for (const i of set) {
-          const x = v[field][i];
-          if (x != null && !isNaN(x)) vals.push(x);
-        }
-        if (!vals.length) return null;
-        const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
-        let sd = null;
-        if (vals.length > 1) {
-          let ss = 0;
-          for (const x of vals) ss += (x - mean) * (x - mean);
-          sd = Math.sqrt(ss / (vals.length - 1));
-        }
-        return { mean, sd, n: vals.length };
-      }
-
-      function drawScatter(g) {
-        const host = document.getElementById("scat-" + g.type);
+      function drawScatterFile(fi) {
+        const host = document.getElementById("scat-f" + fi);
+        if (!host) return;
         host.innerHTML = "";
-        const set = groupSel[g.type];
         const pts = [];
         for (const v of V) {
           if (!v.cls) continue;
-          const fr = aggSel(v, "f_raw", set);
-          if (!fr || !(fr.mean > 0)) continue;
-          const fc = aggSel(v, "f_cor", set);
-          pts.push({ v, fr: fr.mean, frsd: fr.sd, fc: fc ? fc.mean : 0, fcsd: fc ? fc.sd : null, n: fr.n });
+          const fr = v.f_raw[fi],
+            fc = v.f_cor[fi];
+          if (fr == null || !(fr > 0)) continue;
+          pts.push({ v, fr, fc: fc == null ? 0 : fc });
         }
         if (!pts.length) {
-          host.innerHTML = '<div class="empty">No variants for this selection.</div>';
+          host.innerHTML = '<div class="empty">No SNVs in this file.</div>';
           return;
         }
-        const W = 500,
-          H = 260,
-          m = { l: 0, r: 10, t: 10, b: 0 };
+        const W = 330,
+          H = 300,
+          m = { l: 48, r: 8, t: 8, b: 42 };
         const svg = el("svg", { viewBox: `0 0 ${W} ${H}` });
         host.appendChild(svg);
         tipDelegate(svg);
-        const xs = pts.flatMap((p) => [p.fr, p.frsd ? p.fr + p.frsd : p.fr]);
-        const ys = pts.filter((p) => p.fc > 0).flatMap((p) => [p.fc, p.fcsd ? p.fc + p.fcsd : p.fc]);
-        const lo = Math.min(...xs, ...(ys.length ? ys : xs)),
-          hi = Math.max(...xs, ...(ys.length ? ys : xs));
-        const l10 = (v) => Math.log10(Math.max(v, lo / 2));
-        const span = l10(hi) - l10(lo) || 1;
-        const labels = [0, 1, 2, 3].map((i) => Math.pow(10, l10(lo) + (span * i) / 3).toExponential(0));
-        m.l = Math.ceil(LBL_PX + 18 + Math.max(...labels.map((s) => textW(svg, s, "tick"))) + 8);
-        m.b = TICK_PX + 8 + LBL_PX + 14;
         const iw = W - m.l - m.r,
-          ih = H - m.t - m.b;
-        const lane = 16;
-        const x = (v) => m.l + ((l10(v) - l10(lo)) / span) * iw;
-        const y = (v) => m.t + (ih - lane) - ((l10(v) - l10(lo)) / span) * (ih - lane);
+          ih = H - m.t - m.b,
+          lane = 14;
+        const x = (v) => m.l + selPos(v) * iw;
+        const y = (v) => m.t + (ih - lane) - selPos(v) * (ih - lane);
         const yZero = m.t + ih - lane / 2;
-        [0, 1, 2, 3].forEach((i) => {
-          const gv = Math.pow(10, l10(lo) + (span * i) / 3);
-          const gy = y(gv);
-          svg.appendChild(el("line", { class: "grid", x1: m.l, x2: m.l + iw, y1: gy, y2: gy }));
-          const t = el("text", { class: "tick", x: m.l - 8, y: gy + 3, "text-anchor": "end" });
-          t.textContent = gv.toExponential(0);
+        for (let e = -7; e <= -2; e++) {
+          const gv = Math.pow(10, e);
+          svg.appendChild(el("line", { class: "grid", x1: m.l, x2: m.l + iw, y1: y(gv), y2: y(gv) }));
+          const t = el("text", { class: "tick", x: m.l - 6, y: y(gv) + 3, "text-anchor": "end" });
+          t.textContent = "1e" + e;
           svg.appendChild(t);
           const tx = el("text", { class: "tick", x: x(gv), y: m.t + ih + TICK_PX + 4, "text-anchor": "middle" });
-          tx.textContent = gv.toExponential(0);
+          tx.textContent = "1e" + e;
           svg.appendChild(tx);
-        });
+        }
         svg.appendChild(
           el("line", { x1: m.l, x2: m.l + iw, y1: yZero, y2: yZero, stroke: "var(--line)", "stroke-dasharray": "3 3" }),
         );
-        const lz = el("text", { class: "tick", x: m.l - 8, y: yZero + 3, "text-anchor": "end" });
-        lz.textContent = "removed";
+        const lz = el("text", { class: "tick", x: m.l - 6, y: yZero + 3, "text-anchor": "end" });
+        lz.textContent = "0";
         svg.appendChild(lz);
         svg.appendChild(
           el("line", {
-            x1: x(lo),
-            y1: y(lo),
-            x2: x(hi),
-            y2: y(hi),
+            x1: x(SEL_LO),
+            y1: y(SEL_LO),
+            x2: x(SEL_HI),
+            y2: y(SEL_HI),
             stroke: "var(--ink2)",
             "stroke-dasharray": "4 4",
             "stroke-width": 1,
           }),
         );
         pts.forEach((p) => {
-          const px = x(p.fr),
-            py = p.fc > 0 ? y(p.fc) : yZero;
-          const col = clsColor(p.v.cls);
-          if (p.frsd != null) {
-            const x0 = Math.max(p.fr - p.frsd, lo / 2);
-            svg.appendChild(
-              el("line", {
-                x1: x(x0),
-                x2: x(p.fr + p.frsd),
-                y1: py,
-                y2: py,
-                stroke: col,
-                "stroke-width": 1,
-                "stroke-opacity": 0.35,
-              }),
-            );
-          }
-          // vertical (corrected-frequency) spread bar, mirroring the horizontal raw one
-          if (p.fc > 0 && p.fcsd != null) {
-            svg.appendChild(
-              el("line", {
-                x1: px,
-                x2: px,
-                y1: y(Math.max(p.fc - p.fcsd, lo / 2)),
-                y2: y(p.fc + p.fcsd),
-                stroke: col,
-                "stroke-width": 1,
-                "stroke-opacity": 0.35,
-              }),
-            );
-          }
-          const pct = p.fr > 0 ? ((p.fc - p.fr) / p.fr) * 100 : null;
-          const c = el("circle", {
-            cx: px,
-            cy: py,
-            r: 2,
-            fill: col,
-            "fill-opacity": 0.7,
-            "data-tip":
-              `<b>${esc(p.v.pos_mut)}</b> · <code>${esc(p.v.nt)}</code><br>raw ${sci(p.fr)}` +
-              (p.frsd != null ? ` ± ${sci(p.frsd)} (n=${p.n})` : ` (n=${p.n})`) +
-              `<br>corrected ${sci(p.fc)}` +
-              (p.fcsd != null ? ` ± ${sci(p.fcsd)}` : "") +
-              (pct == null ? "" : `<br>${fmt(pct, 1)} % change`),
-          });
-          svg.appendChild(c);
+          const pct_ = p.fr > 0 ? ((p.fc - p.fr) / p.fr) * 100 : null;
+          svg.appendChild(
+            el("circle", {
+              cx: x(p.fr),
+              cy: p.fc > 0 ? y(p.fc) : yZero,
+              r: 1.8,
+              fill: clsColor(p.v.cls),
+              "fill-opacity": 0.7,
+              "data-tip":
+                `<b>${esc(p.v.pos_mut)}</b> · <code>${esc(ntName(p.v))}</code><br>raw ${sci(p.fr)}<br>corrected ${sci(p.fc)}` +
+                (pct_ == null ? "" : `<br>${fmt(pct_, 1)} % change`),
+            }),
+          );
         });
         const yl = el("text", {
           class: "albl",
@@ -1317,17 +1415,22 @@
         xl.textContent = "Raw frequency";
         svg.appendChild(xl);
       }
+      const drawAllScatters = () => CORRECTED_FILES.forEach(drawScatterFile);
 
       /* =========================================================
          SECTION 3 — single file: bias, beeswarm, magnitude, table
          ========================================================= */
-      let curFile = 0;
+      // Wildtype-template libraries are never corrected, so there is nothing to show in detail for them:
+      // the selector offers the corrected files only, as the selection panels and the anchors section do.
+      let curFile = CORRECTED_FILES.length ? CORRECTED_FILES[0] : 0;
       let clsFilter = null;
 
       function buildSeg() {
-        document.getElementById("file-seg").innerHTML = FILES.map(
-          (f, i) => `<span class="opt${i === curFile ? " on" : ""}" data-i="${i}">${esc(SHORT[i])}</span>`,
-        ).join("");
+        document.getElementById("file-seg").innerHTML = (
+          CORRECTED_FILES.length ? CORRECTED_FILES : FILES.map((f, i) => i)
+        )
+          .map((i) => `<span class="opt${i === curFile ? " on" : ""}" data-i="${i}">${esc(SHORT[i])}</span>`)
+          .join("");
       }
       document.getElementById("file-seg").addEventListener("click", (e) => {
         const o = e.target.closest("[data-i]");
@@ -1341,66 +1444,159 @@
         document.getElementById("snv-legend").innerHTML = CLASSES.map(
           (c, i) =>
             `<span class="chip${clsFilter && clsFilter !== c.cls ? " off" : ""}" data-c="${esc(c.cls)}">` +
-            `<span class="sw" style="background:var(--c${i + 1})"></span>${esc(c.label)}</span>`,
+            `<span class="sw" style="background:${clsColor(c.cls)}"></span>${esc(c.label)}</span>`,
         ).join("");
+        // the selection panels colour their points the same way, so they carry the same key - read-only,
+        // since those panels show every class at once
+        const sl = document.getElementById("sel-legend");
+        if (sl)
+          sl.innerHTML = CLASSES.map(
+            (c) =>
+              `<span class="chip"><span class="sw" style="background:${clsColor(c.cls)}"></span>${esc(c.label)}</span>`,
+          ).join("");
       }
       document.getElementById("snv-legend").addEventListener("click", (e) => {
         const c = e.target.closest("[data-c]");
         if (!c) return;
         clsFilter = clsFilter === c.dataset.c ? null : c.dataset.c;
         drawLegend();
+        drawBias();
         drawBee();
         drawTable();
       });
 
       /* --- positional error bias, single file --- */
+      // SNV error rate along the reading frame at NUCLEOTIDE resolution: one point per reference
+      // nucleotide, not per codon, so nothing is averaged across the three bases of a codon. A class's
+      // line is the mean over its SNVs at that nucleotide - at most one, since a given reference base
+      // reaches each class through a single alternative. The y axis is the removed error frequency
+      // (raw - corrected counts-per-coverage) on the same 1e-7..1e-2 log scale as the rest of the report.
+      const BIAS_LO = 1e-7,
+        BIAS_HI = 1e-2;
+      let biasJoint = false; // one line over every SNV class, rather than six
+      // Round tick values: 1 first, then multiples of a step that leaves roughly `target` ticks. Codon
+      // axes of very short ORFs step by 5, as asked, rather than by 1.
+      function roundTicks(lo, hi, target, minStep) {
+        const span = Math.max(1, hi - lo);
+        const steps = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
+        let st = steps[steps.length - 1];
+        for (const c of steps) {
+          if (c < (minStep || 1)) continue;
+          if (span / c <= target) {
+            st = c;
+            break;
+          }
+        }
+        const out = [lo];
+        for (let v = Math.ceil(lo / st) * st; v <= hi; v += st) if (v !== lo) out.push(v);
+        return out;
+      }
       function drawBias() {
         const host = document.getElementById("c-bias");
         host.innerHTML = "";
-        const by = new Map();
+        const by = new Map(); // "ntpos|cls" -> {sum, n}
+        let minN = Infinity,
+          maxN = -Infinity;
+        // nucleotide position <-> codon position, read off the variants themselves: ntpos of the first
+        // base of codon 1 is ntpos - 3*(pos - 1), and every variant agrees on it.
+        let orf0 = null;
         for (const v of V) {
-          if (v.pos == null) continue;
-          const r = v.raw[curFile],
-            c = v.cor[curFile];
-          if (r == null) continue;
-          const p = by.get(v.pos) || { raw: 0, cor: 0 };
-          p.raw += r;
-          p.cor += c == null ? 0 : c;
-          by.set(v.pos, p);
+          if (v.ntpos == null || !v.cls) continue;
+          if (v.pos != null) {
+            // this variant's codon starts at or before ntpos - 3*(pos - 1); the smallest such value over
+            // every variant is the first base of codon 1, since some variant hits a codon's first base
+            const c0 = v.ntpos - 3 * (v.pos - 1);
+            orf0 = orf0 == null ? c0 : Math.min(orf0, c0);
+          }
+          const rmv = removed(v, curFile);
+          if (rmv == null || !(rmv > 0)) continue;
+          minN = Math.min(minN, v.ntpos);
+          maxN = Math.max(maxN, v.ntpos);
+          const k = v.ntpos + "|" + v.cls;
+          const o = by.get(k) || { pos: v.ntpos, cls: v.cls, sum: 0, n: 0 };
+          o.sum += rmv;
+          o.n += 1;
+          by.set(k, o);
         }
-        const P = [...by.entries()]
-          .map(([pos, d]) => ({ pos, frac: d.raw > 0 ? 1 - d.cor / d.raw : null }))
-          .filter((d) => d.frac != null)
-          .sort((a, b) => a.pos - b.pos);
-        if (!P.length) return (host.innerHTML = '<div class="empty">No corrected variants in this file.</div>');
+        if (!by.size) return (host.innerHTML = '<div class="empty">No SNV error was removed in this file.</div>');
+        // the codon a nucleotide belongs to, and the first nucleotide of a codon
+        const codonOf = (nt) => (orf0 == null ? null : Math.floor((nt - orf0) / 3) + 1);
+        const ntOf = (cod) => (orf0 == null ? null : orf0 + 3 * (cod - 1));
+        const perClass = CLASSES.map((c) => ({
+          cls: c.cls,
+          col: clsColor(c.cls),
+          pts: [...by.values()]
+            .filter((o) => o.cls === c.cls)
+            .map((o) => ({ pos: o.pos, y: o.sum / o.n, n: o.n }))
+            .sort((a, b) => a.pos - b.pos),
+        })).filter((s2) => s2.pts.length);
+        // One line over every class: the SUM of the six class lines at each nucleotide - the error rate of
+        // that base over all its substitution channels. Averaging the classes instead would put the line
+        // between the lowest and the highest class by construction.
+        const joint = new Map();
+        for (const o of by.values()) {
+          const j = joint.get(o.pos) || { pos: o.pos, y: 0, n: 0, k: 0 };
+          j.y += o.sum / o.n;
+          j.n += o.n;
+          j.k += 1;
+          joint.set(o.pos, j);
+        }
+        const jointPts = [...joint.values()].sort((a, b) => a.pos - b.pos);
+        const SERIES = biasJoint ? [{ cls: "all", col: "var(--ink2)", pts: jointPts }] : perClass;
         const W = 1000,
-          H = 230,
+          H = 320,
           m = { l: 0, r: 12, t: 10, b: 0 };
         const svg = el("svg", { viewBox: `0 0 ${W} ${H}` });
         host.appendChild(svg);
-        const maxP = Math.max(...P.map((d) => d.pos));
-        const maxY = Math.max(0.001, ...P.map((d) => d.frac));
-        const labels = [0, 1, 2, 3, 4].map((i) => (((maxY * i) / 4) * 100).toFixed(1) + "%");
-        m.l = Math.ceil(LBL_PX + 18 + Math.max(...labels.map((s) => textW(svg, s, "tick"))) + 8);
-        m.b = TICK_PX + 8 + LBL_PX + 8;
+        tipDelegate(svg);
+        m.l = Math.ceil(LBL_PX + 18 + textW(svg, "1e-7", "tick") + 8);
+        // two tick rows (nucleotide, then codon) above the axis label
+        m.b = 2 * (TICK_PX + 6) + LBL_PX + 10;
         const iw = W - m.l - m.r,
           ih = H - m.t - m.b;
-        const x = (p) => m.l + ((p - 1) / Math.max(1, maxP - 1)) * iw;
-        const y = (v) => m.t + ih - (v / maxY) * ih;
-        labels.forEach((lab, i) => {
-          const gy = y((maxY * i) / 4);
+        const lg = (v) => Math.log10(Math.max(v, 1e-12));
+        const span = lg(BIAS_HI) - lg(BIAS_LO);
+        const x = (p) => m.l + ((p - minN) / Math.max(1, maxN - minN)) * iw;
+        const y = (v) => m.t + ih - Math.max(0, Math.min(1, (lg(v) - lg(BIAS_LO)) / span)) * ih;
+        for (let e = -7; e <= -2; e++) {
+          const gv = Math.pow(10, e),
+            gy = y(gv);
           svg.appendChild(el("line", { class: "grid", x1: m.l, x2: m.l + iw, y1: gy, y2: gy }));
           const t = el("text", { class: "tick", x: m.l - 8, y: gy + 3, "text-anchor": "end" });
-          t.textContent = lab;
-          svg.appendChild(t);
-        });
-        const step = Math.max(1, Math.round(maxP / 10));
-        for (let p = 1; p <= maxP; p += step) {
-          const t = el("text", { class: "tick", x: x(p), y: m.t + ih + TICK_PX + 5, "text-anchor": "middle" });
-          t.textContent = p;
+          t.textContent = "1e" + e;
           svg.appendChild(t);
         }
         svg.appendChild(el("line", { class: "axis", x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih }));
+        // row 1: nucleotide positions, in reference coordinates
+        const yNt = m.t + ih + TICK_PX + 4;
+        for (const p of roundTicks(minN, maxN, 9)) {
+          // the first tick sits on the axis origin, where a centred label would run into the row's name
+          const first = p === minN;
+          const t = el("text", { class: "tick", x: x(p), y: yNt, "text-anchor": first ? "start" : "middle" });
+          t.textContent = p;
+          svg.appendChild(t);
+        }
+        const lNt = el("text", { class: "tick", x: m.l - 8, y: yNt, "text-anchor": "end", "font-weight": 600 });
+        lNt.textContent = "nt";
+        svg.appendChild(lNt);
+        // row 2: codon positions, each at the first nucleotide of its codon. An ORF under 30 codons steps
+        // by 5 rather than by 1, so the row stays readable.
+        const yCod = yNt + TICK_PX + 6;
+        if (orf0 != null) {
+          const c0 = codonOf(minN),
+            c1 = codonOf(maxN);
+          for (const c of roundTicks(c0, c1, 9, c1 - c0 < 30 ? 5 : 10)) {
+            const nt = ntOf(c);
+            if (nt < minN - 2 || nt > maxN + 2) continue;
+            const xc = x(Math.min(maxN, Math.max(minN, nt)));
+            const t = el("text", { class: "tick", x: xc, y: yCod, "text-anchor": c === c0 ? "start" : "middle" });
+            t.textContent = c;
+            svg.appendChild(t);
+          }
+          const lCod = el("text", { class: "tick", x: m.l - 8, y: yCod, "text-anchor": "end", "font-weight": 600 });
+          lCod.textContent = "codon";
+          svg.appendChild(lCod);
+        }
         const yl = el("text", {
           class: "albl",
           x: -(m.t + ih / 2),
@@ -1408,23 +1604,73 @@
           transform: "rotate(-90)",
           "text-anchor": "middle",
         });
-        yl.textContent = "Counts removed";
+        yl.textContent = "SNV error frequency";
         svg.appendChild(yl);
         const xl = el("text", { class: "albl", x: m.l + iw / 2, y: H - 4, "text-anchor": "middle" });
-        xl.textContent = "ORF residue position";
+        xl.textContent = "position along the ORF — nucleotide (top) and codon (bottom)";
         svg.appendChild(xl);
-        let d = "";
-        P.forEach((p, i) => (d += (i ? " L " : "M ") + x(p.pos) + " " + y(p.frac)));
-        svg.appendChild(el("path", { d, fill: "none", stroke: "var(--c1)", "stroke-width": 1.5 }));
+        host.insertAdjacentHTML(
+          "beforeend",
+          `<div class="legend">` +
+            `<span class="chip${biasJoint ? "" : " off"}" id="bias-joint" style="cursor:pointer">` +
+            `<span class="sw" style="background:var(--ink2)"></span>${biasJoint ? "showing the six SNV classes summed" : "sum the six SNV classes into one line"}</span>` +
+            (biasJoint
+              ? ""
+              : CLASSES.map(
+                  (c) =>
+                    `<span class="chip"><span class="sw" style="background:${clsColor(c.cls)}"></span>${esc(c.label)}</span>`,
+                ).join("")) +
+            `</div>`,
+        );
+        document.getElementById("bias-joint").addEventListener("click", () => {
+          biasJoint = !biasJoint;
+          drawBias();
+        });
+        // lines last, so they sit above the grid; the class filter dims the others. Drawn as steps (R's
+        // type = "s"): the value holds across the nucleotide it was measured at instead of sloping to the
+        // next one, which reads far less jagged on sparse, spiky data.
+        for (const s2 of SERIES) {
+          const dim = !biasJoint && clsFilter && clsFilter !== s2.cls;
+          let d = "";
+          s2.pts.forEach((p, i) => {
+            const px = x(p.pos).toFixed(1),
+              py = y(p.y).toFixed(1);
+            d += i ? ` H ${px} V ${py}` : `M ${px} ${py}`;
+          });
+          svg.appendChild(
+            el("path", {
+              d,
+              fill: "none",
+              stroke: s2.col,
+              "stroke-width": dim ? 0.6 : biasJoint ? 1.4 : 1.1,
+              "stroke-opacity": dim ? 0.18 : 0.85,
+            }),
+          );
+        }
+        // one hover target per nucleotide, reporting every class present there
         const ov = el("rect", { x: m.l, y: m.t, width: iw, height: ih, fill: "transparent" });
         svg.appendChild(ov);
         ov.addEventListener("mousemove", (e) => {
           const r = svg.getBoundingClientRect(),
             px = ((e.clientX - r.left) / r.width) * W;
-          const pp = Math.round(((px - m.l) / iw) * (maxP - 1)) + 1;
-          const d0 = P.find((z) => z.pos === pp);
-          if (!d0) return hideTT();
-          showTT(e, `<b>position ${pp}</b><br>${(d0.frac * 100).toFixed(2)} % of counts removed`);
+          const pp = Math.round(((px - m.l) / iw) * (maxN - minN)) + minN;
+          const src = biasJoint
+            ? [{ cls: "all", p: jointPts.find((z) => z.pos === pp) }]
+            : perClass.map((s2) => ({ cls: s2.cls, p: s2.pts.find((z) => z.pos === pp) }));
+          const here = src.filter((z) => z.p);
+          if (!here.length) return hideTT();
+          const cod = codonOf(pp);
+          showTT(
+            e,
+            `<b>nucleotide ${pp}</b>${cod == null ? "" : ` · codon ${cod}`}<br>` +
+              here
+                .map((z) =>
+                  z.cls === "all"
+                    ? `all six SNV classes summed ${sci(z.p.y)} (${z.p.k} class${z.p.k === 1 ? "" : "es"})`
+                    : `${z.cls} ${sci(z.p.y)}`,
+                )
+                .join("<br>"),
+          );
         });
         ov.addEventListener("mouseleave", hideTT);
       }
@@ -1487,9 +1733,9 @@
         }).filter((s) => s.pts.length);
         if (!perClass.length)
           return (host.innerHTML = '<div class="empty">No single-nucleotide error was removed in this file.</div>');
-        const all = perClass.flatMap((s) => s.pts.map((p) => p.y));
-        const lo = Math.min(...all),
-          hi = Math.max(...all);
+        // fixed 10^-7 to 10^-2, as everywhere else in the report, so files and classes compare directly
+        const lo = 1e-7,
+          hi = 1e-2;
         // taller than the other panels: more vertical room spreads the swarm in y, which is what keeps
         // dense classes from having to overlap in x
         const W = 500,
@@ -1498,22 +1744,22 @@
         const svg = el("svg", { viewBox: `0 0 ${W} ${H}` });
         host.appendChild(svg);
         tipDelegate(svg);
-        const l10 = (v) => Math.log10(Math.max(v, lo / 2));
+        const l10 = (v) => Math.log10(Math.max(v, 1e-12));
         const span = l10(hi) - l10(lo) || 1;
-        const labels = [0, 1, 2, 3].map((i) => Math.pow(10, l10(lo) + (span * i) / 3).toExponential(0));
+        const labels = [-7, -2].map((e) => "1e" + e);
         m.l = Math.ceil(LBL_PX + 18 + Math.max(...labels.map((s) => textW(svg, s, "tick"))) + 8);
         m.b = TICK_PX + 8 + LBL_PX + 16;
         const iw = W - m.l - m.r,
           ih = H - m.t - m.b;
-        const y = (v) => m.t + ih - ((l10(v) - l10(lo)) / span) * ih;
-        [0, 1, 2, 3].forEach((i) => {
-          const gv = Math.pow(10, l10(lo) + (span * i) / 3);
-          const gy = y(gv);
+        const y = (v) => m.t + ih - Math.max(0, Math.min(1, (l10(v) - l10(lo)) / span)) * ih;
+        for (let e = -7; e <= -2; e++) {
+          const gv = Math.pow(10, e),
+            gy = y(gv);
           svg.appendChild(el("line", { class: "grid", x1: m.l, x2: m.l + iw, y1: gy, y2: gy }));
           const t = el("text", { class: "tick", x: m.l - 8, y: gy + 3, "text-anchor": "end" });
-          t.textContent = gv.toExponential(0);
+          t.textContent = "1e" + e;
           svg.appendChild(t);
-        });
+        }
         const bw = iw / perClass.length;
         const med = (xs) => {
           if (!xs.length) return null;
@@ -1554,7 +1800,7 @@
               r: rr,
               fill: p.col,
               "fill-opacity": 0.65 * p.op,
-              "data-tip": `<b>${esc(p.v.pos_mut)}</b> · <code>${esc(p.v.nt)}</code><br>error frequency ${sci(p.y)}`,
+              "data-tip": `<b>${esc(p.v.pos_mut)}</b> · <code>${esc(ntName(p.v))}</code><br>error frequency ${sci(p.y)}`,
             }),
           );
         });
@@ -1590,10 +1836,10 @@
           transform: "rotate(-90)",
           "text-anchor": "middle",
         });
-        yl.textContent = "Removed error frequency";
+        yl.textContent = "Error frequency";
         svg.appendChild(yl);
         const xl = el("text", { class: "albl", x: m.l + iw / 2, y: H - 4, "text-anchor": "middle" });
-        xl.textContent = "substitution class";
+        xl.textContent = "SNV class";
         svg.appendChild(xl);
       }
 
@@ -1611,16 +1857,21 @@
             c = v.cor[curFile];
           if (r == null || !(r > 0) || c == null) continue;
           const pct = ((r - c) / r) * 100; // fraction of the raw counts removed, 0..100
-          if (pct > 0) pcts.push(Math.min(100, pct)); // adjusted variants only - untouched ones are excluded
+          if (pct > 0) pcts.push({ p: Math.min(100, pct), cls: v.cls }); // adjusted SNVs only
         }
-        if (!pcts.length) return (host.innerHTML = '<div class="empty">No variants were adjusted in this file.</div>');
+        if (!pcts.length) return (host.innerHTML = '<div class="empty">No SNVs were adjusted in this file.</div>');
         const NB = 40,
           bw = 100 / NB;
-        const bins = new Array(NB).fill(0);
-        pcts.forEach((p) => {
+        // one stack per bin: the SNVs are split by substitution class, in the canonical order
+        const KEYS = CLASSES.map((c) => c.cls);
+        const bins = Array.from({ length: NB }, () => Object.fromEntries(KEYS.map((k) => [k, 0])));
+        const binTotal = new Array(NB).fill(0);
+        pcts.forEach(({ p, cls }) => {
           let k = Math.floor(p / bw);
           if (k >= NB) k = NB - 1;
-          bins[k]++;
+          if (bins[k][cls] === undefined) bins[k][cls] = 0;
+          bins[k][cls]++;
+          binTotal[k]++;
         });
         const W = 500,
           H = 300,
@@ -1628,7 +1879,7 @@
         const svg = el("svg", { viewBox: `0 0 ${W} ${H}` });
         host.appendChild(svg);
         tipDelegate(svg);
-        const maxC = Math.max(...bins);
+        const maxC = Math.max(...binTotal);
         const ylabels = [0, 1, 2, 3, 4].map((i) => fmt(Math.round((maxC * i) / 4)));
         m.l = Math.ceil(LBL_PX + 18 + Math.max(...ylabels.map((s) => textW(svg, s, "tick"))) + 8);
         m.b = TICK_PX + 8 + LBL_PX + 8;
@@ -1643,21 +1894,32 @@
           t.textContent = lab;
           svg.appendChild(t);
         });
-        bins.forEach((c, k) => {
-          if (!c) return;
+        bins.forEach((byCls, k) => {
+          const tot = binTotal[k];
+          if (!tot) return;
           const x0 = x(k * bw),
             x1 = x((k + 1) * bw);
-          svg.appendChild(
-            el("rect", {
-              x: x0 + 0.4,
-              y: y(c),
-              width: Math.max(0.8, x1 - x0 - 0.8),
-              height: m.t + ih - y(c),
-              fill: "var(--c1)",
-              "fill-opacity": 0.85,
-              "data-tip": `<b>${fmt(k * bw, 0)} … ${fmt((k + 1) * bw, 0)} %</b><br>${fmt(c)} variants`,
-            }),
-          );
+          const tip =
+            `<b>${fmt(k * bw, 0)} … ${fmt((k + 1) * bw, 0)} %</b><br>${fmt(tot)} SNVs` +
+            KEYS.filter((kk) => byCls[kk])
+              .map((kk) => `<br>· ${esc(clsLabel(kk))} ${fmt(byCls[kk])}`)
+              .join("");
+          let acc = 0;
+          KEYS.forEach((kk) => {
+            const n = byCls[kk];
+            if (!n) return;
+            svg.appendChild(
+              el("rect", {
+                x: x0 + 0.4,
+                y: y(acc + n),
+                width: Math.max(0.8, x1 - x0 - 0.8),
+                height: y(acc) - y(acc + n),
+                fill: clsColor(kk),
+                "data-tip": tip,
+              }),
+            );
+            acc += n;
+          });
         });
         for (let i = 0; i <= 4; i++) {
           const p = (100 * i) / 4;
@@ -1700,13 +1962,15 @@
             (a) =>
               a.v.pos_mut.toLowerCase().includes(q) ||
               a.v.nt.toLowerCase().includes(q) ||
+              (a.v.ctx || "").toLowerCase().includes(q) ||
+              ntNative(a.v).toLowerCase().includes(q) ||
               String(a.v.ntpos).includes(q) ||
               (a.v.cls || "").toLowerCase().includes(q),
           );
         const get = (a) =>
           ({
             ntpos: a.v.ntpos,
-            nt: a.v.nt,
+            nt: ntName(a.v),
             pos_mut: a.v.pos_mut,
             cls: a.v.cls,
             f_raw: a.f_raw,
@@ -1726,7 +1990,7 @@
           .slice(0, 3000)
           .map(
             (a) =>
-              `<tr><td>${a.v.ntpos ?? "–"}</td><td><code>${esc(a.v.nt)}</code></td><td>${esc(a.v.pos_mut)}</td>` +
+              `<tr><td>${a.v.ntpos ?? "–"}</td><td><code title="${esc(ntTitle(a.v))}">${esc(ntName(a.v))}</code></td><td>${esc(a.v.pos_mut)}</td>` +
               `<td><span class="sw" style="background:${clsColor(a.v.cls)}"></span> ${esc(clsLabel(a.v.cls))}</td>` +
               `<td>${sci(a.f_raw)}</td><td>${sci(a.f_cor)}</td><td>${a.pct == null ? "–" : fmt(a.pct, 1) + " %"}</td></tr>`,
           )
@@ -1775,19 +2039,608 @@
           if (v.cls && anyR) nSnv++;
         }
         const pct = rawTot > 0 ? ((rawTot - corTot) / rawTot) * 100 : 0;
+        // How much of each variant's counts the correction took, as a distribution rather than a count of
+        // variants touched: under the empirical-Bayes estimator every variant gets some rate, so "adjusted"
+        // is always every variant and says nothing.
+        //
+        // One entry per variant PER FILE, exactly as the correction-magnitude histogram of the SINGLE FILE
+        // section counts them, so the two agree: this strip is that histogram over every corrected file at
+        // once. Pooling a variant's counts across files first would weight it by depth and understate how
+        // often a whole shallow file is corrected away. Wildtype-template libraries are never corrected and
+        // are left out.
+        const bands = [0, 0, 0, 0, 0];
+        let nBand = 0;
+        for (const v of V) {
+          if (!v.cls) continue;
+          for (let i = 0; i < FILES.length; i++) {
+            if ((FILES[i].type || "") === "wildtype") continue;
+            const r = v.raw[i],
+              c = v.cor[i];
+            if (r == null || !(r > 0) || c == null) continue;
+            bands[Math.min(4, Math.floor(Math.max(0, Math.min(1, (r - c) / r)) * 5))] += 1;
+            nBand += 1;
+          }
+        }
+        const bandLab = ["0–20 %", "20–40 %", "40–60 %", "60–80 %", "80–100 %"];
         const t = [
           ["Sequencing files", fmt(FILES.length)],
-          ["Single-nucleotide variants", fmt(nSnv)],
+          ["SNVs", fmt(nSnv)],
           [
-            `Variants adjusted (≥1 file) <button class="ibtn" type="button" data-info="Counted if adjusted in ≥1 file (a union), so larger than any single file; the DETAIL section shows per-file counts.">i</button>`,
-            fmt(adjusted),
+            `SNV counts removed <button class="ibtn" type="button" data-info="Across every SNV of every file: the estimated error counts the correction subtracted, as a share of the raw SNV counts. Per SNV it is (raw − corrected) ÷ raw; here the totals are summed first, so abundant SNVs weigh more.">i</button>`,
+            (pct >= 0 ? "" : "+") + fmt(pct, 1) + " % <small>of all counts</small>",
           ],
-          ["Counts removed", (pct >= 0 ? "" : "+") + fmt(pct, 1) + " %"],
         ];
-        document.getElementById("tiles").innerHTML = t
+        document.getElementById("tiles").innerHTML =
+          t.map(([k, v]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("") +
+          `<div class="tile" style="grid-column: span 2"><div class="k">How much was removed per SNV` +
+          ` <button class="ibtn" type="button" data-info="(raw − corrected) ÷ raw for every SNV in every corrected file, binned: the correction-magnitude histogram of the SINGLE FILE section taken over all files at once, so one file's panel is a slice of this. Under empirical Bayes every SNV receives an error rate, so the question is not how many SNVs were touched but by how much. Wildtype-template libraries are not corrected and are left out.">i</button></div>` +
+          `<div class="bands">` +
+          bands
+            .map(
+              (nb, i) =>
+                `<span class="band"><b>${nBand ? ((100 * nb) / nBand).toFixed(0) : 0} %</b><span>${bandLab[i]}</span></span>`,
+            )
+            .join("") +
+          `</div></div>`;
+      }
+
+      /* =========================================================
+         SECTION — error spectrum and its signature fit (false doubles)
+         ========================================================= */
+      const SIGFITS = DATA.signatures || [];
+      let curSig = 0;
+      const SUBS = ["C>A", "C>G", "C>T", "T>A", "T>C", "T>G"];
+      // Only the spectrum of the error model this run actually corrects with: the wildtype-template errors
+      // under --error_correction wildtype, the false-double errors under false_doubles. The module fits the
+      // others too (and their difference where both exist); they stay in error_signatures.json.
+      const KIND_ORDER = DATA.method === "wildtype" ? ["wt"] : ["fdm"];
+      const KIND_LABEL = {
+        wt: "Wildtype-template sequencing SNV errors",
+        fdm: "False-double (FDM) SNV error rates",
+        excess: "Excess: FDM minus wildtype template",
+      };
+      const KIND_SUB = {
+        wt: "The spectrum of the sequencing SNV errors measured on the unmutated template — the background this run subtracts — and the known processes that reconstruct it. Hover a bar for its channel.",
+        fdm: "The spectrum of the false-double SNV errors this run subtracts, and the known processes that reconstruct it. Hover a bar for its channel.",
+      };
+      const sigName = (s) =>
+        s === "FFPE_unrepaired" ? "FFPE (unrepaired)" : s === "FFPE_repaired" ? "FFPE (repaired)" : s;
+      const pct = (x, d = 0) => (x == null ? "–" : (100 * x).toFixed(d) + " %");
+      function sigColors(fit) {
+        // colour follows the signature, in candidate order, over every spectrum of this pool
+        const used = [];
+        for (const k of KIND_ORDER) {
+          const r = fit.spectra[k];
+          if (r) for (const s of r.signatures) if (!used.includes(s)) used.push(s);
+        }
+        used.sort((a, b) => fit.candidates.indexOf(a) - fit.candidates.indexOf(b));
+        const col = {};
+        used.forEach((s, i) => (col[s] = SIG_GREY[i] || "var(--muted)"));
+        return col;
+      }
+      function drawSig() {
+        const sec = document.getElementById("sig-section");
+        if (!SIGFITS.length) return;
+        sec.hidden = false;
+        document.getElementById("sig-seg").innerHTML =
+          SIGFITS.length > 1
+            ? SIGFITS.map(
+                (f, i) => `<span class="opt${i === curSig ? " on" : ""}" data-i="${i}">${esc(f.pool)}</span>`,
+              ).join("")
+            : "";
+        const fit = SIGFITS[curSig];
+        const gd = fit.genuine_doubles || {};
+        const tiles = [
+          ["Pool", esc(fit.pool)],
+          ["Libraries · SNVs", `${fmt(fit.n_libraries)} · ${fmt(fit.n_sites)}`],
+          [
+            `Genuine doubles subtracted <button class="ibtn" type="button" data-info="Some reads that look like a false double are two real mutations on one molecule. Their rate is measured on reads carrying two programmed codon variants, and the expected number is removed before the spectrum is fitted. The figure is the mean over the library: the share removed varies strongly by channel, from ${pct(gd.share_lo, 0)} to ${pct(gd.share_hi, 0)} across the ${gd.share_n_channels} channels with at least 10 false-double reads. It is a different number from the ERROR EVIDENCE tile, which compares the two measured rates library-wide.">i</button>`,
+            !gd.applied ? "not subtracted" : `${pct(gd.share_of_F, 1)} <small>of false-double reads, mean</small>`,
+          ],
+        ];
+        document.getElementById("sig-tiles").innerHTML = tiles
           .map(([k, v]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div></div>`)
           .join("");
+        document.getElementById("sig-sub").textContent = KIND_SUB[KIND_ORDER[0]] || "";
+        const host = document.getElementById("sig-panel");
+        host.innerHTML = "";
+        const col = sigColors(fit);
+        const order = Object.keys(col);
+        host.insertAdjacentHTML(
+          "beforeend",
+          `<div class="legend"><span class="chip"><span class="sw" style="background:linear-gradient(90deg,${SUBS.map((sb, i) => `${SBS_COL[sb]} ${(100 * i) / 6}%, ${SBS_COL[sb]} ${(100 * (i + 1)) / 6}%`).join(",")})"></span>measured</span>` +
+            order
+              .map(
+                (s) =>
+                  `<span class="chip"><span class="sw" style="background:${col[s]}"></span>${esc(sigName(s))}</span>`,
+              )
+              .join("") +
+            `</div>`,
+        );
+        // what each signature stands for: COSMIC's own proposed aetiology, or the publication it comes from
+        const notes = fit.descriptions || {};
+        const glossary = order.filter((s) => notes[s]);
+        if (glossary.length) {
+          host.insertAdjacentHTML(
+            "beforeend",
+            `<ul class="gloss">` +
+              glossary
+                .map(
+                  (s) =>
+                    `<li><span class="sw" style="background:${col[s]}"></span><b>${esc(sigName(s))}</b>` +
+                    ` — <i>${esc(notes[s].label)}.</i> ${esc(notes[s].description)}</li>`,
+                )
+                .join("") +
+              `</ul>`,
+          );
+        }
+        // the whole candidate set that was screened, not only what survived: a fit is only as honest as the
+        // list it chose from, so the list is in the report, each with COSMIC's proposed aetiology
+        const cands = fit.candidates || [];
+        if (cands.length) {
+          host.insertAdjacentHTML(
+            "beforeend",
+            `<details class="cands"><summary>All ${cands.length} candidate signatures screened for this fit` +
+              ` (${order.length} chosen)</summary>` +
+              `<ul class="gloss">` +
+              cands
+                .map((s) => {
+                  const picked = order.includes(s);
+                  const n = notes[s];
+                  return (
+                    `<li class="${picked ? "fitted" : ""}">` +
+                    `<span class="dot" style="background:${picked ? col[s] : "var(--line)"}"></span>` +
+                    `<b>${esc(sigName(s))}</b>${n ? ` — <i>${esc(n.label)}.</i> ${esc(n.description)}` : ""}` +
+                    `${picked ? " <b>· in this fit</b>" : ""}</li>`
+                  );
+                })
+                .join("") +
+              `</ul></details>`,
+          );
+        }
+        const CH = fit.channels;
+        // standard SBS96 order: by substitution, then 5' base, then 3' base
+        const idx = CH.map((c, i) => i).sort((a, b) => {
+          const ka = CH[a].slice(2, 5) + CH[a][0] + CH[a][6],
+            kb = CH[b].slice(2, 5) + CH[b][0] + CH[b][6];
+          return ka < kb ? -1 : ka > kb ? 1 : 0;
+        });
+        for (const kind of KIND_ORDER) {
+          const r = fit.spectra[kind];
+          if (!r) continue;
+          const sigs = r.signatures.slice().sort((a, b) => order.indexOf(a) - order.indexOf(b));
+          const ex = sigs
+            .map((s) => {
+              const e = r.exposures[s];
+              return `${esc(sigName(s))} ${e.w.toFixed(2)}${e.lo != null ? ` (${e.lo.toFixed(2)}–${e.hi.toFixed(2)})` : ""}`;
+            })
+            .join(", ");
+          const head = document.createElement("div");
+          head.className = "sub2";
+          head.innerHTML =
+            `${KIND_LABEL[kind]}` +
+            (sigs.length
+              ? ` <span style="font-weight:400">— ${ex}; cosine ${r.cosine.toFixed(2)}. This reconstruction captures ${pct(r.reads_accounted)} of the observed error reads.</span>`
+              : ` <span style="font-weight:400">— no candidate signature passed the screen</span>`);
+          host.appendChild(head);
+          const W = 1000,
+            H = 300,
+            m = { l: 48, r: 6, t: 30, b: 46 },
+            gap = 10,
+            ph = (H - m.t - m.b - gap) / 2;
+          const svg = el("svg", { viewBox: `0 0 ${W} ${H}` });
+          host.appendChild(svg);
+          tipDelegate(svg);
+          const rec = CH.map((_, i) => sigs.reduce((a, s) => a + r.contributions[s][i], 0));
+          // whole-percent ticks: round the axis up to a multiple of a 1/2/5/10 % step
+          const pk = Math.max(...r.observed, ...rec) * 100 || 1;
+          const pstep = [1, 2, 5, 10, 20, 50].find((v) => pk / v <= 4) || 100;
+          const ymax = (Math.ceil(pk / pstep) * pstep) / 100;
+          const bw = (W - m.l - m.r - 5 * 6) / 96;
+          const xpos = (j) => m.l + j * bw + Math.floor(j / 16) * 6;
+          const yTop = (v) => m.t + ph - (v / ymax) * ph,
+            yBot = (v) => m.t + ph + gap + ph - (v / ymax) * ph;
+          for (const [y0, lab] of [
+            [m.t, "measured"],
+            [m.t + ph + gap, "reconstructed"],
+          ]) {
+            for (let pv = 0; pv <= 100 * ymax + 1e-9; pv += pstep) {
+              const gy = y0 + ph - (pv / (100 * ymax)) * ph;
+              svg.appendChild(el("line", { class: "grid", x1: m.l, x2: W - m.r, y1: gy, y2: gy }));
+              const tx = el("text", { class: "tick", x: m.l - 4, y: gy + 3, "text-anchor": "end" });
+              tx.textContent = String(Math.round(pv));
+              svg.appendChild(tx);
+            }
+            const tl = el("text", {
+              class: "tick",
+              x: -(y0 + ph / 2),
+              y: 10,
+              transform: "rotate(-90)",
+              "text-anchor": "middle",
+            });
+            tl.textContent = lab + " (%)";
+            svg.appendChild(tl);
+          }
+          SUBS.forEach((sb, g) => {
+            const x0 = xpos(g * 16),
+              x1 = xpos(g * 16 + 15) + bw;
+            const t = el("text", {
+              class: "tick",
+              x: (x0 + x1) / 2,
+              y: m.t - 13,
+              "text-anchor": "middle",
+              "font-weight": 600,
+            });
+            t.textContent = sb;
+            svg.appendChild(t);
+            svg.appendChild(el("rect", { x: x0, y: m.t - 9, width: x1 - x0, height: 6, fill: SBS_COL[sb], rx: 1 }));
+          });
+          idx.forEach((ci, j) => {
+            const x0 = xpos(j) + 0.15 * bw,
+              w0 = 0.7 * bw;
+            const rb = r.rate_per_mb ? r.rate_per_mb[ci] : null;
+            const tip =
+              `<b>${esc(CH[ci])}</b><br>measured ${(100 * r.observed[ci]).toFixed(2)} %` +
+              (rb != null ? `<br>burden ${rb.toFixed(1)} per million bases` : "") +
+              `<br>reconstruction ${(100 * rec[ci]).toFixed(2)} %` +
+              sigs.map((s) => `<br>· ${esc(sigName(s))} ${(100 * r.contributions[s][ci]).toFixed(2)} %`).join("");
+            svg.appendChild(
+              el("rect", {
+                x: x0,
+                y: yTop(r.observed[ci]),
+                width: w0,
+                height: m.t + ph - yTop(r.observed[ci]),
+                fill: SBS_COL[CH[ci].slice(2, 5)] || "var(--ink2)",
+                "data-tip": tip,
+              }),
+            );
+            let acc = 0;
+            for (const s of sigs) {
+              const v = r.contributions[s][ci];
+              if (v <= 0) continue;
+              svg.appendChild(
+                el("rect", {
+                  x: x0,
+                  y: yBot(acc + v),
+                  width: w0,
+                  height: yBot(acc) - yBot(acc + v),
+                  fill: col[s],
+                  "data-tip": tip,
+                }),
+              );
+              acc += v;
+            }
+            const lt = el("text", {
+              class: "tick",
+              x: x0 + w0 / 2,
+              y: H - m.b + 6,
+              transform: `rotate(-90 ${x0 + w0 / 2} ${H - m.b + 6})`,
+              "text-anchor": "end",
+              "dominant-baseline": "central",
+              "font-size": 7,
+            });
+            lt.textContent = CH[ci][0] + CH[ci][2] + CH[ci][6];
+            svg.appendChild(lt);
+          });
+        }
       }
+      document.getElementById("sig-seg").addEventListener("click", (e) => {
+        const o = e.target.closest("[data-i]");
+        if (!o) return;
+        curSig = +o.dataset.i;
+        drawSig();
+      });
+      // number the visible sections in order (the spectrum section only exists with false doubles)
+      function numberSections() {
+        let n = 0;
+        document.querySelectorAll(".sechead .n").forEach((s) => {
+          if (s.closest("[hidden]")) return;
+          n += 1;
+          s.textContent = `${n} · ${s.textContent.replace(/^[0-9]*\s*·\s*/, "")}`;
+        });
+      }
+
+      /* =========================================================
+         SECTION — anchor distance profile (false doubles)
+         ========================================================= */
+      // Wildtype-template libraries carry no programmed anchors, so they have nothing to say here. The rest
+      // are ordered the way the experiment ran: condition (input before output, bin1 before bin2), then
+      // replicate number.
+      // The same key the report builder sorts the files with: condition first (input, then output, then
+      // anything else), then natural order within the name, so bin_2 precedes bin_10 and replicate 1
+      // precedes replicate 2 whatever the order the pipeline staged them in.
+      const ancOrderKey = (name) => {
+        const s = String(name).toLowerCase();
+        const rank = /input/.test(s) ? 0 : /output/.test(s) ? 1 : /wildtype|wt/.test(s) ? 3 : 2;
+        const chunks = (s.match(/\d+|\D+/g) || []).map((c) => (/^\d+$/.test(c) ? +c : c));
+        return [rank].concat(chunks);
+      };
+      const ANC = (DATA.anchors || [])
+        .filter((a) => {
+          const f = FILES.find((x) => x.id === a.library);
+          return !f || (f.type || "") !== "wildtype";
+        })
+        .slice()
+        .sort((a, b) => {
+          const ka = ancOrderKey(a.library),
+            kb = ancOrderKey(b.library);
+          for (let i = 0; i < Math.max(ka.length, kb.length); i++) {
+            if (ka[i] === undefined) return -1;
+            if (kb[i] === undefined) return 1;
+            if (ka[i] < kb[i]) return -1;
+            if (ka[i] > kb[i]) return 1;
+          }
+          return String(a.library).localeCompare(String(b.library));
+        });
+      const MINFD = DATA.min_fd_dist == null ? 0 : DATA.min_fd_dist;
+      let curAnc = -1; // -1 = every library of the run summed
+      let ancStack = false; // genuine doubles stacked on the false doubles, rather than beside them
+      const ancLabels = () => ["all libraries"].concat(shortLabels(ANC.map((a) => a.library)));
+      function ancSum(sel) {
+        // sum the chosen libraries onto a common distance axis
+        const rows = sel < 0 ? ANC : [ANC[sel]];
+        const m = new Map();
+        for (const a of rows)
+          a.dist.forEach((d, i) => {
+            const o = m.get(d) || { d, fr: 0, fe: 0, gr: 0, ge: 0, ga: 0 };
+            o.fr += a.fd_reads[i] || 0;
+            o.fe += a.fd_exposure[i] || 0;
+            o.gr += a.gd_reads[i] || 0;
+            o.ge += a.gd_exposure[i] || 0;
+            o.ga += (a.gd_anchor_exposure && a.gd_anchor_exposure[i]) || 0;
+            m.set(d, o);
+          });
+        return [...m.values()].sort((x, y) => x.d - y.d);
+      }
+      // A shared log axis for both panels: reads carrying a second change, per anchor-spanning read.
+      const ANC_LO = 1e-7,
+        ANC_HI = 1e-2;
+      const ancPos = (v) => (Math.log10(v) - Math.log10(ANC_LO)) / (Math.log10(ANC_HI) - Math.log10(ANC_LO));
+      // Libraries built by nicking mutagenesis carry a primer footprint, and --min_FDdist is what avoids it.
+      // At --min_FDdist 0 there is no footprint to speak of - a tiled synthesis library - and the section has
+      // to say so: there, double mutants on one molecule come from the synthesis of the oligo pool, not from
+      // two primers meeting, and nothing is excluded.
+      const PRIMERS = MINFD > 0;
+      const GD_ORIGIN = PRIMERS
+        ? "likely two nicking primers that bound to one template molecule"
+        : "likely an error of the library synthesis, not of the sequencer";
+      function drawAnchors() {
+        // The anchor evidence only exists for, and only matters to, the false-doubles correction.
+        if (!ANC.length || DATA.method !== "false_doubles") return;
+        document.getElementById("anc-section").hidden = false;
+        document.getElementById("anc-sub").innerHTML =
+          (PRIMERS
+            ? `Two artefacts sit on top of the sequencing SNV error, and they separate by distance: the nicking
+               mutagenesis primer's own recurrent errors close to the anchor, and real double mutants far from it. `
+            : `One artefact sits on top of the sequencing SNV error here: real double mutants. `) +
+          `<b>Genuine doubles</b> are reads carrying two programmed codon variants (2+2, 3+2, 3+3 changed bases)
+           — ${PRIMERS ? "likely two nicking primers that bound to one template molecule" : "likely an error of the library synthesis, not of the sequencer"};
+           <b>false doubles</b> are a 2- or 3-nucleotide variant anchor plus one changed base (2+1, 3+1) — the reads
+           the error model is read from. Both are shown as a share of the reads that cover an anchor. Every number
+           and bar below is pooled over all variant positions and over
+           ${ANC.length > 1 ? "all " + ANC.length + " libraries of the run, unless you pick one above" : "the run"}.
+           Hover a bar for its numbers.`;
+        document.getElementById("anc-info").dataset.info =
+          `Each single-nucleotide variant's (SNV's) error rate is read from reads that also carry a programmed ` +
+          `multi-nucleotide variant (an anchor) nearby. Blue: false doubles, a 2- or 3-nucleotide variant anchor plus one changed base ` +
+          `(2+1, 3+1) - the error evidence. Green: genuine doubles, two programmed codon variants (2+2, 3+2, ` +
+          `3+3), which no sequencing error can make - ${GD_ORIGIN}. ` +
+          (PRIMERS
+            ? `Within the primer footprint the false-double rate carries the primer's own recurrent errors, so those anchors are excluded (--min_FDdist), and genuine doubles are rare there because the two footprints clash. `
+            : `Nothing is excluded: without nicking mutagenesis there is no footprint. `) +
+          `Everything is pooled over all positions and all libraries unless one library is selected.`;
+        document.getElementById("anc-seg").innerHTML =
+          ANC.length > 1
+            ? ancLabels()
+                .map((l, k) => `<span class="opt${k - 1 === curAnc ? " on" : ""}" data-a="${k - 1}">${esc(l)}</span>`)
+                .join("")
+            : "";
+        const P = ancSum(curAnc);
+        const near = P.filter((o) => o.d <= MINFD),
+          far = P.filter((o) => o.d > MINFD);
+        const sum = (a, k) => a.reduce((t, o) => t + o[k], 0);
+        const rNear = sum(near, "fe") > 0 ? sum(near, "fr") / sum(near, "fe") : null;
+        const rFar = sum(far, "fe") > 0 ? sum(far, "fr") / sum(far, "fe") : null;
+        const gRate = (a) => (sum(a, "ga") > 0 ? sum(a, "gr") / sum(a, "ga") : null);
+        const gRateFar = gRate(far);
+        const tiles = [
+          [
+            `Excluded false doubles <button class="ibtn" type="button" data-info="False-double reads whose anchor lies within --min_FDdist codons of the variant - inside the primer's own footprint, where its recurrent errors dominate. Left out of the error estimate.">i</button>`,
+            fmt(sum(near, "fr")) + " reads",
+          ],
+          [
+            `${PRIMERS ? "False doubles used" : "False doubles"} <button class="ibtn" type="button" data-info="${PRIMERS ? "False-double reads whose anchor lies beyond --min_FDdist codons: the evidence every SNV's error rate is read from." : "Every false-double read in the run: with no primer footprint to avoid, all of them are evidence."} Pooled over all positions and libraries.">i</button>`,
+            fmt(sum(far, "fr")) + " reads",
+          ],
+          [
+            `Mean false double rate <button class="ibtn" type="button" data-info="False-double reads as a share of the reads covering an anchor, over the anchors the estimate uses - the blue dashed line. It is the read-weighted average of the per-SNV error rates, so it is close to, but not the same as, the per-nucleotide rates in SINGLE FILE, which average over SNVs and sum the six classes.">i</button>`,
+            rFar != null && isFinite(rFar) ? sci(rFar) : "–",
+          ],
+          [
+            `Mean genuine double rate <button class="ibtn" type="button" data-info="Reads carrying two programmed codon variants as a share of the reads covering an anchor, over the anchors the estimate uses - the green dashed line. These are real double mutants: ${GD_ORIGIN}. The percentage is their share of the false-double rate: how common they are against the reads the model fits. It is a property of the library, not the share the correction removes - that is the ERROR SPECTRUM tile, which weights each variant by its own library frequency.">i</button>`,
+            gRateFar != null && isFinite(gRateFar)
+              ? sci(gRateFar) + (rFar ? ` <small>(${((100 * gRateFar) / rFar).toFixed(1)} %)</small>` : "")
+              : "–",
+          ],
+          [
+            `Within-primer excess <button class="ibtn" type="button" data-info="The false-double rate inside the excluded window divided by the rate over the anchors used. Above 1 means the primer's own errors inflate the evidence close to an anchor.">i</button>`,
+            rNear != null && rFar ? (rNear / rFar).toFixed(2) + "×" : "–",
+          ],
+        ].filter(([k]) => MINFD > 0 || !/Within-primer excess|Excluded false doubles/.test(k));
+        document.getElementById("anc-tiles").innerHTML = tiles
+          .map(([k, v]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div></div>`)
+          .join("");
+        const host = document.getElementById("anc-panel");
+        host.innerHTML = "";
+        const W = 1000,
+          H = 330,
+          m = { l: 66, r: 10, t: 26, b: 46 };
+        const ph = H - m.t - m.b;
+        const svg = el("svg", { viewBox: `0 0 ${W} ${H}` });
+        host.appendChild(svg);
+        tipDelegate(svg);
+        const dmax = Math.max(...P.map((o) => o.d));
+        const bw = (W - m.l - m.r) / (dmax + 1);
+        const x = (d) => m.l + d * bw;
+        const y = (v) => m.t + ph - Math.max(0, Math.min(1, ancPos(v))) * ph;
+        // Both read classes share one axis - reads per anchor-spanning read - so the panel reads as one
+        // picture: the false doubles the model fits, and the genuine double mutants it has to take back out.
+        const fdVal = (o) => (o.fe > 0 ? o.fr / o.fe : null);
+        const gdVal = (o) => (o.ga > 0 ? o.gr / o.ga : null);
+        if (MINFD > 0) {
+          svg.appendChild(
+            el("rect", {
+              x: m.l,
+              y: m.t,
+              width: x(MINFD + 1) - m.l,
+              height: ph,
+              fill: "var(--neg)",
+              "fill-opacity": 0.06,
+            }),
+          );
+        }
+        for (let e = -7; e <= -2; e++) {
+          const gv = Math.pow(10, e),
+            gy = y(gv);
+          svg.appendChild(el("line", { class: "grid", x1: m.l, x2: W - m.r, y1: gy, y2: gy }));
+          const tx = el("text", { class: "tick", x: m.l - 6, y: gy + 3, "text-anchor": "end" });
+          tx.textContent = "1e" + e;
+          svg.appendChild(tx);
+        }
+        for (const o of P) {
+          const fv = fdVal(o),
+            gv = gdVal(o);
+          const inNear = o.d <= MINFD;
+          const tip =
+            `<b>${o.d} codon${o.d === 1 ? "" : "s"} away</b><br>` +
+            (fv != null && fv > 0 ? `false doubles ${sci(fv)} of anchor reads · ${fmt(o.fr)} reads<br>` : "") +
+            (gv != null && gv > 0
+              ? `genuine doubles ${sci(gv)} of anchor reads · ${fmt(o.gr)} reads` +
+                (fv ? ` · ${((100 * gv) / fv).toFixed(1)} % of the false doubles` : "")
+              : "") +
+            (inNear ? "<br><i>excluded from the fit</i>" : "");
+          if (ancStack) {
+            // one bar per distance: the false doubles, then the genuine doubles stacked on top of them,
+            // so the bar's top is every read carrying a second change and the split says what it is.
+            const base = fv != null && fv > 0 ? fv : null;
+            const top = (base || 0) + (gv != null && gv > 0 ? gv : 0);
+            if (base) {
+              svg.appendChild(
+                el("rect", {
+                  x: x(o.d) + bw * 0.12,
+                  y: y(base),
+                  width: Math.max(1, bw * 0.76),
+                  height: Math.max(0, m.t + ph - y(base)),
+                  fill: "var(--accent)",
+                  "fill-opacity": inNear ? 0.45 : 0.9,
+                  "data-tip": tip,
+                }),
+              );
+            }
+            if (top > (base || 0)) {
+              const y1 = y(top),
+                y0 = base ? y(base) : m.t + ph;
+              svg.appendChild(
+                el("rect", {
+                  x: x(o.d) + bw * 0.12,
+                  y: y1,
+                  width: Math.max(1, bw * 0.76),
+                  height: Math.max(0.8, y0 - y1),
+                  fill: "var(--pos)",
+                  "fill-opacity": inNear ? 0.5 : 0.95,
+                  "data-tip": tip,
+                }),
+              );
+            }
+          } else {
+            // side by side: the honest comparison on a log axis, where a stacked segment of a few per
+            // cent would be a sliver thinner than the line it sits on
+            [
+              [fv, "var(--accent)", 0.06],
+              [gv, "var(--pos)", 0.5],
+            ].forEach(([v, fill, off]) => {
+              if (v == null || !isFinite(v) || v <= 0) return;
+              const yv = y(v);
+              svg.appendChild(
+                el("rect", {
+                  x: x(o.d) + bw * off,
+                  y: yv,
+                  width: Math.max(1, bw * 0.42),
+                  height: Math.max(0, m.t + ph - yv),
+                  fill,
+                  "fill-opacity": inNear ? 0.45 : 0.9,
+                  "data-tip": tip,
+                }),
+              );
+            });
+          }
+        }
+        // the two means the tiles quote, over the anchors the estimate actually uses
+        [
+          [rFar, "var(--accent)"],
+          [gRateFar, "var(--pos)"],
+        ].forEach(([v, stroke]) => {
+          if (v == null || !isFinite(v) || v <= 0) return;
+          svg.appendChild(
+            el("line", {
+              x1: x(MINFD + 1),
+              x2: W - m.r,
+              y1: y(v),
+              y2: y(v),
+              stroke,
+              "stroke-width": 1.2,
+              "stroke-dasharray": "4 3",
+            }),
+          );
+        });
+        const yl = el("text", {
+          class: "albl",
+          x: -(m.t + ph / 2),
+          y: 11,
+          transform: "rotate(-90)",
+          "text-anchor": "middle",
+        });
+        yl.textContent = "share of the reads covering an anchor";
+        svg.appendChild(yl);
+        svg.appendChild(el("line", { class: "axis", x1: m.l, x2: W - m.r, y1: m.t + ph, y2: m.t + ph }));
+        for (let d = 0; d <= dmax; d += 5) {
+          const t = el("text", { class: "tick", x: x(d) + bw / 2, y: H - m.b + 16, "text-anchor": "middle" });
+          t.textContent = d;
+          svg.appendChild(t);
+        }
+        const xl = el("text", { class: "albl", x: m.l + (W - m.l - m.r) / 2, y: H - 6, "text-anchor": "middle" });
+        xl.textContent = "codon distance between the two changes";
+        svg.appendChild(xl);
+        const ttl = el("text", { class: "sub2lbl", x: W - m.r, y: m.t - 8, "text-anchor": "end" });
+        ttl.textContent = ancStack
+          ? "false doubles (2+1, 3+1) with genuine doubles (2+2, 3+2, 3+3) stacked on top"
+          : "false doubles (2+1, 3+1) and genuine doubles (2+2, 3+2, 3+3), side by side";
+        svg.appendChild(ttl);
+        host.insertAdjacentHTML(
+          "beforeend",
+          `<div class="legend" style="margin-top:10px">` +
+            `<span class="chip"><span class="sw" style="background:var(--accent)"></span>false doubles — an anchor plus one changed base, the error evidence</span>` +
+            `<span class="chip"><span class="sw" style="background:var(--pos)"></span>genuine doubles — two programmed codon variants</span>` +
+            (MINFD > 0
+              ? `<span class="chip"><span class="sw" style="background:var(--neg);opacity:.14"></span>shaded and faded: excluded by --min_FDdist = ${MINFD}</span>`
+              : "") +
+            `<span class="chip" style="border:none">dashed lines: the two means over the anchors used</span>` +
+            `<span class="chip" id="anc-stack" style="cursor:pointer">${ancStack ? "showing them stacked" : "stack genuine on top of false"}</span>` +
+            `</div>`,
+        );
+        const sb = document.getElementById("anc-stack");
+        if (sb)
+          sb.addEventListener("click", () => {
+            ancStack = !ancStack;
+            drawAnchors();
+          });
+      }
+      document.getElementById("anc-seg").addEventListener("click", (e) => {
+        const o = e.target.closest("[data-a]");
+        if (!o) return;
+        curAnc = +o.dataset.a;
+        drawAnchors();
+      });
 
       /* ---------- info buttons ---------- */
       document.addEventListener("click", (e) => {
@@ -1799,7 +2652,7 @@
         e.stopPropagation();
         const pop = document.createElement("div");
         pop.className = "ipop";
-        pop.textContent = b.dataset.info;
+        pop.innerHTML = b.dataset.info;
         document.body.appendChild(pop);
         const r = b.getBoundingClientRect();
         pop.style.left = Math.max(8, Math.min(r.left, innerWidth - pop.offsetWidth - 8)) + "px";
@@ -1814,14 +2667,19 @@
       // page paints first, then the detail fills in - which noticeably cuts the perceived load time.
       tiles();
       drawCorr();
+      drawSig();
+      drawAnchors();
+      numberSections();
       buildGroups();
-      GROUPS.forEach((g) => drawScatter(g));
+      drawAllScatters();
       buildSeg();
       drawLegend();
       setTimeout(drawDetail, 0);
       addEventListener("resize", () => {
         drawCorr();
-        GROUPS.forEach((g) => drawScatter(g));
+        drawSig();
+        drawAnchors();
+        drawAllScatters();
         drawDetail();
       });
       // Close the enlarged scatter once the matrix it belongs to has scrolled out of sight.

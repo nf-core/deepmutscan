@@ -1,13 +1,17 @@
 name: "dmsanalysis_error_correction_false_doubles"
-description: "Sequencing-error correction of single-codon variant counts using the false-double-mutant model: because the library only contains single-codon changes, observed multi-codon variants are treated as errors and used to estimate and subtract the per-nucleotide error rate."
+description: "Sequencing-error correction of single-codon variant counts using the false-double-mutant model: subtracts the expected error reads (error rate of the library's pool, from DMSANALYSIS_FDM_ESTIMATE, times the library's coverage) from every single-nucleotide variant."
 keywords:
   - deep mutational scanning
   - error correction
   - false doubles
   - variant counting
 tools:
+  - "dms-fdmcorrect":
+      description: "Sequencing-error correction of deep mutational scanning counts by false double mutants (R package fdmcorrect)"
+      homepage: "https://github.com/MaximilianStammnitz/dms-fdmcorrect"
+      licence: ["MIT"]
   - "r-base":
-      description: "The R programming language (base only)"
+      description: "The R programming language"
       homepage: "https://www.r-project.org/"
       licence: ["GPL-2.0-or-later"]
 
@@ -17,10 +21,6 @@ input:
         description: |
           Groovy Map containing sample information
           e.g. `[ id:'test', sample:'ORF1', type:'input', replicate:1 ]`
-    - raw_counts:
-        type: file
-        description: Raw (pre-library-filter) variant count table from VARIANTCOUNTING.
-        pattern: "*.variant_counts.tsv"
     - filtered:
         type: file
         description: Library-filtered single-codon variant counts (annotated CSV).
@@ -29,10 +29,18 @@ input:
         type: file
         description: Completed library table (all possible variants) to also correct.
         pattern: "*.csv"
+    - evidence:
+        type: file
+        description: This library's false-double evidence from DMSANALYSIS_FDM_EVIDENCE.
+        pattern: "fdm_evidence.csv"
+    - rates:
+        type: file
+        description: Error rates of this library's pool from DMSANALYSIS_FDM_ESTIMATE.
+        pattern: "fdm_rates.csv"
   - - wt_fasta:
         type: file
-        description: Reference FASTA the reads were aligned to; base_mut positions are in its frame.
-        pattern: "*.{fa,fasta}"
+        description: Reference the reads were aligned to (coordinate frame of `base_mut`).
+        pattern: "*.{fa,fasta,fna}"
   - - aa_seq:
         type: file
         description: Reference amino-acid sequence (one line).
@@ -66,7 +74,7 @@ output:
           description: Groovy Map containing sample information
       - seq_error_rate.csv:
           type: file
-          description: Observed frequency and estimated sequencing-error rate per single-nucleotide variant.
+          description: Every possible single-nucleotide substitution along the reference - observed frequency, applied error rate, this library's `F` and `M`, the pool's `F` and `M`, prior mean, prior strength and shrinkage weight.
           pattern: "seq_error_rate.csv"
   - versions:
       - versions.yml:
@@ -79,27 +87,3 @@ authors:
   - "@MaximilianStammnitz"
 maintainers:
   - "@BenjaminWehnert1008"
-containers:
-  docker:
-    linux/amd64:
-      name: community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-stringr:801bac9c074a1f9b
-      build_id: bd-801bac9c074a1f9b_1
-      scan_id: sc-bb0508c32fbdbbf3_1
-    linux/arm64:
-      name: community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-stringr:fbcc673012c62cb0
-      build_id: bd-fbcc673012c62cb0_1
-      scan_id: sc-c0377bfc5c678ddc_1
-  singularity:
-    linux/amd64:
-      name: oras://community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-stringr:f7ed82e8081ab38d
-      build_id: bd-f7ed82e8081ab38d_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/e5/e5a2e5419dff47f9dbcea8823692f60f9a1b1c1a1ee32ae56eef0ce2989f7b72/data
-    linux/arm64:
-      name: oras://community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-stringr:1c3d5150b5f34345
-      build_id: bd-1c3d5150b5f34345_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/cc/ccd8ca061a33803f1d15bc47bf8e6d87b242ebb66b387cbb5ab02a4c7670f425/data
-  conda:
-    linux/amd64:
-      lock_file: modules/local/dmsanalysis/error_correction_false_doubles/.conda-lock/linux_amd64-bd-801bac9c074a1f9b_1.txt
-    linux/arm64:
-      lock_file: modules/local/dmsanalysis/error_correction_false_doubles/.conda-lock/linux_arm64-bd-fbcc673012c62cb0_1.txt

@@ -19,6 +19,10 @@ process VISUALIZATION_ERROR_CORRECTION_REPORT {
     path corrected, stageAs: 'c*/*'          // per-file tables share a basename -> numbered dirs
     val method
     val false_doubles_method                 // 'mle' | 'eb' - names the estimator in the report heading
+    path rate_tables, stageAs: 'r*/*'        // false doubles: fdm_rates.csv + fdm_rates_per_library.csv of every pool (else empty)
+    path signatures, stageAs: 's*/*'         // false doubles: error_signatures.json of every pool (else empty)
+    path anchor_profiles, stageAs: 'ap*/*'   // false doubles: fdm_distance_profile.csv of every library (else empty)
+    val min_fd_dist                          // --min_FDdist, the anchor distance below which evidence is unused
     path template_html
 
     output:
