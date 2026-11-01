@@ -190,9 +190,9 @@ Two parameters control which variants are scored, and how:
 
 Two established statistical frameworks can be run on the same merged counts:
 
-- `--dimsum`: [DiMSum](https://github.com/lehner-lab/DiMSum) fitness estimates (stages 4–5 of DiMSum, without its own read processing), on the same merged count table as the default estimator. The pipeline passes `--min_counts` as `--fitnessMinInputCountAll` and `--output_pseudocount` as `--fitnessDropoutPseudocount`, so DiMSum scores the same variants. By default, DiMSum also runs with:
+- `--dimsum`: [DiMSum](https://github.com/lehner-lab/DiMSum) fitness estimates (stages 4–5 of DiMSum, without its own read processing), on the same merged count table as the default estimator. The pipeline runs these two stages from DiMSum 1.4's own R code, bundled as `bin/dimsum_fitness.R` (MIT, credited in the file) instead of through the `r-dimsum` package, whose Bioconda recipe pins R 4.0 and pulls in the read-processing tools of the stages the pipeline never runs; the outputs are the same files with the same content, and the step runs natively on ARM. The pipeline passes `--min_counts` as `--fitnessMinInputCountAll` and `--output_pseudocount` as `--fitnessDropoutPseudocount`, so DiMSum scores the same variants. By default, DiMSum also runs with:
   - `--mixedSubstitutions T`: the synonymous wildtype proxy can differ from the reference by one codon. With DiMSum's own default (`F`), single mutants relative to the proxy would be discarded as "mixed substitutions". With `T`, DiMSum also adds up synonymous codon variants before estimating fitness, as the default estimator does.
-  - `--fitnessErrorModel F`: DiMSum's error model needs enough variants that are well covered in every replicate, which sparse shotgun libraries often lack. Without it, DiMSum uses count-based errors only and no replicate normalisation. For deeply sequenced libraries, the error model can be switched on.
+  - `--fitnessErrorModel T` (from `--dimsum_error_model`, default `true`): DiMSum fits its error model. It estimates replicate-specific error terms and normalises fitness between replicates, by bootstrapping over the variants that are well covered in every input and output replicate. The fitness sigmas then combine count-based and replicate errors. The fit needs at least 30 such variants per replicate (90 for three replicates); sparse libraries may not have them, and DiMSum stops with "insufficent number of variants satisfying full fitness range". In that case, run with `--dimsum_error_model false`: DiMSum then uses count-based errors only and no replicate normalisation. The `test` profile does this, because its subsampled libraries are too sparse. The fit runs on one CPU, so that its bootstrap resamples, and hence its numbers, do not depend on the CPUs a task is given.
   - `--retainIntermediateFiles T`.
 
   These options are set with `ext.args` and can be changed in a custom config, for example:
@@ -203,9 +203,7 @@ Two established statistical frameworks can be run on the same merged counts:
   }
   ```
 
-  DiMSum's container is currently only available for x86-64 (amd64), so on ARM machines (e.g. Apple Silicon) `--dimsum` runs under amd64 emulation, and the `arm64` profile has no native image for it.
-
-- `--mutscan`: [mutscan](https://github.com/fmicompbio/mutscan) enrichment estimates with edgeR and limma, on the same merged count table. mutscan is currently only packaged for x86-64 (amd64), so on ARM machines (e.g. Apple Silicon) `--mutscan` runs under amd64 emulation, and the `arm64` profile has no native image for it.
+- `--mutscan`: variant enrichment estimates with [edgeR](https://bioconductor.org/packages/edgeR/) and [limma](https://bioconductor.org/packages/limma/)-voom following [mutscan](https://github.com/fmicompbio/mutscan)'s analysis (Soneson et al. 2023) step by step, on the same merged count table: the wildtype's counts as the per-sample normalisation, replicate as a blocking factor, the input-to-output change as the tested coefficient. The pipeline calls edgeR and limma directly rather than through the mutscan package, so the step runs natively on ARM as well; the result tables are identical to mutscan's, with one deliberate exception: a TTG or CTG variant codon at the first position of the ORF is named L (standard genetic code), not M (Biostrings' initiation-codon rule, which mutscan's names inherit).
 
 ### Interactive variant effect inspection tool (`--pdb`)
 

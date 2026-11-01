@@ -1,7 +1,14 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
+# The mutscan step without the mutscan package: edgeR and limma, called as mutscan calls them. The pins
+# are the versions mutscan's own container carried, so the result tables stay identical to its. All
+# four packages are built for linux-aarch64 on Bioconda/conda-forge.
 channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::bioconductor-biostrings=2.78.0
-  - bioconda::bioconductor-mutscan=1.0.0
+  - bioconda::bioconductor-edger=4.8.2
+  - bioconda::bioconductor-limma=3.66.0
   - conda-forge::r-base=4.5.1
+  - conda-forge::r-ggally=2.4.0
+  - conda-forge::r-ggplot2=4.0.3

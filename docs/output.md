@@ -174,9 +174,9 @@ These plots help to judge the success of the mutagenesis (are all positions and 
   - `single_rep_counts/<library>_fitness_input.tsv`: per-library count tables in DiMSum input format. These are written for every run, also without `--fitness`.
   - `DiMSum_results/`
     - `single_rep_counts/<library>_fitness_input.tsv` (with `--dimsum`): per-library count tables in DiMSum input format.
-    - `dimsum_results/` (with `--dimsum`): the complete [DiMSum](https://github.com/lehner-lab/DiMSum) default output, including its HTML `report.html`, fitness tables (`fitness_singles.txt`, `fitness_doubles.txt`, `fitness_synonymous.txt`, `fitness_wildtype.txt`, `fitness_singles_MaveDB.csv`) and `.RData` objects.
+    - `dimsum_results/` (with `--dimsum`): the complete [DiMSum](https://github.com/lehner-lab/DiMSum) STEAM output (stages 4–5, run from DiMSum 1.4's bundled code, `bin/dimsum_fitness.R`), including its HTML `report.html`, fitness tables (`fitness_singles.txt`, `fitness_doubles.txt`, `fitness_synonymous.txt`, `fitness_wildtype.txt`, `fitness_singles_MaveDB.csv`) and `.RData` objects.
   - `mutscan_results/` (with `--mutscan`)
-    - `fitness_estimation_mutscan_edgeR.tsv`, `fitness_estimation_mutscan_limma.tsv`: [mutscan](https://github.com/fmicompbio/mutscan) default variant enrichment estimates with edgeR and limma.
+    - `fitness_estimation_mutscan_edgeR.tsv`, `fitness_estimation_mutscan_limma.tsv`: variant enrichment estimates with edgeR and limma-voom, following [mutscan](https://github.com/fmicompbio/mutscan)'s default analysis; the first column `mutant` is the amino-acid level mutant name (`WT`, `A1L`, `A1L_K5R`, …) that the counts were aggregated by, the remaining columns are edgeR's `topTags()` / limma's `topTable()` output (identical to mutscan's tables, except that a first-position TTG/CTG variant codon is named L, not M).
     - `mutscan_counts_corr.pdf`, `mutscan_edgeR_volcano.pdf`, `mutscan_limma_volcano.pdf`: count correlation and volcano plots.
 
 </details>
