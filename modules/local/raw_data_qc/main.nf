@@ -3,8 +3,6 @@ process RAW_DATA_QC {
     label 'process_low'
 
     conda "${moduleDir}/environment.yml"
-    // Container lines are regenerated from environment.yml by `nf-core pipelines lint --fix container_configs`
-    // (Seqera Containers): fq + falco.
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
         ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/7a/7aca4e9958243151b7f31fe9df0639e20bc73d97c3ae22aa06a44d23c135e6ea/data'
         : 'community.wave.seqera.io/library/falco_fq:db74719b1b1ce638'}"

@@ -5,7 +5,7 @@
 */
 include { RAW_DATA_QC            } from '../modules/local/raw_data_qc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
-include { BWA_INDEX              } from '../modules/nf-core/bwa/index/main'
+include { BWAMEM3_INDEX          } from '../modules/nf-core/bwamem3/index/main'
 include { MERGE_ALIGN            } from '../modules/local/bamprocessing/merge_align/main'
 include { VARIANTCOUNTING            } from '../modules/local/variantcounting/main'
 include { DMSANALYSIS_AASEQ      } from '../modules/local/dmsanalysis/aa_seq/main'
@@ -56,7 +56,7 @@ workflow DEEPMUTSCAN {
 
     // Define input channels from parameters. The reference and the samplesheet are one file per run,
     // so they are value channels: every task that needs them reads the same value, however many
-    // libraries there are. Outputs of processes whose inputs are all value channels (BWA_INDEX,
+    // libraries there are. Outputs of processes whose inputs are all value channels (BWAMEM3_INDEX,
     // DMSANALYSIS_AASEQ, DMSANALYSIS_POSSIBLE_MUTATIONS, EXPDESIGN_FITNESS) are value channels too.
     def ch_fasta = Channel.value(tuple([id: 'ref'], file(params.fasta, checkIfExists: true)))
     def ch_fasta_file = ch_fasta.map { _meta, fasta -> fasta }               // path(fasta)
@@ -115,20 +115,20 @@ workflow DEEPMUTSCAN {
     ch_multiqc_files = ch_multiqc_files.mix(RAW_DATA_QC.out.data.flatMap { _meta, files -> files })
 
     //
-    // MODULE: BWA Index
+    // MODULE: bwa-mem3 index of the reference ORF
     //
-    BWA_INDEX (
+    BWAMEM3_INDEX (
         ch_fasta
     )
 
     //
     // MODULE: Merge each raw read pair into a consensus read (vsearch), align the merged reads
-    // (BWA-MEM), filter the alignments, and coordinate-sort and index them (samtools), streamed in
+    // (bwa-mem3), filter the alignments, and coordinate-sort and index them (samtools), streamed in
     // one task per library. The sorted, indexed BAM is what the read-based counter needs.
     //
     MERGE_ALIGN(
       ch_reads,                        // tuple(val(meta), path(reads)): checked raw paired-end FASTQ
-      BWA_INDEX.out.index              // tuple(val(meta2), path(index)), a value channel
+      BWAMEM3_INDEX.out.index          // tuple(val(meta2), path(index)), a value channel
     )
 
     // One task per library (the sorted, indexed BAMs); the other inputs are value channels
@@ -480,7 +480,7 @@ workflow DEEPMUTSCAN {
     emit:
     multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
-    bwa_index      = BWA_INDEX.out.index
+    bwa_index      = BWAMEM3_INDEX.out.index
     merged_bam     = MERGE_ALIGN.out.bam
 }
 
