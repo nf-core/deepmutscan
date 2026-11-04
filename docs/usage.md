@@ -207,7 +207,7 @@ When `--fitness` is set and a wildtype 3D structure is supplied via `--pdb <stru
 
 ### 9. Reporting
 
-`nf-core/deepmutscan` writes a single, self-contained `deepmutscan_report.html` to the top of the results directory. It embeds the library QC plots, the error-correction report, the fitness results (and DiMSum/mutscan output, if run), the [MultiQC](https://multiqc.info) report, run statistics and the citations of all tools that were used, so it can be shared as a single file.
+`nf-core/deepmutscan` writes a single, self-contained `deepmutscan_report.html` to the top of the results directory. It embeds the library QC plots, the error-correction report, the fitness results (and DiMSum/mutscan output, if run), the [MultiQC](https://multiqc.info) report, links to Nextflow's execution report and timeline, and the citations of all tools that were used, so it can be shared as a single file.
 
 ## Updating the pipeline
 

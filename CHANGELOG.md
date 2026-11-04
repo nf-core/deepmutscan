@@ -25,16 +25,18 @@ Initial release of nf-core/deepmutscan, created with the [nf-core](https://nf-co
 - DMS library QC per library: count and count-per-coverage heatmaps, sorted count distributions with LogDiff (variants without counts drawn at a floor derived from the data and counted separately; LogDiff not reported when more than 10% of variants have no counts), sliding-window coverage and count profiles (`--sliding_window_size`, `--aimed_cov`), and sequencing-depth rarefaction on a geometric depth grid (`--run_seqdepth`)
 - Optional fitness estimation (`--fitness`): merged count tables, experimental design, synonymous wildtype proxy selection, default log-ratio fitness with replicate rescaling and summary statistics, replicate correlation plots and fitness heatmap
 - Optional fitness estimation with DiMSum (`--dimsum`) and mutscan edgeR / limma (`--mutscan`)
-- Minimum observation count for a variant to be retained (`--min_counts`, default 1), applied during variant counting; the sequencing-error correction runs on the pre-threshold counts
+- Minimum number of reads a variant needs in every `input` replicate to receive a fitness estimate (`--min_counts`, default 10), applied in the same way by the default estimator, DiMSum and mutscan; variant counting, the sequencing-error correction and the library QC always use all reads
+- Pseudocount for variants that drop out of an `output` replicate (`--output_pseudocount`, default 1; 0 gives dropouts no fitness value)
 - Optional interactive 3D variant effect inspection tool built from a user-supplied wildtype structure (`--pdb`)
-- Self-contained, all-in-one run report (`deepmutscan_report.html`) embedding QC, error-correction, fitness, MultiQC and run statistics
+- Self-contained, all-in-one run report (`deepmutscan_report.html`) embedding QC, error-correction, fitness and MultiQC results, with links to Nextflow's execution report and timeline
+- Docker and Singularity images (amd64 and arm64) and conda lock files for all modules, built from each module's `environment.yml`; DiMSum and mutscan are amd64 only for now
 - `test` profile on a 50,000 read-pair subsample of a GID1A nicking-mutagenesis GluePCA experiment, with three nf-test pipeline tests (all options; without fitness, error correction, SeqDepth and structure; stub run), and `test_full` profile on the complete dataset (ENA PRJEB110196); test data and the PDB structure are hosted on [nf-core/test-datasets](https://github.com/nf-core/test-datasets/tree/deepmutscan)
 
 ### `Dependencies`
 
 | Dependency    | Version               |
 | ------------- | --------------------- |
-| `fastqc`      | 0.12.1                |
+| `fastqc`      | 0.13.0                |
 | `fq`          | 0.12.0                |
 | `multiqc`     | 1.35                  |
 | `bwa`         | 0.7.19                |

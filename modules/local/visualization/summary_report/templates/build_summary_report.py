@@ -489,78 +489,6 @@ def structure_data(pdb_path, wt_seq, fitness):
             "identity": round(identity, 4), "n_residues": len(residues), "pdb": pdb_text}
 
 
-def _dur_s(s):
-    """Nextflow-formatted duration ('7m 37s', '746ms', '1h 2m') to seconds."""
-    s = str(s).strip()
-    if not s or s == "-":
-        return 0.0
-    tot = 0.0
-    for num, unit in re.findall(r"([\\d.]+)\\s*(ms|s|m|h|d)", s):
-        tot += float(num) * {"ms": 0.001, "s": 1, "m": 60, "h": 3600, "d": 86400}[unit]
-    return tot
-
-
-def _size_b(s):
-    """Nextflow-formatted size ('3 GB', '4.9 MB') to bytes."""
-    m = re.match(r"([\\d.]+)\\s*(B|KB|MB|GB|TB)", str(s).strip(), re.I)
-    if not m:
-        return 0.0
-    return float(m.group(1)) * {"B": 1, "KB": 1e3, "MB": 1e6, "GB": 1e9, "TB": 1e12}[m.group(2).upper()]
-
-
-def run_stats(path):
-    """Per-process compute stats from Nextflow's execution trace.
-
-    The trace is written continuously, so at report time it holds every task finished so far - i.e.
-    everything but the report itself and the version collation that follows it. That is the whole
-    compute-heavy body of the run, which is what the page is about; it is labelled 'as of report
-    generation' rather than pretended to be the final total. CACHED tasks are counted separately
-    because they consumed no compute this run.
-    """
-    df = pd.read_csv(path, sep="\\t", dtype=str, keep_default_na=False)
-    if "name" not in df.columns:
-        return None
-
-    def proc(n):
-        return re.sub(r"\\s*\\(.*\\)\\s*\$", "", n).split(":")[-1]  # drop "(sample)" and the module path
-
-    rows = {}
-    for _, r in df.iterrows():
-        p = proc(r.get("name", ""))
-        d = rows.setdefault(p, {"n": 0, "cached": 0, "cpu_time": 0.0, "rss": 0.0, "cpu": [], "submit": ""})
-        d["n"] += 1
-        if r.get("status", "") == "CACHED":
-            d["cached"] += 1
-        d["cpu_time"] += _dur_s(r.get("realtime", ""))
-        d["rss"] = max(d["rss"], _size_b(r.get("peak_rss", "")))
-        # earliest submission time, so the table can read top-to-bottom in run order. The trace timestamp
-        # is "YYYY-MM-DD HH:MM:SS.mmm", which sorts lexically = chronologically, so no parsing is needed.
-        sub = r.get("submit", "")
-        if sub and (not d["submit"] or sub < d["submit"]):
-            d["submit"] = sub
-        c = r.get("%cpu", "").replace("%", "").strip()
-        try:
-            d["cpu"].append(float(c))
-        except ValueError:
-            pass
-    procs = [{
-        "process": p, "tasks": d["n"], "cached": d["cached"],
-        "cpu_time": round(d["cpu_time"], 1), "peak_rss": round(d["rss"]),
-        "cpu_pct": round(sum(d["cpu"]) / len(d["cpu"])) if d["cpu"] else None,
-        "submit": d["submit"],
-    } for p, d in rows.items()]
-    # chronological: first-submitted process first (falls back to name for any row with no timestamp)
-    procs.sort(key=lambda x: (x["submit"] or "~", x["process"]))
-    status = df["status"] if "status" in df.columns else pd.Series([], dtype=str)
-    total = {
-        "tasks": int(df.shape[0]),
-        "cached": int((status == "CACHED").sum()),
-        "cpu_time": round(sum(p["cpu_time"] for p in procs), 1),
-        "peak_rss": round(max((p["peak_rss"] for p in procs), default=0)),
-    }
-    return {"processes": procs, "total": total}
-
-
 def software_versions(path):
     """Parse pipeline_info's software versions YAML into {process: {package: version}}.
 
@@ -709,11 +637,6 @@ def main():
         elif kind == "versions":               # pipeline_info software-versions YAML
             versions = software_versions(path)
 
-        elif kind == "trace":                  # Nextflow execution trace -> per-process compute stats
-            try:
-                run["stats"] = run_stats(path)
-            except Exception as exc:  # a malformed/partial trace must never sink the whole report
-                print(f"WARNING: could not parse execution trace: {exc}")
 
     # Coverage needed for every residue outcome to reach --aimed_cov counts, assuming all 21 outcomes
     # are equally represented. Same expression as the reference line in global_position_biases_cov.R;

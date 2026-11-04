@@ -453,14 +453,6 @@ workflow DEEPMUTSCAN {
     ch_report_assets = ch_report_assets.mix(
         ch_collated_versions.map { f -> [['versions', 'run', 'versions.yml'], f] }
     )
-    // Nextflow's own execution trace drives the Overview run-statistics table. It is still being
-    // appended to as the report is built, so it captures every compute-heavy task (all but the report
-    // task itself) - the page labels it as of report generation. checkIfExists is off because the file
-    // is engine-managed, not a process output.
-    ch_report_assets = ch_report_assets.mix(
-        Channel.fromPath("${outdir}/pipeline_info/execution_trace_${params.trace_report_suffix}.txt", checkIfExists: false)
-            .map { f -> [['trace', 'run', 'execution_trace.txt'], f] }
-    )
 
     // Sorting keeps the manifest and the staged files in one deterministic, matching order.
     def ch_summary_input = ch_report_assets
