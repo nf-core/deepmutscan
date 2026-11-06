@@ -1,0 +1,7 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::bwa=0.7.19
+  - bioconda::samtools=1.21
+  - bioconda::vsearch=2.30.0
