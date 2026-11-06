@@ -1319,56 +1319,16 @@
             (s) =>
               `<tr><td>${esc(s.id)}</td><td>${s.ec ? fmt(s.ec.n_variants) : "–"}</td><td>${s.ec ? fmt(s.ec.total_corrected) : "–"}</td></tr>`,
           ).join("")}</tbody></table></div></div>`;
-          // Run statistics from the Nextflow execution trace (Overview), when it was available.
-          const RS = (DATA.run || {}).stats;
-          if (RS && RS.processes && RS.processes.length) {
-            const dur = (s) => {
-              s = Math.round(s);
-              if (s < 60) return s + " s";
-              const m = Math.floor(s / 60),
-                ss = s % 60;
-              if (m < 60) return m + "m" + (ss ? " " + ss + "s" : "");
-              return Math.floor(m / 60) + "h " + (m % 60) + "m";
-            };
-            const sz = (b) => {
-              if (!b) return "–";
-              const u = ["B", "KB", "MB", "GB", "TB"];
-              let i = 0;
-              while (b >= 1000 && i < u.length - 1) ((b /= 1000), i++);
-              return (b < 10 ? b.toFixed(1) : Math.round(b)) + " " + u[i];
-            };
-            const t = RS.total;
-            h += `<div class="panel"><h2>Run statistics ${info(
-              "Per-process compute from Nextflow's execution trace at report time (excludes this report and the trailing version collation). CPU time sums task runtimes; CACHED tasks reused earlier results.",
-            )}</h2>`;
-            h += `<div class="tiles">${[
-              ["Tasks", fmt(t.tasks)],
-              ["Cached", fmt(t.cached)],
-              ["CPU time", dur(t.cpu_time)],
-              ["Peak memory", sz(t.peak_rss)],
-            ]
-              .map(([k, v]) => `<div class="tile"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`)
-              .join("")}</div>`;
-            h += `<div class="tblwrap"><table><thead><tr><th>Process</th><th>Tasks</th><th>Cached</th><th>CPU time</th><th>Mean %CPU</th><th>Peak RSS</th></tr></thead><tbody>${RS.processes
-              .map(
-                (p) =>
-                  `<tr><td>${esc(p.process)}</td><td>${fmt(p.tasks)}</td><td>${fmt(p.cached)}</td><td>${dur(
-                    p.cpu_time,
-                  )}</td><td>${p.cpu_pct == null ? "–" : fmt(p.cpu_pct) + "%"}</td><td>${sz(p.peak_rss)}</td></tr>`,
-              )
-              .join("")}</tbody></table></div>`;
-            // Straight into Nextflow's own richer report + timeline, which sit next to this file in
-            // pipeline_info/. Relative links, so they resolve when the report is opened from the results
-            // folder (the location it is published to).
-            const sfx = (DATA.run || {}).trace_report_suffix;
-            if (sfx)
-              h += `<p class="desc" style="margin-top:10px">Nextflow's own outputs, next to this file: <a href="pipeline_info/execution_report_${esc(
-                sfx,
-              )}.html" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">execution report ↗</a> · <a href="pipeline_info/execution_timeline_${esc(
-                sfx,
-              )}.html" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">timeline ↗</a></p>`;
-            h += `</div>`;
-          }
+          // Run statistics: Nextflow's own execution report and timeline, which sit next to this file in
+          // pipeline_info/. Linked rather than parsed, because the trace is still being written while this
+          // report is built. Relative links resolve when the report is opened from the results folder.
+          const sfx = (DATA.run || {}).trace_report_suffix;
+          if (sfx)
+            h += `<div class="panel"><h2>Run statistics</h2><p class="desc">Task runtimes, CPU and memory usage of this run are in Nextflow's own reports, next to this file: <a href="pipeline_info/execution_report_${esc(
+              sfx,
+            )}.html" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">execution report ↗</a> · <a href="pipeline_info/execution_timeline_${esc(
+              sfx,
+            )}.html" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">timeline ↗</a></p></div>`;
           // README: what this file is and how it maps onto the results folder. The report is meant as
           // the way in - a reader should be able to orient here and then find the underlying files.
           const ec = r.error_correction && r.error_correction !== "none";
