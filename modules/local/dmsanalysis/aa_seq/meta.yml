@@ -1,0 +1,72 @@
+name: "dmsanalysis_aaseq"
+description: Translates a wild-type DNA sequence into an amino acid sequence based on a provided coding region (ORF) range.
+keywords:
+  - translation
+  - amino acid
+  - dna
+  - dms
+  - biostrings
+tools:
+  - "bioconductor-biostrings":
+      description: "Memory efficient string containers, string matching algorithms, and other utilities, for fast manipulation of large biological sequences or sets of sequences"
+      homepage: "https://bioconductor.org/packages/Biostrings"
+      documentation: "https://bioconductor.org/packages/release/bioc/manuals/Biostrings/man/Biostrings.pdf"
+      licence: ["Artistic-2.0"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'ref' ]`
+    - wt_seq:
+        type: file
+        description: FASTA file containing the wild-type DNA reference sequence
+        pattern: "*.{fasta,fa}"
+  - - pos_range:
+        type: string
+        description: Start and stop codon positions in the format 'start-stop', e.g., '352-1383'
+
+output:
+  - aa_seq:
+      - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+      - aa_seq.txt:
+          type: file
+          description: Text file containing the translated amino acid sequence
+          pattern: "aa_seq.txt"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-dplyr_r-ggplot2_pruned:32f1af0a83a018e7
+      build_id: bd-32f1af0a83a018e7_1
+      scan_id: sc-337510c2c910aa1c_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-dplyr_r-ggplot2_pruned:880bbdecb19543bb
+      build_id: bd-880bbdecb19543bb_1
+      scan_id: sc-09c9d098a09068b9_1
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-dplyr_r-ggplot2_pruned:db46247d9810b3e7
+      build_id: bd-db46247d9810b3e7_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/02/02db891e505b0ec37ba6de21f08d576b15a95991026542455b209e20959e50b1/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-dplyr_r-ggplot2_pruned:7202e5d19667bddb
+      build_id: bd-7202e5d19667bddb_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/79/7988a2e369e98cec897d48bab3e55daddd8a973d9b7491ad27b6b15d550a4c5b/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/dmsanalysis/aa_seq/.conda-lock/linux_amd64-bd-32f1af0a83a018e7_1.txt
+    linux/arm64:
+      lock_file: modules/local/dmsanalysis/aa_seq/.conda-lock/linux_arm64-bd-880bbdecb19543bb_1.txt

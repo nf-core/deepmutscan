@@ -1,17 +1,24 @@
-repository_type: pipeline
-nf_core_version: 3.1.2
 lint:
   files_exist:
-    - .github/workflows/linting_comment.yml
+    - conf/igenomes.config
+    - conf/igenomes_ignored.config
+  # The two logos are intentionally the project's own artwork rather than the template's
+  # generated versions, so files_unchanged must not flag them.
   files_unchanged:
-    - .github/workflows/branch.yml
-    - .github/workflows/linting.yml
+    - assets/nf-core-deepmutscan_logo_light.png
+    - docs/images/nf-core-deepmutscan_logo_dark.png
+nf_core_version: 4.2.1
+repository_type: pipeline
 template:
-  org: nf-core
-  name: dmscore
-  description: "Until now, most Deep Mutational Scanning (DMS) experiments relied on variant-specific barcoded libraries for sequencing. This method enabled DMS on large proteins and led to many great publications. Recently, efforts have increased to make use of the classic and more simple random fragmentation-based short-read sequencing (“shotgun-sequencing”). This saves time and money and due to its simpler experimental design is less prone to mistakes. dmscore handles the essential computational steps, processing the raw FASTQ files and generating a count table of variants. Along the way, it provides multiple QC metrics, enabling users to quickly evaluate the success of their experimental setup."
-  author: Benjamin Wehnert & Max Stammnitz
-  version: 1.0.0dev
-  force: true
-  outdir: .
+  author: Benjamin Wehnert & Maximilian R. Stammnitz
+  description: "Processing and analysis of deep mutational scanning (DMS) data from
+    shotgun and amplicon sequencing: read alignment, variant counting, sequencing-error
+    correction, library QC and fitness estimation"
+  force: false
   is_nfcore: true
+  name: deepmutscan
+  org: nf-core
+  outdir: .
+  skip_features:
+    - igenomes
+  version: 1.0.0
