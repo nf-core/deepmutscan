@@ -271,6 +271,10 @@
                 "BWA_INDEX": {
                     "bwa": "0.7.19-r1273"
                 },
+                "COUNTS_TO_FITNESS": {
+                    "r-base": "4.5.1",
+                    "r-Biostrings": "2.78.0"
+                },
                 "DMSANALYSIS_AASEQ": {
                     "r-base": "4.5.1",
                     "r-Biostrings": "2.78.0"
@@ -671,10 +675,10 @@
                 "limma_rowCount": 732
             }
         ],
-        "timestamp": "2026-10-23T12:17:01.199248",
+        "timestamp": "2026-11-06T19:29:16.39125",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.04.1"
+            "nextflow": "25.10.4"
         }
     },
     "-profile test -stub": {
@@ -682,6 +686,9 @@
             {
                 "BWA_INDEX": {
                     "bwa": "0.7.19-r1273"
+                },
+                "COUNTS_TO_FITNESS": {
+                    "stub-version": "0.0.0"
                 },
                 "DMSANALYSIS_AASEQ": {
                     "stub-version": "0.0.0"
@@ -924,10 +931,10 @@
                 "variant_effect_inspection_tool/variant_effect_inspection_tool.html"
             ]
         ],
-        "timestamp": "2026-10-23T09:34:21.572733",
+        "timestamp": "2026-11-06T19:31:52.175022",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.04.1"
+            "nextflow": "25.10.4"
         }
     }
 }

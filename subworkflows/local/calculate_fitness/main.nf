@@ -22,10 +22,10 @@ workflow CALCULATE_FITNESS {
 
     take:
     ch_fitness_input    // channel: output from COUNTS_TO_FITNESS (grouped by sample/replicate logic)
-    ch_samplesheet_csv  // channel: path to samplesheet csv
-    ch_fasta            // channel: tuple([meta], path(fasta))
-    val_reading_frame   // value: reading frame param
-    ch_aa_seq           // channel: output from DMSANALYSIS_AASEQ (for heatmap)
+    ch_samplesheet_csv  // value channel: path to samplesheet csv
+    ch_fasta            // value channel: tuple([meta], path(fasta))
+    val_reading_frame   // value channel: reading frame param
+    ch_aa_seq           // value channel: tuple([meta], path(aa_seq)) from DMSANALYSIS_AASEQ (for heatmap)
     val_run_dimsum      // value: boolean, run DiMSum
     val_run_mutscan     // value: boolean, run mutscan
 
@@ -59,14 +59,11 @@ workflow CALCULATE_FITNESS {
     EXPDESIGN_FITNESS( ch_samplesheet_csv )
     ch_versions = ch_versions.mix(EXPDESIGN_FITNESS.out.versions)
 
-    // 4. Find Synonymous Mutations
-    // Prepare inputs (broadcast logic)
-    def ch_fasta_path = ch_fasta.map { it[1] } // strip meta
-
+    // 4. Find Synonymous Mutations (the reference and the reading frame are value channels)
     FIND_SYNONYMOUS_MUTATION(
         MERGE_COUNTS.out.merged_counts,
-        ch_fasta_path.combine(MERGE_COUNTS.out.merged_counts).map { it[0] },
-        val_reading_frame.combine(MERGE_COUNTS.out.merged_counts).map { it[0] }
+        ch_fasta.map { _meta, fasta -> fasta },
+        val_reading_frame
     )
     ch_versions = ch_versions.mix(FIND_SYNONYMOUS_MUTATION.out.versions)
 
@@ -84,15 +81,10 @@ workflow CALCULATE_FITNESS {
     def ch_counts_wt_d = ch_counts_keyed_d.join(ch_wt_keyed_d)
         .map { key, smp, counts, wt -> tuple(smp, counts, wt) }
 
-    // Broadcast experimental design
-    def ch_exp_for_each_d = EXPDESIGN_FITNESS.out.experimental_design
-        .combine(ch_counts_wt_d)
-        .map { it[0] }
-
-    // Final aligned channels
+    // Final aligned channels; the experimental design is a value channel (one samplesheet per run)
     def ch_run_counts_d = ch_counts_wt_d.map { smp, counts, wt -> tuple(smp, counts) }
     def ch_run_wt_d     = ch_counts_wt_d.map { smp, counts, wt -> wt }
-    def ch_run_exp_d    = ch_exp_for_each_d
+    def ch_run_exp_d    = EXPDESIGN_FITNESS.out.experimental_design
 
     // 6. Run Fitness Calculation & QC
     FITNESS_CALCULATION(
