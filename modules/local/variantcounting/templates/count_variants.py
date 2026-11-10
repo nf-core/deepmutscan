@@ -237,7 +237,7 @@ def parse_read(read, orf_start, orf_end, base_qual, min_flank):
                     md_index += 1
                 base_ref_pos += 1
                 base_read_pos += 1
-        elif op == 1: # I, insertion (indel-containing reads are dropped upstream in bam_filter)
+        elif op == 1: # I, insertion (reads with insertions or deletions are dropped upstream, in MERGE_ALIGN)
             base_read_pos += op_len
         elif op == 2: # D, deletion
             for i in range(op_len):
