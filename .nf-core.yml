@@ -5,7 +5,7 @@ lint:
   files_unchanged:
     - assets/nf-core-deepmutscan_logo_light.png
     - docs/images/nf-core-deepmutscan_logo_dark.png
-nf_core_version: 4.2.1
+nf_core_version: 4.2.2
 repository_type: pipeline
 template:
   author: Benjamin Wehnert & Maximilian R. Stammnitz
