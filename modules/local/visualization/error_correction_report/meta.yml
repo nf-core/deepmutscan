@@ -1,0 +1,80 @@
+name: "visualization_error_correction_report"
+description: Build a self-contained, per-sample HTML report visualising the effect of the sequencing-error correction (positional error bias, correction magnitude, and per-variant raw-vs-corrected counts).
+keywords:
+  - deep mutational scanning
+  - error correction
+  - report
+  - visualisation
+tools:
+  - "pandas":
+      description: "Fast, powerful data structures for data analysis in Python."
+      homepage: "https://pandas.pydata.org/"
+      licence: ["BSD-3-Clause"]
+
+input:
+  - - sample:
+        type: string
+        description: Run-level sample name, used for the report heading.
+  - - ids_b64:
+        type: string
+        description: |
+          Base64-encoded JSON array of the library identifiers, in the same order as `corrected`.
+          Base64 keeps the JSON free of quoting problems when it is interpolated into the template.
+  - - corrected:
+        type: file
+        description: |
+          Error-corrected, library-filtered counts for every library of the run (with `counts`
+          corrected and `counts_raw` preserved). Staged into numbered directories because the
+          basenames repeat across libraries.
+        pattern: "*.csv"
+  - - method:
+        type: string
+        description: Error-correction method label (`false_doubles` or `wildtype`).
+  - - false_doubles_method:
+        type: string
+        description: Estimator naming in the report heading, `mle` or `eb`.
+  - - template_html:
+        type: file
+        description: The report's HTML shell; data and plots are injected into it.
+        pattern: "*.html"
+
+output:
+  - report:
+      - error_correction_report.html:
+          type: file
+          description: Self-contained, run-level error-correction report.
+          pattern: "error_correction_report.html"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+maintainers:
+  - "@BenjaminWehnert1008"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/numpy_pandas_python:cfb38dbf0574e16d
+      build_id: bd-cfb38dbf0574e16d_1
+      scan_id: sc-fae0cdb4b6c51968_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/numpy_pandas_python:a15c6f547e2083b8
+      build_id: bd-a15c6f547e2083b8_1
+      scan_id: sc-931239170a8e2353_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/numpy_pandas_python:7f16bcac97973062
+      build_id: bd-7f16bcac97973062_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f7/f727259d394cff047a26f3e3fa3a43e1a7a1c9dc51a35e6def7aa90a2085bb7b/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/numpy_pandas_python:648dc1860698d21b
+      build_id: bd-648dc1860698d21b_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/22/229745e9be125462f1850ac75f13afb0738d30241558908657bfc802c2c6681f/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/visualization/error_correction_report/.conda-lock/linux_amd64-bd-cfb38dbf0574e16d_1.txt
+    linux/arm64:
+      lock_file: modules/local/visualization/error_correction_report/.conda-lock/linux_arm64-bd-a15c6f547e2083b8_1.txt
