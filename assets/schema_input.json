@@ -9,25 +9,38 @@
         "properties": {
             "sample": {
                 "type": "string",
-                "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces",
-                "meta": ["id"]
+                "pattern": "^[^\\s/]+$",
+                "errorMessage": "Sample name must be provided, cannot contain spaces, and must not include special characters",
+                "meta": ["sample"]
             },
-            "fastq_1": {
+            "file1": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "pattern": "^\\S+\\.(fastq|fq)(\\.gz)?$",
+                "errorMessage": "FASTQ file for read 1 must be provided, cannot contain spaces and must have the extension '.fastq.gz', '.fq.gz', '.fastq' or '.fq'"
             },
-            "fastq_2": {
+            "file2": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "pattern": "^\\S+\\.(fastq|fq)(\\.gz)?$",
+                "errorMessage": "FASTQ file for read 2 must be provided (paired-end reads are required), cannot contain spaces and must have the extension '.fastq.gz', '.fq.gz', '.fastq' or '.fq'"
+            },
+            "type": {
+                "type": "string",
+                "enum": ["input", "output", "wildtype"],
+                "errorMessage": "Type must be one of: input, output or wildtype",
+                "meta": ["type"]
+            },
+            "replicate": {
+                "type": "integer",
+                "minimum": 1,
+                "errorMessage": "Replicate must be a positive integer",
+                "meta": ["replicate"]
             }
         },
-        "required": ["sample", "fastq_1"]
-    }
+        "required": ["sample", "type", "replicate", "file1", "file2"]
+    },
+    "uniqueEntries": ["sample", "type", "replicate"]
 }
