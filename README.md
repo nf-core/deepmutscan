@@ -116,10 +116,7 @@ For scientific discussions around the use of this pipeline (e.g. on experimental
 
 If you use `nf-core/deepmutscan` for your analysis, please cite it as follows:
 
-> Wehnert B, et al. _bioRxiv_ preprint (in preparation).
-
-<!-- Add the Zenodo DOI after the first release: -->
-If you use nf-core/deepmutscan for your analysis, please cite it using the following doi: [10.5281/zenodo.24218965](https://doi.org/10.5281/zenodo.24218965)
+> Wehnert B, et al. _bioRxiv_ preprint (in preparation). Zenodo DOI: [10.5281/zenodo.24218965](https://doi.org/10.5281/zenodo.24218965)
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
