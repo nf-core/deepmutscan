@@ -1,0 +1,95 @@
+name: "variantcounting"
+description: Count single- and multi-nucleotide variants per read against a reference ORF, producing a GATK-AnalyzeSaturationMutagenesis-compatible variant count table.
+keywords:
+  - deep mutational scanning
+  - variant calling
+  - saturation mutagenesis
+  - counting
+tools:
+  - pysam:
+      description: Python interface for reading/manipulating SAM/BAM alignment files (htslib).
+      homepage: https://pysam.readthedocs.io
+      licence: ["MIT"]
+  - polars:
+      description: Fast DataFrame library.
+      homepage: https://pola.rs
+      licence: ["MIT"]
+  - biopython:
+      description: Tools for biological computation (sequence translation).
+      homepage: https://biopython.org
+      licence: ["BSD-3-Clause"]
+
+input:
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information, e.g. `[ id:'sample1' ]`
+    - bam:
+        type: file
+        description: Coordinate-sorted, indexed BAM of merged reads aligned to the reference.
+        pattern: "*.bam"
+    - bai:
+        type: file
+        description: BAM index (staged alongside the BAM).
+        pattern: "*.{bai,csi}"
+  - - fasta:
+        type: file
+        description: Reference FASTA containing the ORF.
+        pattern: "*.{fa,fasta}"
+  - - reading_frame:
+        type: string
+        description: ORF range as 1-based inclusive `start-stop` (GATK `--orf` convention), e.g. `352-1383`.
+  - - base_qual:
+        type: integer
+        description: Minimum base quality for a mutation to be counted.
+  - - min_flank:
+        type: integer
+        description: Minimum distance (nt) of a mutation/covered base from a read edge; 0 disables edge trimming.
+
+output:
+  - variant_counts:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.variant_counts.tsv":
+          type: file
+          description: Tab-separated variant count table (no header), GATK-compatible 9 columns.
+          pattern: "*.variant_counts.tsv"
+  - columns:
+      - variant_counts_columns.tsv:
+          type: file
+          description: Concise explanation of each output column.
+          pattern: "variant_counts_columns.tsv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+maintainers:
+  - "@BenjaminWehnert1008"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/pysam_biopython_numpy_polars-lts-cpu_pruned:f223db6b9aa476d1
+      build_id: bd-f223db6b9aa476d1_1
+      scan_id: sc-7694d04e5969b2e6_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/pysam_biopython_numpy_polars-lts-cpu_pruned:4cc0c5d536e48053
+      build_id: bd-4cc0c5d536e48053_1
+      scan_id: sc-555693b2cbde3457_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/pysam_biopython_numpy_polars-lts-cpu_pruned:52b881e1947dfdb0
+      build_id: bd-52b881e1947dfdb0_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/62/6247bcc77159c0adea94e0fdc439006f94d499e9d32004470fa7e402ede08538/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/pysam_biopython_numpy_polars-lts-cpu_pruned:9df342605773fef4
+      build_id: bd-9df342605773fef4_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/00/009b2a9e9a23d373d35a9afb3e353449f962bcc5511cb56aa3a286b942b0d514/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/variantcounting/.conda-lock/linux_amd64-bd-f223db6b9aa476d1_1.txt
+    linux/arm64:
+      lock_file: modules/local/variantcounting/.conda-lock/linux_arm64-bd-4cc0c5d536e48053_1.txt

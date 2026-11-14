@@ -9,12 +9,12 @@ Content-Type: text/html; charset=utf-8
 $email_html
 
 --nfcoremimeboundary
-Content-Type: image/png;name="nf-core-dmscore_logo.png"
+Content-Type: image/png;name="nf-core-deepmutscan_logo.png"
 Content-Transfer-Encoding: base64
 Content-ID: <nfcorepipelinelogo>
-Content-Disposition: inline; filename="nf-core-dmscore_logo_light.png"
+Content-Disposition: inline; filename="nf-core-deepmutscan_logo_light.png"
 
-<% out << new File("$projectDir/assets/nf-core-dmscore_logo_light.png").
+<% out << new File("$projectDir/assets/nf-core-deepmutscan_logo_light.png").
     bytes.
     encodeBase64().
     toString().
