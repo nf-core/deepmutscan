@@ -85,9 +85,10 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - `possible_mutations.csv`: all programmed codon variants per position, as defined by `--mutagenesis_type`; used for library filtering and visualisation.
   - `bwamem3/`: bwa-mem3 index of the reference FASTA in upper case (`<name>.uppercase.fasta.{amb,ann,bwt.2bit.64,pac}`).
   - `merged_reads/<library>.vsearch_mergepairs.log`: read-pair merging statistics from vsearch (pairs merged, reasons for failed merges, fragment lengths, expected errors).
+  - `merged_reads/<library>.tiled_flanks.tsv` (`--sequencing tiled` only): the constant 5' and 3' flanks of the library's reads, whether each was given, found from the reads or not found, and whether it was added to the reference for the alignment.
   - `bam_files/sorted/<library>.sorted.bam` and `.bai` (only with `--save_bam`): the coordinate-sorted,
     indexed alignments of the merged read pairs, after filtering (mapped, primary, MAPQ >= 30) - what
-    the variant counter reads. Alignments with an insertion, deletion or reference skip are kept in the
+    the variant counter reads (with `--sequencing tiled`, aligned to the reference with any added flanks). Alignments with an insertion, deletion or reference skip are kept in the
     BAM but ignored by the counter. Merging, alignment, filtering and counting run as one stream, and
     the counter does not need the alignments sorted, so without `--save_bam` no BAM is written at all.
   - `variant_counts/<library>/<library>.variant_counts.tsv`: variant count table with one row per observed combination of nucleotide changes, its count, coverage and codon / amino acid annotation. No count threshold is applied here: `--min_counts` acts only on fitness estimation.

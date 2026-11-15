@@ -62,6 +62,20 @@ Use `--mutagenesis_type` to define which codons were programmed at each position
 > [!IMPORTANT]
 > Shotgun sequencing cannot distinguish reads from unmutated plasmids from wildtype-matching fragments of mutated plasmids, so exact wildtype reads are not used as the fitness reference. Instead, the pipeline uses a synonymous variant as a wildtype proxy. We therefore highly recommend that your library design choice includes at least some synonymous wildtype amino acid codons – degenerate NNK/NNS codons do so at almost every position.
 
+### Tiled amplicon libraries (`--sequencing tiled`)
+
+The default, `--sequencing shotgun`, is for libraries sequenced as fragments from anywhere along the mutagenised gene. Use `--sequencing tiled` when every library is a PCR amplicon of one tile of the gene and `--fasta` is that tile. All reads of such an amplicon start and end at the same place: past the tile, through the constant sequences the amplicon was amplified with (primer sites, adapters), and often through a few variable bases (a spacer or stagger) beyond them. With the shotgun settings, bwa-mem3 aligns the bases that run past the end of the reference as an insertion, and the counter skips every read with an indel: on three tiled libraries of 1 M read pairs each, 89-99.5 % of the reads were lost this way.
+
+With `--sequencing tiled`:
+
+- the merged reads are aligned with bwa-mem3's default clipping penalty (`-L 5`, plus `-y 20`, the third seeding round that `--fast` turns off and without which BWA-MEM misses the exact match of a read that contains the whole reference), so whatever runs past the reference is soft-clipped;
+- the constant flanks must be part of the reference, so that this clip never reaches a codon of the tile. Give them with `--flank_5prime` and `--flank_3prime` (the sequences the reads carry before and after the tile, in the orientation of the reference), or leave them out: each library's flanks are then found from its first 20,000 read pairs, as the sequence beyond each end of the reference that at least 90 % of the reads share. A flank the reference does not already start or end with is added to it for the alignment and the counting; positions in the count tables and every later output stay those of `--fasta`. The flanks used are written to `intermediate_files/merged_reads/<library>.tiled_flanks.tsv`.
+
+If your reference already contains the constant flanks (as recommended above), nothing is added and only the clipping changes. On the three tiled libraries, the tiled settings counted 88-91 % of the read pairs, as many as trimming the flanks off the reads with cutadapt (within 2 %) at about a third less CPU time, and found every flank exactly when it was left out of the reference. Do not use `--sequencing tiled` for shotgun libraries: there, the end-to-end alignment of the default keeps codon changes at the read ends (see [Alignment](#2-alignment)).
+
+> [!NOTE]
+> In a tiled amplicon the two mates usually overlap only in the middle of the tile, so the bases near its ends are read once and keep the instrument's quality. On instruments whose highest quality score is below `--base_qual` (Illumina's binned scores top out at Q37 on a NovaSeq 6000 and at Q40 on a NovaSeq X), lower `--base_qual` to that maximum, or the codons at both ends of the tile are not counted (see [Variant counting](#4-variant-counting)). For libraries of a synthesised tile (no nicking primers) also set `--min_FDdist 0`.
+
 ## Running the pipeline
 
 The typical command for running the pipeline (here on a hypothetical gene of exactly 100 codons) is as follows:
@@ -132,7 +146,7 @@ Alignments are filtered with [**samtools view**](https://www.htslib.org/doc/samt
 
 For long ORF site-saturation mutagenesis libraries, most aligned shotgun sequencing reads match the reference exactly. These wildtype reads are retained: they are ignored by the variant counter but contribute to the overall sequencing coverage and sequencing-error estimation.
 
-Merging, alignment, filtering and variant counting run as one streamed, multi-threaded task per library (`MERGE_ALIGN_COUNT`). vsearch and bwa-mem3 each use the task's `task.cpus` and run concurrently; give the task at least two CPUs, because with one bwa-mem3 reads and aligns in turns and the stream runs at half speed. The counter reads the alignments as they arrive and needs no BAM, so none is written by default. `--save_bam` also coordinate-sorts and indexes them into `intermediate_files/bam_files/sorted/` for inspection. The vsearch options (`ext.args`), the bwa-mem3 options (`ext.args3`), the samtools filter flags (`ext.args2`) and extra counter options (`ext.args4`) can be changed in a custom config.
+Merging, alignment, filtering and variant counting run as one streamed, multi-threaded task per library (`MERGE_ALIGN_COUNT`). vsearch and bwa-mem3 each use the task's `task.cpus` and run concurrently; give the task at least two CPUs, because with one bwa-mem3 reads and aligns in turns and the stream runs at half speed. The counter reads the alignments as they arrive and needs no BAM, so none is written by default. `--save_bam` also coordinate-sorts and indexes them into `intermediate_files/bam_files/sorted/` for inspection (with `--sequencing tiled`, against the reference with any added flanks). The vsearch options (`ext.args`), the bwa-mem3 options (`ext.args3`), the samtools filter flags (`ext.args2`) and extra counter options (`ext.args4`) can be changed in a custom config.
 
 > [!TIP]
 > The merging benefit is largest if the average DNA fragment size matches the read length. For example, libraries sequenced with 150 bp paired-end reads should ideally also be sheared or tagmented to a mean size of about 150 bp.

@@ -65,6 +65,15 @@ input:
   - - save_bam:
         type: boolean
         description: Also write a coordinate-sorted, indexed BAM of the filtered alignments.
+  - - sequencing:
+        type: string
+        description: "`shotgun` or `tiled` (reads of a tiled amplicon, which span their tile: constant flanks given or found are added to the reference)"
+  - - flank_5prime:
+        type: string
+        description: Constant sequence of every read before the tile, in the orientation of the reference ('' = find it, tiled only)
+    - flank_3prime:
+        type: string
+        description: Constant sequence of every read after the tile ('' = find it, tiled only)
 
 output:
   - variant_counts:
@@ -100,6 +109,14 @@ output:
           type: file
           description: BAM index (only with save_bam)
           pattern: "*.sorted.bam.bai"
+  - tiled_flanks:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - "*.tiled_flanks.tsv":
+          type: file
+          description: The constant flanks used for a tiled library (given, found or none) and whether each was added to the reference (tiled only)
+          pattern: "*.tiled_flanks.tsv"
   - versions_vsearch:
       - ${task.process}:
           type: string

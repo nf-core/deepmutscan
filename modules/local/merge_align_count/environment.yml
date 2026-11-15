@@ -8,3 +8,4 @@ dependencies:
   - bioconda::dms-count=0.1.0
   - bioconda::samtools=1.25
   - bioconda::vsearch=2.32.0
+  - conda-forge::gawk=5.3.1
