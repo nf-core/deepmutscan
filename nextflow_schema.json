@@ -97,6 +97,12 @@
                     "description": "Minimum distance (nt) a mutation or covered base must be from a read edge; also excludes those bases from coverage. Set to 0 to disable edge trimming.",
                     "minimum": 0,
                     "default": 2
+                },
+                "save_bam": {
+                    "type": "boolean",
+                    "description": "Publish the sorted, indexed BAM of every library to intermediate_files/bam_files/sorted/.",
+                    "help_text": "The variant counter reads the filtered alignments straight from the merge-align stream and needs no BAM, so without this option none is written. With it, the same alignments are also coordinate-sorted and indexed in the MERGE_ALIGN_COUNT task (several GB per full-size run). Leave it off unless you want to inspect the alignments: the count tables carry everything downstream steps use.",
+                    "fa_icon": "fas fa-save"
                 }
             }
         },

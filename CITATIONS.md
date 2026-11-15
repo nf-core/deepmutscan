@@ -50,9 +50,11 @@
 
   > Danecek P, Bonfield JK, Liddle J, Marshall J, Ohan V, Pollard MO, Whitwham A, Keane T, McCarthy SA, Davies RM, Li H. Twelve years of SAMtools and BCFtools. Gigascience. 2021 Feb 16;10(2):giab008. doi: 10.1093/gigascience/giab008.
 
-- [VSEARCH](https://peerj.com/articles/2584/)
+- [VSEARCH](https://peerj.com/articles/2584/) (read-pair merging; the posterior base qualities of the merged reads follow Edgar & Flyvbjerg 2015)
 
   > Rognes T, Flouri T, Nichols B, Quince C, Mahé F. VSEARCH: a versatile open source tool for metagenomics. PeerJ. 2016 Oct 18;4:e2584. doi: 10.7717/peerj.2584.
+
+  > Edgar RC, Flyvbjerg H. Error filtering, pair assembly and error correction for next-generation sequencing reads. Bioinformatics. 2015 Nov 1;31(21):3476-82. doi: 10.1093/bioinformatics/btv401.
 
 - [pysam](https://github.com/pysam-developers/pysam)
 

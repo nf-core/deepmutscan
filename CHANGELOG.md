@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Aligner: bwa-mem3 (`--fast` preset) replaces BWA 0.7.19 in `MERGE_ALIGN`, and `BWAMEM3_INDEX` (nf-core module) replaces `BWA_INDEX`. For a gene-sized reference bwa-mem3 produces alignments identical to BWA with the same scoring in about a third of the CPU time; `--fast` halves that again and changes a single read in one of the four test libraries. Set `ext.args3 = '-L 100 -O 12,12 -B 3'` (no `--fast`) in a custom config for alignments byte-identical to BWA.
 - Alignment scoring in `MERGE_ALIGN` (`ext.args3`, default `--fast -L 100 -O 12,12 -B 3`): substitutions are aligned end-to-end instead of locally. With BWA-MEM's defaults, 2-base codon changes within 3 bp and 3-base changes within 7 bp of a read end were soft-clipped away together with their coverage, under-counting full-codon substitutions by about 13% relative to single-base changes on 150 bp merged reads and making the recovery of read-linked double mutants depend on their codon distance. Count tables gain the previously clipped variants; the nf-test snapshot is updated accordingly.
 - Variant counter: the Python template (`pysam`/`polars`) is replaced by `dms_count`, a single-pass C/htslib counter. Count tables are byte-identical to v1.0.0; `VARIANTCOUNTING` needs about 2% of the CPU time and 14 MB of memory, and its resource label drops from `process_high` to `process_single`.
+- `MERGE_ALIGN_COUNT`: merging, alignment, filtering and variant counting run as one stream per library (`vsearch | bwa-mem3 | samtools view -u | dms_count --bam -`), replacing `MERGE_ALIGN` and `VARIANTCOUNTING`. `dms_count` reads the alignments as they arrive and never needed them sorted or indexed, so the `samtools sort`, the BAM (~2 GB per full-size library) and one task per library are gone; reads with an insertion, deletion or reference skip are skipped by `dms_count --skip_indel_reads` instead of an `awk` filter. Read merging uses vsearch 2.32.0 (from 2.30.0): its directly addressed k-mer index halves the CPU time of the merge (10.2 -> 5.0 CPU s per 1.2 M pairs) with the same merged reads, discarded pairs and statistics, and `--no_progress` keeps the merging log as it was. Count tables and merging logs are byte-identical on the four test libraries and a 1.2 M read-pair benchmark library; on two CPUs that library takes 6.9 s and 0.43 GB instead of 9.7 s and 0.84 GB for the two separate tasks
+- `--save_bam` (default off): alignment files are written only on request. The filtered alignments are then also sorted (compression level 1) and indexed by a background `samtools sort` fed through `tee`, and published to `intermediate_files/bam_files/sorted/`; they now include the reads with insertions or deletions, which the counter skips, so the BAM is about 25% larger than before
 
 ### `Added`
 
@@ -19,20 +21,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Dependencies`
 
-| Dependency        | Version          |
-| ----------------- | ---------------- |
-| `nf-co2footprint` | 1.4.1 (new)      |
-| `falco`           | 2.0.3 (new)      |
-| `fastqc`          | 0.13.0 (removed) |
-| `bwa-mem3`        | 0.17.0 (new)     |
-| `bwa`             | 0.7.19 (removed) |
-| `samtools`        | 1.25 (was 1.21)  |
-| `dms-count`       | 0.1.0 (new)      |
-| `htslib`          | 1.25 (new)       |
-| `pysam`           | 0.24.0 (removed) |
-| `polars`          | 1.33.1 (removed) |
-| `pyarrow`         | 24.0.0 (removed) |
-| `biopython`       | 1.87 (removed)   |
+| Dependency        | Version             |
+| ----------------- | ------------------- |
+| `nf-co2footprint` | 1.4.1 (new)         |
+| `falco`           | 2.0.3 (new)         |
+| `fastqc`          | 0.13.0 (removed)    |
+| `bwa-mem3`        | 0.17.0 (new)        |
+| `bwa`             | 0.7.19 (removed)    |
+| `samtools`        | 1.25 (was 1.21)     |
+| `dms-count`       | 0.1.0 (new)         |
+| `htslib`          | 1.25 (new)          |
+| `pysam`           | 0.24.0 (removed)    |
+| `polars`          | 1.33.1 (removed)    |
+| `pyarrow`         | 24.0.0 (removed)    |
+| `biopython`       | 1.87 (removed)      |
+| `vsearch`         | 2.32.0 (was 2.30.0) |
 
 ## v1.0.0 - Puyol - [2026-11-14]
 

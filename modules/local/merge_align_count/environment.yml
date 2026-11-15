@@ -4,4 +4,7 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
+  - bioconda::bwa-mem3=0.17.0
   - bioconda::dms-count=0.1.0
+  - bioconda::samtools=1.25
+  - bioconda::vsearch=2.32.0

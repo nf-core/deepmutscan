@@ -46,8 +46,8 @@ For more details on the individual steps, please read the [usage documentation](
 1. Raw data QC, one task per library: input FASTQ checks ([`fq lint`](https://github.com/stjude-rust-labs/fq)) and read quality reports ([`Falco`](https://github.com/smithlabcode/falco), FastQC's analyses in C++)
 2. Merging of overlapping read pairs into consensus reads for base error reduction ([`vsearch --fastq_mergepairs`](https://github.com/torognes/vsearch))
 3. End-to-end alignment of the merged reads to the reference ORF ([`bwa-mem3`](https://github.com/fg-labs/bwa-mem3))
-4. Filtering of unmapped, secondary, supplementary, low mapping-quality and indel-containing alignments, sorting and indexing ([`samtools`](https://www.htslib.org/))
-5. Variant counting ([`dms_count`](https://github.com/MaximilianStammnitz/dms-count), a single-pass counter in C on [`htslib`](https://www.htslib.org/))
+4. Filtering of unmapped, secondary, supplementary and low mapping-quality alignments ([`samtools`](https://www.htslib.org/))
+5. Variant counting from the alignment stream, skipping indel-containing reads ([`dms_count`](https://github.com/MaximilianStammnitz/dms-count), a single-pass counter in C on [`htslib`](https://www.htslib.org/)); steps 2-5 run as one stream per library
 6. Annotation and filtering of variant counts against the programmed mutagenesis library
 7. Single-nucleotide variant sequencing-error correction via false double mutants or wildtype sequencing
 8. DMS library quality control and visualisation
