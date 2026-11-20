@@ -8,6 +8,10 @@
 
 > Di Tommaso P, Chatzou M, Floden EW, Barja PP, Palumbo E, Notredame C. Nextflow enables reproducible computational workflows. Nat Biotechnol. 2017 Apr 11;35(4):316-319. doi: 10.1038/nbt.3820.
 
+- [nf-co2footprint](https://github.com/nextflow-io/nf-co2footprint)
+
+  > nf-co2footprint: a Nextflow plugin to estimate the carbon footprint of pipeline runs (https://nextflow-io.github.io/nf-co2footprint/), after Lannelongue L, Grealey J, Inouye M. Green Algorithms: Quantifying the Carbon Footprint of Computation. Adv Sci. 2021;8(12):2100707. doi: 10.1002/advs.202100707.
+
 ## Pipeline tools
 
 - [fq](https://github.com/stjude-rust-labs/fq)
