@@ -6,8 +6,8 @@ process RAW_DATA_QC {
     // Container lines are regenerated from environment.yml by `nf-core pipelines lint --fix container_configs`
     // (Seqera Containers): fq + falco.
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'REPLACE_WITH_SINGULARITY_HTTPS_URL'
-        : 'REPLACE_WITH_DOCKER_IMAGE'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/7a/7aca4e9958243151b7f31fe9df0639e20bc73d97c3ae22aa06a44d23c135e6ea/data'
+        : 'community.wave.seqera.io/library/falco_fq:db74719b1b1ce638'}"
 
     input:
     tuple val(meta), path(reads, arity: '2')

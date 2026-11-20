@@ -92,3 +92,27 @@ output:
 
 authors:
   - "@MaximilianStammnitz"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/falco_fq:db74719b1b1ce638
+      build_id: bd-db74719b1b1ce638_1
+      scan_id: sc-c12ac2cea3950b8f_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/falco_fq:095c2d7303901ef6
+      build_id: bd-095c2d7303901ef6_1
+      scan_id: sc-8f56cd51264d2d20_1
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/falco_fq:c70f5cd1675d28c0
+      build_id: bd-c70f5cd1675d28c0_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/2a/2a9a0431bee090e1836ce15c726b7032c0d57d3ed576523803d8f6b57ee89c78/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/falco_fq:16409f8bb892b75d
+      build_id: bd-16409f8bb892b75d_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/7a/7aca4e9958243151b7f31fe9df0639e20bc73d97c3ae22aa06a44d23c135e6ea/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/raw_data_qc/.conda-lock/linux_amd64-bd-db74719b1b1ce638_1.txt
+    linux/arm64:
+      lock_file: modules/local/raw_data_qc/.conda-lock/linux_arm64-bd-095c2d7303901ef6_1.txt
