@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Changed`
 
 - Nextflow >= 26.10.0 is required (was 25.10.4)
+- Raw data QC: `RAW_DATA_QC` checks the two FASTQ files of a library with `fq lint` and, for libraries that pass, writes the FastQC report of each file with [Falco](https://github.com/smithlabcode/falco) 2.0.3, in one task per library, replacing `FASTQ_CHECK` and nf-core's `FASTQC`. Falco computes FastQC's modules and writes FastQC's `fastqc_data.txt`, which MultiQC (and with it the all-in-one report) shows as a section named Falco with the same plots. On the test reads the numbers match FastQC's (sequence counts, duplication, overrepresented sequences, quality and N content, up to rounding) and the module grades agree except overrepresented sequences and adapter content, which Falco 2.0.3 grades against cutoffs in the wrong units (PASS where FastQC says WARN or FAIL; reported as [smithlabcode/falco#145](https://github.com/smithlabcode/falco/issues/145), fix proposed in [#146](https://github.com/smithlabcode/falco/pull/146); the values are correct). Per 1.2 M reads Falco takes 1.4 CPU s and 14 MB instead of FastQC's 14.5 CPU s and 0.6 GB; on the 50 000-pair test libraries the QC of a library takes 0.4-0.7 s instead of 6-9 s. The reports are published to `raw_data_qc/` (`*_fastqc_data.txt`, `*_falco_report.html`, `*_falco_summary.txt`) instead of `fastqc/`
 
 ### `Added`
 
@@ -15,9 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Dependencies`
 
-| Dependency        | Version     |
-| ----------------- | ----------- |
-| `nf-co2footprint` | 1.4.1 (new) |
+| Dependency        | Version          |
+| ----------------- | ---------------- |
+| `nf-co2footprint` | 1.4.1 (new)      |
+| `falco`           | 2.0.3 (new)      |
+| `fastqc`          | 0.13.0 (removed) |
 
 ## v1.0.0 - Puyol - [2026-11-14]
 

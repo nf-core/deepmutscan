@@ -18,7 +18,11 @@
 
   > St. Jude Rust Labs. fq: FASTQ file manipulation and validation [Online].
 
-- [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+- [Falco](https://doi.org/10.12688/f1000research.21142.2)
+
+  > de Sena Brandine G, Smith AD. Falco: high-speed FastQC emulation for quality control of sequencing data. F1000Research. 2019;8:1874. doi: 10.12688/f1000research.21142.2.
+
+- [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) (the analyses Falco reproduces)
 
   > Andrews S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].
 

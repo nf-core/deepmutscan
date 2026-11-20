@@ -9,7 +9,7 @@ The directories listed below will be created in the results directory after the 
 ```tree title="nf-core/deepmutscan results"
 results/
 ├── deepmutscan_report.html              # all-in-one, self-contained run report
-├── fastqc/                              # raw read QC per FASTQ file
+├── raw_data_qc/                         # raw read QC per FASTQ file (Falco)
 ├── multiqc/                             # MultiQC report across all FASTQ files
 ├── intermediate_files/                  # reference index, alignments, variant count tables, error correction
 │   ├── bwa/
@@ -31,7 +31,7 @@ results/
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following key steps:
 
-- [FastQC](#fastqc) - Raw read QC
+- [Raw data QC](#raw-data-qc) - Raw read QC (Falco)
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Intermediate files](#intermediate-files) - Reference index, alignments and variant count tables
 - [Error correction](#error-correction) - Sequencing-error corrected count tables and report
@@ -41,20 +41,21 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [All-in-one report](#all-in-one-report) - Self-contained HTML report of the whole run
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
-### FastQC
+### Raw data QC
 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `fastqc/`
-  - `*_fastqc.html`: FastQC report containing quality metrics.
-  - `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
+- `raw_data_qc/`
+  - `<library>_{1,2}_fastqc_data.txt`: the quality metrics of each FASTQ file in FastQC's tab-delimited format (read by MultiQC).
+  - `<library>_{1,2}_falco_report.html`: Falco's HTML report of each FASTQ file. Its plots load plotly.js from a CDN, so they need an internet connection; the same plots are in the MultiQC report and the all-in-one report, which work offline.
+  - `<library>_{1,2}_falco_summary.txt`: PASS / WARN / FAIL of each FastQC module.
 
 </details>
 
-[FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) gives general quality metrics about your sequenced reads. It provides information about the quality score distribution across your reads, per base sequence content (%A/T/G/C), adapter contamination estimates and overrepresented sequences. For further reading and documentation see the [FastQC help pages](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/).
+[Falco](https://github.com/smithlabcode/falco) runs [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)'s analyses and writes its data format at a fraction of the cost (about a tenth of FastQC's CPU time and a fortieth of its memory). It gives general quality metrics about your sequenced reads: the quality score distribution across your reads, per base sequence content (%A/T/G/C), adapter contamination estimates and overrepresented sequences. The numbers are those FastQC reports. The per-module PASS / WARN / FAIL grades agree with FastQC's, except for two modules: Falco 2.0.3 compares overrepresented sequences and adapter content with its cutoffs in the wrong units, so these two can read PASS where FastQC's cutoffs give WARN or FAIL (reported as [smithlabcode/falco#145](https://github.com/smithlabcode/falco/issues/145), with a fix proposed in [#146](https://github.com/smithlabcode/falco/pull/146)). Their percentages, in the tables and plots, are correct. For further reading see the [FastQC help pages](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/). Before Falco runs, `fq lint` checks that the two files of every library are complete and consistent; the run stops with one message listing every library that fails.
 
-![FastQC report](images/fastqc.png)
+![Falco section of the MultiQC report](images/falco_multiqc.png)
 
 ### MultiQC
 

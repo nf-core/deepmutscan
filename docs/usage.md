@@ -116,7 +116,7 @@ You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-c
 
 ### 1. Read merging
 
-All paired-end raw reads are first quality-checked with [**FastQC**](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
+All paired-end raw reads are first quality-checked: [**fq lint**](https://github.com/stjude-rust-labs/fq) confirms that both files of every library are complete and consistent, and [**Falco**](https://github.com/smithlabcode/falco) writes the FastQC report of every file (FastQC's analyses, reimplemented in C++ at a fraction of its time and memory), in one task per library.
 
 Even the highest-quality sequencing platforms do not have perfect base accuracy. To minimise the effect of base errors, which would otherwise be counted as false mutations, `nf-core/deepmutscan` uses the overlap of each read pair. As base errors on the forward and reverse read are largely independent, [**vsearch --fastq_mergepairs**](https://github.com/torognes/vsearch) converts each raw read pair into a single consensus read with adjusted base qualities. Read pairs that cannot be merged (overlap shorter than 10 bp) are discarded. The merging statistics of every library are saved in `intermediate_files/merged_reads/`.
 

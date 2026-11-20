@@ -31,7 +31,7 @@ While DNA synthesis and sequencing technologies have advanced substantially, lon
 - End-to-end processing of DMS libraries from shotgun (randomly fragmented) or amplicon short-read sequencing
 - Light-weight variant counter with base-quality and read-edge filters, replacing `GATK AnalyzeSaturationMutagenesis`
 - Intrinsic sequencing-error correction of single-nucleotide variant counts from read-linked false double mutants (maximum-likelihood or empirical-Bayes estimators), or from additional wildtype template sequencing
-- Read QC with [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), aggregated across all libraries with [MultiQC](https://multiqc.info/)
+- Read QC with [Falco](https://github.com/smithlabcode/falco) (FastQC's analyses, in C++), aggregated across all libraries with [MultiQC](https://multiqc.info/)
 - Library quality control: mutant count heatmaps, positional coverage and mutation-type biases, sequencing-depth rarefaction
 - Fitness estimation with a built-in log-ratio estimator, plus optional [DiMSum](https://github.com/lehner-lab/DiMSum) and [mutscan](https://github.com/fmicompbio/mutscan)
 - Support for degenerate codon libraries (NNK, NNS, NNH, NNN and combinations), e.g. from nicking mutagenesis, and for custom (position-specific) codon libraries, e.g. from Twist tiles
@@ -42,7 +42,7 @@ For more details on the individual steps, please read the [usage documentation](
 
 ## Pipeline summary
 
-1. Input FASTQ checks ([`fq lint`](https://github.com/stjude-rust-labs/fq)) and raw read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
+1. Raw data QC, one task per library: input FASTQ checks ([`fq lint`](https://github.com/stjude-rust-labs/fq)) and read quality reports ([`Falco`](https://github.com/smithlabcode/falco), FastQC's analyses in C++)
 2. Merging of overlapping read pairs into consensus reads for base error reduction ([`vsearch --fastq_mergepairs`](https://github.com/torognes/vsearch))
 3. Alignment of the merged reads to the reference ORF ([`BWA-MEM`](https://github.com/lh3/bwa))
 4. Filtering of unmapped, secondary, supplementary, low mapping-quality and indel-containing alignments, sorting and indexing ([`samtools`](https://www.htslib.org/))

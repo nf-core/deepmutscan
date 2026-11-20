@@ -3,8 +3,7 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { FASTQC                 } from '../modules/nf-core/fastqc/main'
-include { FASTQ_CHECK            } from '../modules/local/fastq_check/main'
+include { RAW_DATA_QC            } from '../modules/local/raw_data_qc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { BWA_INDEX              } from '../modules/nf-core/bwa/index/main'
 include { MERGE_ALIGN            } from '../modules/local/bamprocessing/merge_align/main'
@@ -100,23 +99,20 @@ workflow DEEPMUTSCAN {
     }
 
     //
-    // MODULE: Check that the input FASTQ files are complete and consistent (fq lint). Every later
-    // step waits for all libraries to pass; otherwise the run stops with one message listing every
+    // MODULE: Raw data QC, one task per library: check that the input FASTQ files are complete and
+    // consistent (fq lint), and write the FastQC report of each file with Falco. Every later step
+    // waits for all libraries to pass; otherwise the run stops with one message listing every
     // faulty library. Quick checks of the first record of each file already ran at start-up.
     //
-    FASTQ_CHECK(ch_samplesheet)
+    RAW_DATA_QC(ch_samplesheet)
 
     def ch_reads = ch_samplesheet
-        .join(FASTQ_CHECK.out.report)                                         // [meta, reads, report]
+        .join(RAW_DATA_QC.out.report)                                         // [meta, reads, report]
         .toList()
         .map { rows -> checkFastqReports(rows) }                              // stops the run on any FAIL
         .flatMap { rows -> rows.collect { meta, reads, _report -> [ meta, reads ] } }
 
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC(ch_reads)
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map{ _meta, file -> file })
+    ch_multiqc_files = ch_multiqc_files.mix(RAW_DATA_QC.out.data.flatMap { _meta, files -> files })
 
     //
     // MODULE: BWA Index
