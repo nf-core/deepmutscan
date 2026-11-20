@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nextflow >= 26.10.0 is required (was 25.10.4)
 - Raw data QC: `RAW_DATA_QC` checks the two FASTQ files of a library with `fq lint` and, for libraries that pass, writes the FastQC report of each file with [Falco](https://github.com/smithlabcode/falco) 2.0.3, in one task per library, replacing `FASTQ_CHECK` and nf-core's `FASTQC`. Falco computes FastQC's modules and writes FastQC's `fastqc_data.txt`, which MultiQC (and with it the all-in-one report) shows as a section named Falco with the same plots. On the test reads the numbers match FastQC's (sequence counts, duplication, overrepresented sequences, quality and N content, up to rounding) and the module grades agree except overrepresented sequences and adapter content, which Falco 2.0.3 grades against cutoffs in the wrong units (PASS where FastQC says WARN or FAIL; reported as [smithlabcode/falco#145](https://github.com/smithlabcode/falco/issues/145), fix proposed in [#146](https://github.com/smithlabcode/falco/pull/146); the values are correct). Per 1.2 M reads Falco takes 1.4 CPU s and 14 MB instead of FastQC's 14.5 CPU s and 0.6 GB; on the 50 000-pair test libraries the QC of a library takes 0.4-0.7 s instead of 6-9 s. The reports are published to `raw_data_qc/` (`*_fastqc_data.txt`, `*_falco_report.html`, `*_falco_summary.txt`) instead of `fastqc/`
+- Aligner: bwa-mem3 (`--fast` preset) replaces BWA 0.7.19 in `MERGE_ALIGN`, and `BWAMEM3_INDEX` (nf-core module) replaces `BWA_INDEX`. For a gene-sized reference bwa-mem3 produces alignments identical to BWA with the same scoring in about a third of the CPU time; `--fast` halves that again and changes a single read in one of the four test libraries. Set `ext.args3 = '-L 100 -O 12,12 -B 3'` (no `--fast`) in a custom config for alignments byte-identical to BWA.
+- Alignment scoring in `MERGE_ALIGN` (`ext.args3`, default `--fast -L 100 -O 12,12 -B 3`): substitutions are aligned end-to-end instead of locally. With BWA-MEM's defaults, 2-base codon changes within 3 bp and 3-base changes within 7 bp of a read end were soft-clipped away together with their coverage, under-counting full-codon substitutions by about 13% relative to single-base changes on 150 bp merged reads and making the recovery of read-linked double mutants depend on their codon distance. Count tables gain the previously clipped variants; the nf-test snapshot is updated accordingly.
 
 ### `Added`
 
@@ -21,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 | `nf-co2footprint` | 1.4.1 (new)      |
 | `falco`           | 2.0.3 (new)      |
 | `fastqc`          | 0.13.0 (removed) |
+| `bwa-mem3`        | 0.17.0 (new)     |
+| `bwa`             | 0.7.19 (removed) |
+| `samtools`        | 1.25 (was 1.21)  |
 
 ## v1.0.0 - Puyol - [2026-11-14]
 

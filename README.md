@@ -30,6 +30,7 @@ While DNA synthesis and sequencing technologies have advanced substantially, lon
 
 - End-to-end processing of DMS libraries from shotgun (randomly fragmented) or amplicon short-read sequencing
 - Light-weight variant counter with base-quality and read-edge filters, replacing `GATK AnalyzeSaturationMutagenesis`
+- End-to-end alignment of substitutions with bwa-mem3, so that multi-base codon changes near read ends are counted like single-base changes
 - Intrinsic sequencing-error correction of single-nucleotide variant counts from read-linked false double mutants (maximum-likelihood or empirical-Bayes estimators), or from additional wildtype template sequencing
 - Read QC with [Falco](https://github.com/smithlabcode/falco) (FastQC's analyses, in C++), aggregated across all libraries with [MultiQC](https://multiqc.info/)
 - Library quality control: mutant count heatmaps, positional coverage and mutation-type biases, sequencing-depth rarefaction
@@ -44,7 +45,7 @@ For more details on the individual steps, please read the [usage documentation](
 
 1. Raw data QC, one task per library: input FASTQ checks ([`fq lint`](https://github.com/stjude-rust-labs/fq)) and read quality reports ([`Falco`](https://github.com/smithlabcode/falco), FastQC's analyses in C++)
 2. Merging of overlapping read pairs into consensus reads for base error reduction ([`vsearch --fastq_mergepairs`](https://github.com/torognes/vsearch))
-3. Alignment of the merged reads to the reference ORF ([`BWA-MEM`](https://github.com/lh3/bwa))
+3. End-to-end alignment of the merged reads to the reference ORF ([`bwa-mem3`](https://github.com/fg-labs/bwa-mem3))
 4. Filtering of unmapped, secondary, supplementary, low mapping-quality and indel-containing alignments, sorting and indexing ([`samtools`](https://www.htslib.org/))
 5. Variant counting (custom counter built on [`pysam`](https://github.com/pysam-developers/pysam) and [`polars`](https://pola.rs))
 6. Annotation and filtering of variant counts against the programmed mutagenesis library
