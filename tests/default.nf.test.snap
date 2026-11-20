@@ -73,7 +73,7 @@
                     "r-scales": "1.4.0"
                 },
                 "Workflow": {
-                    "nf-core/deepmutscan": "v1.0.0"
+                    "nf-core/deepmutscan": "v1.1.0dev"
                 }
             },
             [
@@ -395,7 +395,7 @@
                     "r-ggplot2": "4.0.2"
                 },
                 "Workflow": {
-                    "nf-core/deepmutscan": "v1.0.0"
+                    "nf-core/deepmutscan": "v1.1.0dev"
                 }
             },
             [
@@ -769,7 +769,7 @@
                     "r-ggplot2": "0.0.0"
                 },
                 "Workflow": {
-                    "nf-core/deepmutscan": "v1.0.0"
+                    "nf-core/deepmutscan": "v1.1.0dev"
                 }
             },
             [

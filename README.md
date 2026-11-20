@@ -6,7 +6,7 @@
 </h1>
 
 [![GitHub Actions CI Status](https://github.com/nf-core/deepmutscan/actions/workflows/nf-test.yml/badge.svg)](https://github.com/nf-core/deepmutscan/actions/workflows/nf-test.yml)
-[![GitHub Actions Linting Status](https://github.com/nf-core/deepmutscan/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/deepmutscan/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/deepmutscan/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![GitHub Actions Linting Status](https://github.com/nf-core/deepmutscan/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/deepmutscan/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/deepmutscan/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.24218965-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.24218965)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
 [![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.10.4-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
@@ -116,10 +116,7 @@ For scientific discussions around the use of this pipeline (e.g. on experimental
 
 If you use `nf-core/deepmutscan` for your analysis, please cite it as follows:
 
-> Wehnert B, et al. _bioRxiv_ preprint (in preparation).
-
-<!-- Add the Zenodo DOI after the first release: -->
-<!-- If you use nf-core/deepmutscan for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+> Wehnert B, et al. _bioRxiv_ preprint (in preparation). Zenodo DOI: [10.5281/zenodo.24218965](https://doi.org/10.5281/zenodo.24218965)
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
