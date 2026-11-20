@@ -5,8 +5,8 @@ process MERGE_ALIGN {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'REPLACE_WITH_SINGULARITY_HTTPS_URL'
-        : 'REPLACE_WITH_DOCKER_IMAGE'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/40/4016ac329eacb2871c416a0324088d7905f22804c99e97c6badc6fe0d432bf5f/data'
+        : 'community.wave.seqera.io/library/bwa-mem3_samtools_vsearch:a4bfb8df646b8637'}"
 
     input:
     tuple val(meta), path(reads)
