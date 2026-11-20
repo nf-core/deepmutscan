@@ -23,16 +23,14 @@
                     "r-reshape2": "1.4.4",
                     "r-scales": "1.4.0"
                 },
-                "FASTQC": {
-                    "fastqc": "0.13.0"
-                },
-                "FASTQ_CHECK": {
-                    "fq": "0.12.0"
-                },
                 "MERGE_ALIGN": {
                     "bwa": "0.7.19-r1273",
                     "samtools": 1.21,
                     "vsearch": "2.30.0"
+                },
+                "RAW_DATA_QC": {
+                    "falco": "2.0.3",
+                    "fq": "0.12.0"
                 },
                 "VARIANTCOUNTING": {
                     "python": "3.12.13",
@@ -78,23 +76,6 @@
             },
             [
                 "deepmutscan_report.html",
-                "fastqc",
-                "fastqc/GID1A_input_1_pe_1_fastqc.html",
-                "fastqc/GID1A_input_1_pe_1_fastqc.zip",
-                "fastqc/GID1A_input_1_pe_2_fastqc.html",
-                "fastqc/GID1A_input_1_pe_2_fastqc.zip",
-                "fastqc/GID1A_input_2_pe_1_fastqc.html",
-                "fastqc/GID1A_input_2_pe_1_fastqc.zip",
-                "fastqc/GID1A_input_2_pe_2_fastqc.html",
-                "fastqc/GID1A_input_2_pe_2_fastqc.zip",
-                "fastqc/GID1A_output_1_pe_1_fastqc.html",
-                "fastqc/GID1A_output_1_pe_1_fastqc.zip",
-                "fastqc/GID1A_output_1_pe_2_fastqc.html",
-                "fastqc/GID1A_output_1_pe_2_fastqc.zip",
-                "fastqc/GID1A_output_2_pe_1_fastqc.html",
-                "fastqc/GID1A_output_2_pe_1_fastqc.zip",
-                "fastqc/GID1A_output_2_pe_2_fastqc.html",
-                "fastqc/GID1A_output_2_pe_2_fastqc.zip",
                 "intermediate_files",
                 "intermediate_files/aa_seq.txt",
                 "intermediate_files/bam_files",
@@ -188,17 +169,17 @@
                 "library_QC/GID1A_output_2_pe/rolling_coverage.pdf",
                 "multiqc",
                 "multiqc/multiqc_data",
-                "multiqc/multiqc_data/fastqc-status-check-heatmap.txt",
-                "multiqc/multiqc_data/fastqc_adapter_content_plot.txt",
-                "multiqc/multiqc_data/fastqc_overrepresented_sequences_plot.txt",
-                "multiqc/multiqc_data/fastqc_per_base_n_content_plot.txt",
-                "multiqc/multiqc_data/fastqc_per_base_sequence_quality_plot.txt",
-                "multiqc/multiqc_data/fastqc_per_sequence_gc_content_plot_Counts.txt",
-                "multiqc/multiqc_data/fastqc_per_sequence_gc_content_plot_Percentages.txt",
-                "multiqc/multiqc_data/fastqc_per_sequence_quality_scores_plot.txt",
-                "multiqc/multiqc_data/fastqc_sequence_counts_plot.txt",
-                "multiqc/multiqc_data/fastqc_sequence_duplication_levels_plot.txt",
-                "multiqc/multiqc_data/fastqc_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/falco-status-check-heatmap.txt",
+                "multiqc/multiqc_data/falco_adapter_content_plot.txt",
+                "multiqc/multiqc_data/falco_overrepresented_sequences_plot.txt",
+                "multiqc/multiqc_data/falco_per_base_n_content_plot.txt",
+                "multiqc/multiqc_data/falco_per_base_sequence_quality_plot.txt",
+                "multiqc/multiqc_data/falco_per_sequence_gc_content_plot_Counts.txt",
+                "multiqc/multiqc_data/falco_per_sequence_gc_content_plot_Percentages.txt",
+                "multiqc/multiqc_data/falco_per_sequence_quality_scores_plot.txt",
+                "multiqc/multiqc_data/falco_sequence_counts_plot.txt",
+                "multiqc/multiqc_data/falco_sequence_duplication_levels_plot.txt",
+                "multiqc/multiqc_data/falco_top_overrepresented_sequences_table.txt",
                 "multiqc/multiqc_data/llms-full.txt",
                 "multiqc/multiqc_data/multiqc.log",
                 "multiqc/multiqc_data/multiqc.parquet",
@@ -210,7 +191,32 @@
                 "multiqc/multiqc_data/multiqc_sources.txt",
                 "multiqc/multiqc_report.html",
                 "pipeline_info",
-                "pipeline_info/nf_core_deepmutscan_software_mqc_versions.yml"
+                "pipeline_info/nf_core_deepmutscan_software_mqc_versions.yml",
+                "raw_data_qc",
+                "raw_data_qc/GID1A_input_1_pe_1_falco_report.html",
+                "raw_data_qc/GID1A_input_1_pe_1_falco_summary.txt",
+                "raw_data_qc/GID1A_input_1_pe_1_fastqc_data.txt",
+                "raw_data_qc/GID1A_input_1_pe_2_falco_report.html",
+                "raw_data_qc/GID1A_input_1_pe_2_falco_summary.txt",
+                "raw_data_qc/GID1A_input_1_pe_2_fastqc_data.txt",
+                "raw_data_qc/GID1A_input_2_pe_1_falco_report.html",
+                "raw_data_qc/GID1A_input_2_pe_1_falco_summary.txt",
+                "raw_data_qc/GID1A_input_2_pe_1_fastqc_data.txt",
+                "raw_data_qc/GID1A_input_2_pe_2_falco_report.html",
+                "raw_data_qc/GID1A_input_2_pe_2_falco_summary.txt",
+                "raw_data_qc/GID1A_input_2_pe_2_fastqc_data.txt",
+                "raw_data_qc/GID1A_output_1_pe_1_falco_report.html",
+                "raw_data_qc/GID1A_output_1_pe_1_falco_summary.txt",
+                "raw_data_qc/GID1A_output_1_pe_1_fastqc_data.txt",
+                "raw_data_qc/GID1A_output_1_pe_2_falco_report.html",
+                "raw_data_qc/GID1A_output_1_pe_2_falco_summary.txt",
+                "raw_data_qc/GID1A_output_1_pe_2_fastqc_data.txt",
+                "raw_data_qc/GID1A_output_2_pe_1_falco_report.html",
+                "raw_data_qc/GID1A_output_2_pe_1_falco_summary.txt",
+                "raw_data_qc/GID1A_output_2_pe_1_fastqc_data.txt",
+                "raw_data_qc/GID1A_output_2_pe_2_falco_report.html",
+                "raw_data_qc/GID1A_output_2_pe_2_falco_summary.txt",
+                "raw_data_qc/GID1A_output_2_pe_2_fastqc_data.txt"
             ],
             [
                 "aa_seq.txt:md5,421287586f566191f7da4a7aad7d24a8",
@@ -244,25 +250,41 @@
                 "variant_counts_columns.tsv:md5,c94801255a553ce5ff4a00d3170f6768",
                 "GID1A_output_2_pe.variant_counts.tsv:md5,3a32172e359f551fdf0e6e540de7d08a",
                 "variant_counts_columns.tsv:md5,c94801255a553ce5ff4a00d3170f6768",
-                "fastqc-status-check-heatmap.txt:md5,58a9580c11af4210b1af65753383e120",
-                "fastqc_adapter_content_plot.txt:md5,2990ad34b6fa29151dd4b9a38828afbe",
-                "fastqc_overrepresented_sequences_plot.txt:md5,bd15a88aec7c1a85fe798b8a2d9cac77",
-                "fastqc_per_base_n_content_plot.txt:md5,6af419871cdec77149cf013b72e82417",
-                "fastqc_per_base_sequence_quality_plot.txt:md5,460b8e65cf8d58087b3143ba78b30e17",
-                "fastqc_per_sequence_gc_content_plot_Counts.txt:md5,7f1eacaa19e912e18a4419b23e749e3a",
-                "fastqc_per_sequence_gc_content_plot_Percentages.txt:md5,0e405d9394ae8aeaa6ae162e18f7c195",
-                "fastqc_per_sequence_quality_scores_plot.txt:md5,5d1ee338c146901ca9f1690f7ee47200",
-                "fastqc_sequence_counts_plot.txt:md5,8b438078b7f3475b6ce659cc4b8dca11",
-                "fastqc_sequence_duplication_levels_plot.txt:md5,a0839f96103959fd7265cbb986e2724a",
+                "falco-status-check-heatmap.txt:md5,d5b9d662da1ab122df4200cab73cea84",
+                "falco_adapter_content_plot.txt:md5,db702ec55dec776470786db449dfdc2e",
+                "falco_overrepresented_sequences_plot.txt:md5,c24e3d0c49bbf7188753858a6c1e759b",
+                "falco_per_base_n_content_plot.txt:md5,2123cc1655f3b51479c6573da8605230",
+                "falco_per_base_sequence_quality_plot.txt:md5,0b20984d45be4d0239d7a405b21b3ffb",
+                "falco_per_sequence_gc_content_plot_Counts.txt:md5,a3ff2661b93c7fa92735c1dc317a78bb",
+                "falco_per_sequence_gc_content_plot_Percentages.txt:md5,23714cccff5bfe33a0b6804a03eb9ac2",
+                "falco_per_sequence_quality_scores_plot.txt:md5,5d1ee338c146901ca9f1690f7ee47200",
+                "falco_sequence_counts_plot.txt:md5,8b438078b7f3475b6ce659cc4b8dca11",
+                "falco_sequence_duplication_levels_plot.txt:md5,58810cc29fa34ed196a756a7c19a1315",
                 "multiqc_citations.txt:md5,4c806e63a283ec1b7e78cdae3a923d4f",
-                "multiqc_fastqc.txt:md5,5eee3e766f3e598e0aec50309aee075d",
-                "multiqc_general_stats.txt:md5,7c2fd44ded06835128a208d3365aa23b"
+                "multiqc_fastqc.txt:md5,09a67c9356748f1c26540fbe972504b2",
+                "multiqc_general_stats.txt:md5,4f86a98dcc1761a56803d9689978db29",
+                "GID1A_input_1_pe_1_falco_summary.txt:md5,f1a9a4b4c97547c7a7c2636b768a3c55",
+                "GID1A_input_1_pe_1_fastqc_data.txt:md5,7f08288004675041f76857235569b245",
+                "GID1A_input_1_pe_2_falco_summary.txt:md5,1d569f6a3e43bbd372a00e5ce17c06fa",
+                "GID1A_input_1_pe_2_fastqc_data.txt:md5,a4c647eaffe18f9f0dc704f6f87bcb27",
+                "GID1A_input_2_pe_1_falco_summary.txt:md5,cea232901a39992737f437daceeeb085",
+                "GID1A_input_2_pe_1_fastqc_data.txt:md5,e9cc3b31085dfeadb542b568eecc2e55",
+                "GID1A_input_2_pe_2_falco_summary.txt:md5,53dc43ab55437d38ae52899fbda0d454",
+                "GID1A_input_2_pe_2_fastqc_data.txt:md5,3d7f0ab56a9a7e1ab2f337b5505dee0d",
+                "GID1A_output_1_pe_1_falco_summary.txt:md5,04ce942cdf517655a88a668ea8214539",
+                "GID1A_output_1_pe_1_fastqc_data.txt:md5,c882a8bd638eaa227cbfddc310877a3f",
+                "GID1A_output_1_pe_2_falco_summary.txt:md5,27511b96ee261a80052228cf4c03b375",
+                "GID1A_output_1_pe_2_fastqc_data.txt:md5,328e4bce6002051b56b1aece56aa04bd",
+                "GID1A_output_2_pe_1_falco_summary.txt:md5,48e1575f8d4e566f501639920ddd125c",
+                "GID1A_output_2_pe_1_fastqc_data.txt:md5,27378f987572c07dfb794ae2453b0f96",
+                "GID1A_output_2_pe_2_falco_summary.txt:md5,e17eec04071e348e929dc5fe0007a367",
+                "GID1A_output_2_pe_2_fastqc_data.txt:md5,02329f5724d6c3a7089b3a6707e7edfa"
             ]
         ],
-        "timestamp": "2026-10-23T12:23:29.777971",
+        "timestamp": "2026-11-20T20:46:29.759153",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.04.1"
+            "nextflow": "26.10.0"
         }
     },
     "-profile test": {
@@ -301,12 +323,6 @@
                 "EXPDESIGN_FITNESS": {
                     "r-base": "4.5.1"
                 },
-                "FASTQC": {
-                    "fastqc": "0.13.0"
-                },
-                "FASTQ_CHECK": {
-                    "fq": "0.12.0"
-                },
                 "FIND_SYNONYMOUS_MUTATION": {
                     "r-base": "4.5.1",
                     "r-Biostrings": "2.78.0"
@@ -332,6 +348,10 @@
                 },
                 "MERGE_COUNTS": {
                     "r-base": "4.5.1"
+                },
+                "RAW_DATA_QC": {
+                    "falco": "2.0.3",
+                    "fq": "0.12.0"
                 },
                 "RUN_DIMSUM": {
                     "r-base": "4.4.2",
@@ -400,23 +420,6 @@
             },
             [
                 "deepmutscan_report.html",
-                "fastqc",
-                "fastqc/GID1A_input_1_pe_1_fastqc.html",
-                "fastqc/GID1A_input_1_pe_1_fastqc.zip",
-                "fastqc/GID1A_input_1_pe_2_fastqc.html",
-                "fastqc/GID1A_input_1_pe_2_fastqc.zip",
-                "fastqc/GID1A_input_2_pe_1_fastqc.html",
-                "fastqc/GID1A_input_2_pe_1_fastqc.zip",
-                "fastqc/GID1A_input_2_pe_2_fastqc.html",
-                "fastqc/GID1A_input_2_pe_2_fastqc.zip",
-                "fastqc/GID1A_output_1_pe_1_fastqc.html",
-                "fastqc/GID1A_output_1_pe_1_fastqc.zip",
-                "fastqc/GID1A_output_1_pe_2_fastqc.html",
-                "fastqc/GID1A_output_1_pe_2_fastqc.zip",
-                "fastqc/GID1A_output_2_pe_1_fastqc.html",
-                "fastqc/GID1A_output_2_pe_1_fastqc.zip",
-                "fastqc/GID1A_output_2_pe_2_fastqc.html",
-                "fastqc/GID1A_output_2_pe_2_fastqc.zip",
                 "fitness",
                 "fitness/DiMSum_results",
                 "fitness/DiMSum_results/dimsum_results",
@@ -577,17 +580,17 @@
                 "library_QC/error_correction_report.html",
                 "multiqc",
                 "multiqc/multiqc_data",
-                "multiqc/multiqc_data/fastqc-status-check-heatmap.txt",
-                "multiqc/multiqc_data/fastqc_adapter_content_plot.txt",
-                "multiqc/multiqc_data/fastqc_overrepresented_sequences_plot.txt",
-                "multiqc/multiqc_data/fastqc_per_base_n_content_plot.txt",
-                "multiqc/multiqc_data/fastqc_per_base_sequence_quality_plot.txt",
-                "multiqc/multiqc_data/fastqc_per_sequence_gc_content_plot_Counts.txt",
-                "multiqc/multiqc_data/fastqc_per_sequence_gc_content_plot_Percentages.txt",
-                "multiqc/multiqc_data/fastqc_per_sequence_quality_scores_plot.txt",
-                "multiqc/multiqc_data/fastqc_sequence_counts_plot.txt",
-                "multiqc/multiqc_data/fastqc_sequence_duplication_levels_plot.txt",
-                "multiqc/multiqc_data/fastqc_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/falco-status-check-heatmap.txt",
+                "multiqc/multiqc_data/falco_adapter_content_plot.txt",
+                "multiqc/multiqc_data/falco_overrepresented_sequences_plot.txt",
+                "multiqc/multiqc_data/falco_per_base_n_content_plot.txt",
+                "multiqc/multiqc_data/falco_per_base_sequence_quality_plot.txt",
+                "multiqc/multiqc_data/falco_per_sequence_gc_content_plot_Counts.txt",
+                "multiqc/multiqc_data/falco_per_sequence_gc_content_plot_Percentages.txt",
+                "multiqc/multiqc_data/falco_per_sequence_quality_scores_plot.txt",
+                "multiqc/multiqc_data/falco_sequence_counts_plot.txt",
+                "multiqc/multiqc_data/falco_sequence_duplication_levels_plot.txt",
+                "multiqc/multiqc_data/falco_top_overrepresented_sequences_table.txt",
                 "multiqc/multiqc_data/llms-full.txt",
                 "multiqc/multiqc_data/multiqc.log",
                 "multiqc/multiqc_data/multiqc.parquet",
@@ -600,6 +603,31 @@
                 "multiqc/multiqc_report.html",
                 "pipeline_info",
                 "pipeline_info/nf_core_deepmutscan_software_mqc_versions.yml",
+                "raw_data_qc",
+                "raw_data_qc/GID1A_input_1_pe_1_falco_report.html",
+                "raw_data_qc/GID1A_input_1_pe_1_falco_summary.txt",
+                "raw_data_qc/GID1A_input_1_pe_1_fastqc_data.txt",
+                "raw_data_qc/GID1A_input_1_pe_2_falco_report.html",
+                "raw_data_qc/GID1A_input_1_pe_2_falco_summary.txt",
+                "raw_data_qc/GID1A_input_1_pe_2_fastqc_data.txt",
+                "raw_data_qc/GID1A_input_2_pe_1_falco_report.html",
+                "raw_data_qc/GID1A_input_2_pe_1_falco_summary.txt",
+                "raw_data_qc/GID1A_input_2_pe_1_fastqc_data.txt",
+                "raw_data_qc/GID1A_input_2_pe_2_falco_report.html",
+                "raw_data_qc/GID1A_input_2_pe_2_falco_summary.txt",
+                "raw_data_qc/GID1A_input_2_pe_2_fastqc_data.txt",
+                "raw_data_qc/GID1A_output_1_pe_1_falco_report.html",
+                "raw_data_qc/GID1A_output_1_pe_1_falco_summary.txt",
+                "raw_data_qc/GID1A_output_1_pe_1_fastqc_data.txt",
+                "raw_data_qc/GID1A_output_1_pe_2_falco_report.html",
+                "raw_data_qc/GID1A_output_1_pe_2_falco_summary.txt",
+                "raw_data_qc/GID1A_output_1_pe_2_fastqc_data.txt",
+                "raw_data_qc/GID1A_output_2_pe_1_falco_report.html",
+                "raw_data_qc/GID1A_output_2_pe_1_falco_summary.txt",
+                "raw_data_qc/GID1A_output_2_pe_1_fastqc_data.txt",
+                "raw_data_qc/GID1A_output_2_pe_2_falco_report.html",
+                "raw_data_qc/GID1A_output_2_pe_2_falco_summary.txt",
+                "raw_data_qc/GID1A_output_2_pe_2_fastqc_data.txt",
                 "variant_effect_inspection_tool",
                 "variant_effect_inspection_tool/structure_data.json",
                 "variant_effect_inspection_tool/variant_effect_inspection_tool.html"
@@ -656,29 +684,45 @@
                 "seqdepth_curve.csv:md5,1889d2bf939feaf2e31cc9db170fe93b",
                 "seqdepth_curve.csv:md5,b1fedbf390be7a8d41db661df76eab6d",
                 "error_correction_report.html:md5,37e34626669a98586831575a135baf50",
-                "fastqc-status-check-heatmap.txt:md5,58a9580c11af4210b1af65753383e120",
-                "fastqc_adapter_content_plot.txt:md5,2990ad34b6fa29151dd4b9a38828afbe",
-                "fastqc_overrepresented_sequences_plot.txt:md5,bd15a88aec7c1a85fe798b8a2d9cac77",
-                "fastqc_per_base_n_content_plot.txt:md5,6af419871cdec77149cf013b72e82417",
-                "fastqc_per_base_sequence_quality_plot.txt:md5,460b8e65cf8d58087b3143ba78b30e17",
-                "fastqc_per_sequence_gc_content_plot_Counts.txt:md5,7f1eacaa19e912e18a4419b23e749e3a",
-                "fastqc_per_sequence_gc_content_plot_Percentages.txt:md5,0e405d9394ae8aeaa6ae162e18f7c195",
-                "fastqc_per_sequence_quality_scores_plot.txt:md5,5d1ee338c146901ca9f1690f7ee47200",
-                "fastqc_sequence_counts_plot.txt:md5,8b438078b7f3475b6ce659cc4b8dca11",
-                "fastqc_sequence_duplication_levels_plot.txt:md5,a0839f96103959fd7265cbb986e2724a",
+                "falco-status-check-heatmap.txt:md5,d5b9d662da1ab122df4200cab73cea84",
+                "falco_adapter_content_plot.txt:md5,db702ec55dec776470786db449dfdc2e",
+                "falco_overrepresented_sequences_plot.txt:md5,c24e3d0c49bbf7188753858a6c1e759b",
+                "falco_per_base_n_content_plot.txt:md5,2123cc1655f3b51479c6573da8605230",
+                "falco_per_base_sequence_quality_plot.txt:md5,0b20984d45be4d0239d7a405b21b3ffb",
+                "falco_per_sequence_gc_content_plot_Counts.txt:md5,a3ff2661b93c7fa92735c1dc317a78bb",
+                "falco_per_sequence_gc_content_plot_Percentages.txt:md5,23714cccff5bfe33a0b6804a03eb9ac2",
+                "falco_per_sequence_quality_scores_plot.txt:md5,5d1ee338c146901ca9f1690f7ee47200",
+                "falco_sequence_counts_plot.txt:md5,8b438078b7f3475b6ce659cc4b8dca11",
+                "falco_sequence_duplication_levels_plot.txt:md5,58810cc29fa34ed196a756a7c19a1315",
                 "multiqc_citations.txt:md5,4c806e63a283ec1b7e78cdae3a923d4f",
-                "multiqc_fastqc.txt:md5,5eee3e766f3e598e0aec50309aee075d",
-                "multiqc_general_stats.txt:md5,7c2fd44ded06835128a208d3365aa23b"
+                "multiqc_fastqc.txt:md5,09a67c9356748f1c26540fbe972504b2",
+                "multiqc_general_stats.txt:md5,4f86a98dcc1761a56803d9689978db29",
+                "GID1A_input_1_pe_1_falco_summary.txt:md5,f1a9a4b4c97547c7a7c2636b768a3c55",
+                "GID1A_input_1_pe_1_fastqc_data.txt:md5,7f08288004675041f76857235569b245",
+                "GID1A_input_1_pe_2_falco_summary.txt:md5,1d569f6a3e43bbd372a00e5ce17c06fa",
+                "GID1A_input_1_pe_2_fastqc_data.txt:md5,a4c647eaffe18f9f0dc704f6f87bcb27",
+                "GID1A_input_2_pe_1_falco_summary.txt:md5,cea232901a39992737f437daceeeb085",
+                "GID1A_input_2_pe_1_fastqc_data.txt:md5,e9cc3b31085dfeadb542b568eecc2e55",
+                "GID1A_input_2_pe_2_falco_summary.txt:md5,53dc43ab55437d38ae52899fbda0d454",
+                "GID1A_input_2_pe_2_fastqc_data.txt:md5,3d7f0ab56a9a7e1ab2f337b5505dee0d",
+                "GID1A_output_1_pe_1_falco_summary.txt:md5,04ce942cdf517655a88a668ea8214539",
+                "GID1A_output_1_pe_1_fastqc_data.txt:md5,c882a8bd638eaa227cbfddc310877a3f",
+                "GID1A_output_1_pe_2_falco_summary.txt:md5,27511b96ee261a80052228cf4c03b375",
+                "GID1A_output_1_pe_2_fastqc_data.txt:md5,328e4bce6002051b56b1aece56aa04bd",
+                "GID1A_output_2_pe_1_falco_summary.txt:md5,48e1575f8d4e566f501639920ddd125c",
+                "GID1A_output_2_pe_1_fastqc_data.txt:md5,27378f987572c07dfb794ae2453b0f96",
+                "GID1A_output_2_pe_2_falco_summary.txt:md5,e17eec04071e348e929dc5fe0007a367",
+                "GID1A_output_2_pe_2_fastqc_data.txt:md5,02329f5724d6c3a7089b3a6707e7edfa"
             ],
             {
                 "edger_rowCount": 732,
                 "limma_rowCount": 732
             }
         ],
-        "timestamp": "2026-11-06T19:29:16.39125",
+        "timestamp": "2026-11-20T20:45:07.991938",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nextflow": "26.10.0"
         }
     },
     "-profile test -stub": {
@@ -705,12 +749,6 @@
                 "EXPDESIGN_FITNESS": {
                     "r-base": "0.0.0"
                 },
-                "FASTQC": {
-                    "fastqc": "0.13.0"
-                },
-                "FASTQ_CHECK": {
-                    "fq": "0.12.0"
-                },
                 "FIND_SYNONYMOUS_MUTATION": {
                     "r-base": "0.0.0"
                 },
@@ -730,6 +768,10 @@
                 },
                 "MERGE_COUNTS": {
                     "r-base": "0.0.0"
+                },
+                "RAW_DATA_QC": {
+                    "falco": "2.0.3",
+                    "fq": "0.12.0"
                 },
                 "RUN_DIMSUM": {
                     "r-base": "0.0.0",
@@ -774,15 +816,6 @@
             },
             [
                 "deepmutscan_report.html",
-                "fastqc",
-                "fastqc/GID1A_input_1_pe.html",
-                "fastqc/GID1A_input_1_pe.zip",
-                "fastqc/GID1A_input_2_pe.html",
-                "fastqc/GID1A_input_2_pe.zip",
-                "fastqc/GID1A_output_1_pe.html",
-                "fastqc/GID1A_output_1_pe.zip",
-                "fastqc/GID1A_output_2_pe.html",
-                "fastqc/GID1A_output_2_pe.zip",
                 "fitness",
                 "fitness/DiMSum_results",
                 "fitness/DiMSum_results/dimsum_results",
@@ -926,15 +959,40 @@
                 "multiqc/multiqc_report.html",
                 "pipeline_info",
                 "pipeline_info/nf_core_deepmutscan_software_mqc_versions.yml",
+                "raw_data_qc",
+                "raw_data_qc/GID1A_input_1_pe_1_falco_report.html",
+                "raw_data_qc/GID1A_input_1_pe_1_falco_summary.txt",
+                "raw_data_qc/GID1A_input_1_pe_1_fastqc_data.txt",
+                "raw_data_qc/GID1A_input_1_pe_2_falco_report.html",
+                "raw_data_qc/GID1A_input_1_pe_2_falco_summary.txt",
+                "raw_data_qc/GID1A_input_1_pe_2_fastqc_data.txt",
+                "raw_data_qc/GID1A_input_2_pe_1_falco_report.html",
+                "raw_data_qc/GID1A_input_2_pe_1_falco_summary.txt",
+                "raw_data_qc/GID1A_input_2_pe_1_fastqc_data.txt",
+                "raw_data_qc/GID1A_input_2_pe_2_falco_report.html",
+                "raw_data_qc/GID1A_input_2_pe_2_falco_summary.txt",
+                "raw_data_qc/GID1A_input_2_pe_2_fastqc_data.txt",
+                "raw_data_qc/GID1A_output_1_pe_1_falco_report.html",
+                "raw_data_qc/GID1A_output_1_pe_1_falco_summary.txt",
+                "raw_data_qc/GID1A_output_1_pe_1_fastqc_data.txt",
+                "raw_data_qc/GID1A_output_1_pe_2_falco_report.html",
+                "raw_data_qc/GID1A_output_1_pe_2_falco_summary.txt",
+                "raw_data_qc/GID1A_output_1_pe_2_fastqc_data.txt",
+                "raw_data_qc/GID1A_output_2_pe_1_falco_report.html",
+                "raw_data_qc/GID1A_output_2_pe_1_falco_summary.txt",
+                "raw_data_qc/GID1A_output_2_pe_1_fastqc_data.txt",
+                "raw_data_qc/GID1A_output_2_pe_2_falco_report.html",
+                "raw_data_qc/GID1A_output_2_pe_2_falco_summary.txt",
+                "raw_data_qc/GID1A_output_2_pe_2_fastqc_data.txt",
                 "variant_effect_inspection_tool",
                 "variant_effect_inspection_tool/structure_data.json",
                 "variant_effect_inspection_tool/variant_effect_inspection_tool.html"
             ]
         ],
-        "timestamp": "2026-11-06T19:31:52.175022",
+        "timestamp": "2026-11-20T20:47:31.867424",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nextflow": "26.10.0"
         }
     }
 }
