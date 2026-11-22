@@ -26,6 +26,14 @@
 
   > Andrews S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].
 
+- [bwa-mem3](https://github.com/fg-labs/bwa-mem3)
+
+  > Fulcrum Genomics. bwa-mem3: a short-read aligner derived from bwa-mem2 with correctness fixes and performance improvements. https://bwa-mem3.readthedocs.io
+
+- [BWA-MEM2](https://doi.org/10.1109/IPDPS.2019.00041)
+
+  > Vasimuddin M, Misra S, Li H, Aluru S. Efficient Architecture-Aware Acceleration of BWA-MEM for Multicore Systems. IEEE IPDPS 2019:314-324. doi: 10.1109/IPDPS.2019.00041.
+
 - [BWA-MEM](https://arxiv.org/abs/1303.3997)
 
   > Li H. Aligning sequence reads, clone sequences and assembly contigs with BWA-MEM. arXiv. 2013;1303.3997 [q-bio.GN]. doi: 10.48550/arXiv.1303.3997.

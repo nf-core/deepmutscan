@@ -12,7 +12,7 @@ results/
 ├── raw_data_qc/                         # raw read QC per FASTQ file (Falco)
 ├── multiqc/                             # MultiQC report across all FASTQ files
 ├── intermediate_files/                  # reference index, alignments, variant count tables, error correction
-│   ├── bwa/
+│   ├── bwamem3/
 │   ├── merged_reads/                    # read-pair merging statistics
 │   ├── bam_files/sorted/                # only the sorted, indexed BAM is published
 │   ├── variant_counts/<library>/
@@ -83,7 +83,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - `intermediate_files/`
   - `aa_seq.txt`: wildtype amino acid sequence translated from `--reading_frame`.
   - `possible_mutations.csv`: all programmed codon variants per position, as defined by `--mutagenesis_type`; used for library filtering and visualisation.
-  - `bwa/`: BWA index of the reference FASTA.
+  - `bwamem3/`: bwa-mem3 index of the reference FASTA.
   - `merged_reads/<library>.vsearch_mergepairs.log`: read-pair merging statistics from vsearch (pairs merged, reasons for failed merges, fragment lengths, expected errors).
   - `bam_files/sorted/<library>.sorted.bam` and `.bai`: the coordinate-sorted, indexed alignments of
     the merged read pairs, after filtering - exactly what the variant counter reads. This is the only

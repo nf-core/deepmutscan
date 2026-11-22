@@ -122,7 +122,9 @@ Even the highest-quality sequencing platforms do not have perfect base accuracy.
 
 ### 2. Alignment
 
-The merged reads are aligned to the reference with [**BWA-MEM**](https://github.com/lh3/bwa). BWA-MEM is a highly efficient mapping algorithm for reads ≥ 70 bp.
+The merged reads are aligned to the reference with [**bwa-mem3**](https://github.com/fg-labs/bwa-mem3), a maintained derivative of bwa-mem2 that implements the BWA-MEM algorithm. For a gene-sized reference its alignments are identical to those of BWA 0.7.19 with the same scoring, at a fraction of the CPU time; the pipeline runs it with its `--fast` preset, which trades byte-for-byte reproducibility across bwa-mem3 versions for a further 2× (on the test libraries it changes a single read in one library).
+
+Substitutions are aligned end-to-end (`-L 100 -O 12,12 -B 3`, with `--fast` the module's `ext.args3`). With BWA-MEM's default local alignment, a read end that carries two or three adjacent mismatches (a full codon change) costs more than clipping it off, so a 2-base codon change within 3 bp, or a 3-base change within 7 bp, of a read end was removed from the alignment together with its coverage contribution; on 150 bp merged reads this under-counted full-codon substitutions by about 13% relative to single-base changes, and made the recovery of read-linked double mutants depend on their distance. A clipping penalty of 100 keeps every base in the alignment, the higher gap-open penalty stops three mismatches from being realigned as an indel (indel-containing reads are discarded in the next step), and the mismatch penalty is lowered for the same reason. Reads with genuine adapter remnants or chimeric ends now show up as runs of low-quality mismatches, which the base-quality filter of the variant counter removes. For alignments byte-identical to BWA 0.7.19, set `ext.args3 = '-L 100 -O 12,12 -B 3'` (without `--fast`) in a custom config.
 
 ### 3. Filtering
 
@@ -130,7 +132,7 @@ Alignments are filtered with [**samtools view**](https://www.htslib.org/doc/samt
 
 For long ORF site-saturation mutagenesis libraries, most aligned shotgun sequencing reads match the reference exactly. These wildtype reads are retained: they are ignored by the variant counter but contribute to the overall sequencing coverage and sequencing-error estimation.
 
-Merging, alignment, filtering, sorting and indexing run as one streamed, multi-threaded task per library (`MERGE_ALIGN`, using its `task.cpus`). The vsearch options (`ext.args`) and the samtools filter flags (`ext.args2`) can be changed in a custom config.
+Merging, alignment, filtering, sorting and indexing run as one streamed, multi-threaded task per library (`MERGE_ALIGN`, using its `task.cpus`). The vsearch options (`ext.args`), the bwa-mem3 options (`ext.args3`) and the samtools filter flags (`ext.args2`) can be changed in a custom config.
 
 > [!TIP]
 > The merging benefit is largest if the average DNA fragment size matches the read length. For example, libraries sequenced with 150 bp paired-end reads should ideally also be sheared or tagmented to a mean size of about 150 bp.
