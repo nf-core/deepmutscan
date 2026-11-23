@@ -31,3 +31,5 @@ deepmutscan_report.html
 **/annotated_variantCounts.csv
 **/library_completed_variantCounts*.csv
 **/variantCounts_filtered_by_library*.csv
+**/fdm_evidence_summary.csv
+library_QC/error_correction_report.html
