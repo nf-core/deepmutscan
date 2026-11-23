@@ -77,3 +77,25 @@ authors:
 maintainers:
   - "@MaximilianStammnitz"
   - "@BenjaminWehnert1008"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/dms-fdmcorrect_r-base:373aad1776732a61
+      build_id: bd-373aad1776732a61_1
+      scan_id: sc-6660e7874574306a_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/dms-fdmcorrect_r-base:bfb60589c0e91857
+      build_id: bd-bfb60589c0e91857_1
+      scan_id: sc-01d4a0fc590dc19e_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/dms-fdmcorrect_r-base:b09746d08c67dfee
+      build_id: bd-b09746d08c67dfee_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/76/76821c826dabd8d88eb42b9075e8648d371a14b560ac3dc755dafd5dfc46fb07/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/dms-fdmcorrect_r-base:e4d02356c866c62b
+      build_id: bd-e4d02356c866c62b_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/86/868dd2e940a1ccf9a77cddcfce9671ac041a2544777c438737d308fa1d30c8f0/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/dmsanalysis/fdm_evidence/.conda-lock/linux_amd64-bd-373aad1776732a61_1.txt

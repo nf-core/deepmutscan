@@ -7,8 +7,8 @@ process DMSANALYSIS_FDM_EVIDENCE {
     conda "${moduleDir}/environment.yml"
 
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'REPLACE_WITH_SINGULARITY_HTTPS_URL'
-        : 'REPLACE_WITH_DOCKER_IMAGE'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/76/76821c826dabd8d88eb42b9075e8648d371a14b560ac3dc755dafd5dfc46fb07/data'
+        : 'community.wave.seqera.io/library/dms-fdmcorrect_r-base:373aad1776732a61'}"
 
     input:
     tuple val(meta), path(raw_counts), path(filtered)
