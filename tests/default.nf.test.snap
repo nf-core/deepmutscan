@@ -33,12 +33,8 @@
                     "fq": "0.12.0"
                 },
                 "VARIANTCOUNTING": {
-                    "python": "3.12.13",
-                    "pysam": "0.24.0",
-                    "polars": "1.33.1",
-                    "pyarrow": "24.0.0",
-                    "numpy": "2.5.1",
-                    "biopython": 1.87
+                    "dms_count": "0.1.0",
+                    "htslib": 1.25
                 },
                 "VISUALIZATION_COUNTS_HEATMAP": {
                     "r-base": "4.5.1",
@@ -279,7 +275,7 @@
                 "GID1A_output_2_pe_2_fastqc_data.txt:md5,02329f5724d6c3a7089b3a6707e7edfa"
             ]
         ],
-        "timestamp": "2026-11-21T00:12:37.725907",
+        "timestamp": "2026-11-23T13:09:15.714577",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
@@ -361,12 +357,8 @@
                     "r-Biostrings": "2.78.0"
                 },
                 "VARIANTCOUNTING": {
-                    "python": "3.12.13",
-                    "pysam": "0.24.0",
-                    "polars": "1.33.1",
-                    "pyarrow": "24.0.0",
-                    "numpy": "2.5.1",
-                    "biopython": 1.87
+                    "dms_count": "0.1.0",
+                    "htslib": 1.25
                 },
                 "VARIANT_EFFECT_INSPECTION_TOOL": {
                     "python": "3.12.3",
@@ -715,7 +707,7 @@
                 "limma_rowCount": 785
             }
         ],
-        "timestamp": "2026-11-21T00:11:13.730686",
+        "timestamp": "2026-11-23T13:08:16.756984",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
@@ -777,7 +769,8 @@
                     "r-base": "0.0.0"
                 },
                 "VARIANTCOUNTING": {
-                    "variantcounting": "stub"
+                    "dms_count": "stub",
+                    "htslib": "stub"
                 },
                 "VARIANT_EFFECT_INSPECTION_TOOL": {
                     "python": "0.0.0",
@@ -984,7 +977,7 @@
                 "variant_effect_inspection_tool/variant_effect_inspection_tool.html"
             ]
         ],
-        "timestamp": "2026-11-21T00:13:51.807926",
+        "timestamp": "2026-11-23T13:10:07.302162",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
