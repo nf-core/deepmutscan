@@ -38,6 +38,14 @@
 
   > Li H. Aligning sequence reads, clone sequences and assembly contigs with BWA-MEM. arXiv. 2013;1303.3997 [q-bio.GN]. doi: 10.48550/arXiv.1303.3997.
 
+- [dms_count](https://github.com/MaximilianStammnitz/dms-count)
+
+  > Stammnitz MR, Wehnert B. dms_count: a single-pass variant counter for deep mutational scanning alignments (C, htslib). https://github.com/MaximilianStammnitz/dms-count
+
+- [HTSlib](https://doi.org/10.1093/gigascience/giab007)
+
+  > Bonfield JK, Marshall J, Danecek P, Li H, Ohan V, Whitwham A, Keane T, Davies RM. HTSlib: C library for reading/writing high-throughput sequencing data. Gigascience. 2021 Feb 16;10(2):giab007. doi: 10.1093/gigascience/giab007.
+
 - [SAMtools](https://doi.org/10.1093/gigascience/giab008)
 
   > Danecek P, Bonfield JK, Liddle J, Marshall J, Ohan V, Pollard MO, Whitwham A, Keane T, McCarthy SA, Davies RM, Li H. Twelve years of SAMtools and BCFtools. Gigascience. 2021 Feb 16;10(2):giab008. doi: 10.1093/gigascience/giab008.
