@@ -4,8 +4,8 @@ process VARIANTCOUNTING {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'REPLACE_WITH_SINGULARITY_HTTPS_URL'
-        : 'REPLACE_WITH_DOCKER_IMAGE'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/56/569d61b69a0cc1502c3562a748540f91063050d10642eb0b6fc967efed6d998e/data'
+        : 'community.wave.seqera.io/library/dms-count:0.1.0--10f9a3c07e3f9e5a'}"
 
     input:
     tuple val(meta), path(bam), path(bai)

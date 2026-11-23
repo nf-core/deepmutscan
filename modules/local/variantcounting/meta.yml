@@ -65,3 +65,25 @@ authors:
   - "@BenjaminWehnert1008"
 maintainers:
   - "@BenjaminWehnert1008"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/dms-count:0.1.0--10f9a3c07e3f9e5a
+      build_id: bd-10f9a3c07e3f9e5a_1
+      scan_id: sc-6c49ab57e0619157_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/dms-count:0.1.0--67351e31701ed53e
+      build_id: bd-67351e31701ed53e_1
+      scan_id: sc-aa8f182d922f27d4_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/dms-count:0.1.0--f2c8a51138a262b5
+      build_id: bd-f2c8a51138a262b5_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/56/569d61b69a0cc1502c3562a748540f91063050d10642eb0b6fc967efed6d998e/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/dms-count:0.1.0--610a55c4b66020f2
+      build_id: bd-610a55c4b66020f2_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/28/288b61b49a2d3e3d89072adcef926d60802370d6d753f685677f405f79edfa36/data
+  conda:
+    linux/arm64:
+      lock_file: modules/local/variantcounting/.conda-lock/linux_arm64-bd-67351e31701ed53e_1.txt
