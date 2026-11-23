@@ -128,11 +128,11 @@ Substitutions are aligned end-to-end (`-L 100 -O 12,12 -B 3`, with `--fast` the 
 
 ### 3. Filtering
 
-Alignments are filtered with [**samtools view**](https://www.htslib.org/doc/samtools-view.html): only primary alignments (no unmapped, secondary or supplementary records) with a mapping quality ≥ 30 and without insertions, deletions or splice gaps are kept, as indel-containing reads are most likely artefacts in substitution libraries. The filtered alignments are coordinate-sorted and indexed with samtools, and used for variant counting.
+Alignments are filtered with [**samtools view**](https://www.htslib.org/doc/samtools-view.html): only primary alignments (no unmapped, secondary or supplementary records) with a mapping quality ≥ 30 are kept. The filtered alignments go straight to variant counting; reads whose alignment contains an insertion, deletion or splice gap pass the filter but are ignored by the counter, as indel-containing reads are most likely artefacts in substitution libraries.
 
 For long ORF site-saturation mutagenesis libraries, most aligned shotgun sequencing reads match the reference exactly. These wildtype reads are retained: they are ignored by the variant counter but contribute to the overall sequencing coverage and sequencing-error estimation.
 
-Merging, alignment, filtering, sorting and indexing run as one streamed, multi-threaded task per library (`MERGE_ALIGN`, using its `task.cpus`). The vsearch options (`ext.args`), the bwa-mem3 options (`ext.args3`) and the samtools filter flags (`ext.args2`) can be changed in a custom config.
+Merging, alignment, filtering and variant counting run as one streamed, multi-threaded task per library (`MERGE_ALIGN_COUNT`). vsearch and bwa-mem3 each use the task's `task.cpus` and run concurrently; give the task at least two CPUs, because with one bwa-mem3 reads and aligns in turns and the stream runs at half speed. The counter reads the alignments as they arrive and needs no BAM, so none is written by default. `--save_bam` also coordinate-sorts and indexes them into `intermediate_files/bam_files/sorted/` for inspection. The vsearch options (`ext.args`), the bwa-mem3 options (`ext.args3`), the samtools filter flags (`ext.args2`) and extra counter options (`ext.args4`) can be changed in a custom config.
 
 > [!TIP]
 > The merging benefit is largest if the average DNA fragment size matches the read length. For example, libraries sequenced with 150 bp paired-end reads should ideally also be sheared or tagmented to a mean size of about 150 bp.

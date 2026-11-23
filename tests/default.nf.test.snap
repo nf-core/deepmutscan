@@ -23,18 +23,16 @@
                     "r-reshape2": "1.4.4",
                     "r-scales": "1.4.0"
                 },
-                "MERGE_ALIGN": {
+                "MERGE_ALIGN_COUNT": {
                     "bwa-mem3": "0.17.0",
+                    "dms_count": "0.1.0",
+                    "htslib": 1.25,
                     "samtools": 1.25,
-                    "vsearch": "2.30.0"
+                    "vsearch": "2.32.0"
                 },
                 "RAW_DATA_QC": {
                     "falco": "2.0.3",
                     "fq": "0.12.0"
-                },
-                "VARIANTCOUNTING": {
-                    "dms_count": "0.1.0",
-                    "htslib": 1.25
                 },
                 "VISUALIZATION_COUNTS_HEATMAP": {
                     "r-base": "4.5.1",
@@ -215,14 +213,14 @@
             ],
             [
                 "aa_seq.txt:md5,421287586f566191f7da4a7aad7d24a8",
-                "GID1A_input_1_pe.sorted.bam:md5,f9ac8603e824d910cc09fac934c4b648",
-                "GID1A_input_1_pe.sorted.bam.bai:md5,731c88053e78e6bf025d7a542106dda7",
-                "GID1A_input_2_pe.sorted.bam:md5,75642149abf0c7a7601b933b8082c41b",
-                "GID1A_input_2_pe.sorted.bam.bai:md5,243e4e924f252004f75bb7445d9e07ab",
-                "GID1A_output_1_pe.sorted.bam:md5,6d1ed8aaa65b56cd687bfb334fa44617",
-                "GID1A_output_1_pe.sorted.bam.bai:md5,92c94e9540fad56d3e72fa9a969e381c",
-                "GID1A_output_2_pe.sorted.bam:md5,c2ae6447bb41fd2d07013f46ce829128",
-                "GID1A_output_2_pe.sorted.bam.bai:md5,fe3d7c6d178f825d0b1aafeb3a1d1596",
+                "GID1A_input_1_pe.sorted.bam:md5,07b12f347c7b4b9f9d4db44e1d621ccd",
+                "GID1A_input_1_pe.sorted.bam.bai:md5,f8db211d8eb1bba592fd3b5cd510855c",
+                "GID1A_input_2_pe.sorted.bam:md5,9483111b5616dd10ad34dd3d0efd8a9d",
+                "GID1A_input_2_pe.sorted.bam.bai:md5,43343ef16207d031581a069ed44991a1",
+                "GID1A_output_1_pe.sorted.bam:md5,1fbd387c95319d22b97d57b6d37ba4e9",
+                "GID1A_output_1_pe.sorted.bam.bai:md5,5d27d91bf2866bd9cd566ba79f0fc280",
+                "GID1A_output_2_pe.sorted.bam:md5,90885b2cabb4c9c1933dd33a11189cf1",
+                "GID1A_output_2_pe.sorted.bam.bai:md5,1206aa485b9225694debbff633972318",
                 "GID1A.fasta.amb:md5,383ef17f6abb846ab669ebac30f5659b",
                 "GID1A.fasta.ann:md5,30c4a2204f9166d9594c790e0ca58793",
                 "GID1A.fasta.bwt.2bit.64:md5,9dffdbe159c10d2c22af7cae3ab22ec3",
@@ -275,7 +273,7 @@
                 "GID1A_output_2_pe_2_fastqc_data.txt:md5,02329f5724d6c3a7089b3a6707e7edfa"
             ]
         ],
-        "timestamp": "2026-11-23T13:09:15.714577",
+        "timestamp": "2026-11-23T14:09:33.71848",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
@@ -335,10 +333,12 @@
                 "FITNESS_QC": {
                     "r-base": "4.5.1"
                 },
-                "MERGE_ALIGN": {
+                "MERGE_ALIGN_COUNT": {
                     "bwa-mem3": "0.17.0",
+                    "dms_count": "0.1.0",
+                    "htslib": 1.25,
                     "samtools": 1.25,
-                    "vsearch": "2.30.0"
+                    "vsearch": "2.32.0"
                 },
                 "MERGE_COUNTS": {
                     "r-base": "4.5.1"
@@ -355,10 +355,6 @@
                     "r-base": "4.5.1",
                     "r-mutscan": "1.0.0",
                     "r-Biostrings": "2.78.0"
-                },
-                "VARIANTCOUNTING": {
-                    "dms_count": "0.1.0",
-                    "htslib": 1.25
                 },
                 "VARIANT_EFFECT_INSPECTION_TOOL": {
                     "python": "3.12.3",
@@ -630,14 +626,14 @@
                 "experimentalDesign.tsv:md5,f95dea4a3e6cf7e206e789a96e502604",
                 "synonymous_wt.txt:md5,bb94c5975185b80f8d63acebfbf4a0da",
                 "aa_seq.txt:md5,421287586f566191f7da4a7aad7d24a8",
-                "GID1A_input_1_pe.sorted.bam:md5,f9ac8603e824d910cc09fac934c4b648",
-                "GID1A_input_1_pe.sorted.bam.bai:md5,731c88053e78e6bf025d7a542106dda7",
-                "GID1A_input_2_pe.sorted.bam:md5,75642149abf0c7a7601b933b8082c41b",
-                "GID1A_input_2_pe.sorted.bam.bai:md5,243e4e924f252004f75bb7445d9e07ab",
-                "GID1A_output_1_pe.sorted.bam:md5,6d1ed8aaa65b56cd687bfb334fa44617",
-                "GID1A_output_1_pe.sorted.bam.bai:md5,92c94e9540fad56d3e72fa9a969e381c",
-                "GID1A_output_2_pe.sorted.bam:md5,c2ae6447bb41fd2d07013f46ce829128",
-                "GID1A_output_2_pe.sorted.bam.bai:md5,fe3d7c6d178f825d0b1aafeb3a1d1596",
+                "GID1A_input_1_pe.sorted.bam:md5,07b12f347c7b4b9f9d4db44e1d621ccd",
+                "GID1A_input_1_pe.sorted.bam.bai:md5,f8db211d8eb1bba592fd3b5cd510855c",
+                "GID1A_input_2_pe.sorted.bam:md5,9483111b5616dd10ad34dd3d0efd8a9d",
+                "GID1A_input_2_pe.sorted.bam.bai:md5,43343ef16207d031581a069ed44991a1",
+                "GID1A_output_1_pe.sorted.bam:md5,1fbd387c95319d22b97d57b6d37ba4e9",
+                "GID1A_output_1_pe.sorted.bam.bai:md5,5d27d91bf2866bd9cd566ba79f0fc280",
+                "GID1A_output_2_pe.sorted.bam:md5,90885b2cabb4c9c1933dd33a11189cf1",
+                "GID1A_output_2_pe.sorted.bam.bai:md5,1206aa485b9225694debbff633972318",
                 "GID1A.fasta.amb:md5,383ef17f6abb846ab669ebac30f5659b",
                 "GID1A.fasta.ann:md5,30c4a2204f9166d9594c790e0ca58793",
                 "GID1A.fasta.bwt.2bit.64:md5,9dffdbe159c10d2c22af7cae3ab22ec3",
@@ -707,7 +703,7 @@
                 "limma_rowCount": 785
             }
         ],
-        "timestamp": "2026-11-23T13:08:16.756984",
+        "timestamp": "2026-11-23T14:08:37.899735",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
@@ -749,10 +745,12 @@
                 "FITNESS_QC": {
                     "stub-version": "0.0.0"
                 },
-                "MERGE_ALIGN": {
+                "MERGE_ALIGN_COUNT": {
                     "bwa-mem3": "0.17.0",
+                    "dms_count": "0.1.0",
+                    "htslib": 1.25,
                     "samtools": 1.25,
-                    "vsearch": "2.30.0"
+                    "vsearch": "2.32.0"
                 },
                 "MERGE_COUNTS": {
                     "r-base": "0.0.0"
@@ -767,10 +765,6 @@
                 },
                 "RUN_MUTSCAN": {
                     "r-base": "0.0.0"
-                },
-                "VARIANTCOUNTING": {
-                    "dms_count": "stub",
-                    "htslib": "stub"
                 },
                 "VARIANT_EFFECT_INSPECTION_TOOL": {
                     "python": "0.0.0",
@@ -977,7 +971,7 @@
                 "variant_effect_inspection_tool/variant_effect_inspection_tool.html"
             ]
         ],
-        "timestamp": "2026-11-23T13:10:07.302162",
+        "timestamp": "2026-11-23T14:10:23.603391",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"

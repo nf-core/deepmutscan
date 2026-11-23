@@ -6,8 +6,7 @@
 include { RAW_DATA_QC            } from '../modules/local/raw_data_qc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { BWAMEM3_INDEX          } from '../modules/nf-core/bwamem3/index/main'
-include { MERGE_ALIGN            } from '../modules/local/bamprocessing/merge_align/main'
-include { VARIANTCOUNTING            } from '../modules/local/variantcounting/main'
+include { MERGE_ALIGN_COUNT      } from '../modules/local/merge_align_count/main'
 include { DMSANALYSIS_AASEQ      } from '../modules/local/dmsanalysis/aa_seq/main'
 include { DMSANALYSIS_POSSIBLE_MUTATIONS      } from '../modules/local/dmsanalysis/possible_mutations/main'
 include { DMSANALYSIS_PROCESS_VARIANT_COUNTS      } from '../modules/local/dmsanalysis/process_variant_counts/main'
@@ -123,23 +122,19 @@ workflow DEEPMUTSCAN {
 
     //
     // MODULE: Merge each raw read pair into a consensus read (vsearch), align the merged reads
-    // (bwa-mem3), filter the alignments, and coordinate-sort and index them (samtools), streamed in
-    // one task per library. The sorted, indexed BAM is what the read-based counter needs.
+    // (bwa-mem3), filter the alignments (samtools) and count the variants (dms_count), streamed in
+    // one task per library. The counter reads the alignments as they arrive; a sorted, indexed BAM
+    // is written only with --save_bam.
     //
-    MERGE_ALIGN(
+    MERGE_ALIGN_COUNT(
       ch_reads,                        // tuple(val(meta), path(reads)): checked raw paired-end FASTQ
-      BWAMEM3_INDEX.out.index          // tuple(val(meta2), path(index)), a value channel
+      BWAMEM3_INDEX.out.index,         // tuple(val(meta2), path(index)), a value channel
+      ch_fasta_file,                   // path(fasta)
+      reading_frame_ch,                // val(reading_frame string, 1-based inclusive)
+      base_qual_ch,                    // val(base_qual)
+      min_flank_ch,                    // val(min_flank)
+      asBool(params.save_bam)          // val(save_bam)
     )
-
-    // One task per library (the sorted, indexed BAMs); the other inputs are value channels
-    VARIANTCOUNTING(
-      MERGE_ALIGN.out.bam, // tuple(val(meta), path(bam), path(bai))
-      ch_fasta_file,       // path(fasta)
-      reading_frame_ch,    // val(reading_frame string, 1-based inclusive)
-      base_qual_ch,        // val(base_qual)
-      min_flank_ch         // val(min_flank)
-    )
-    ch_versions = ch_versions.mix(VARIANTCOUNTING.out.versions)
 
     DMSANALYSIS_AASEQ (
       ch_fasta,
@@ -160,7 +155,7 @@ workflow DEEPMUTSCAN {
     def ch_possible_mutations = DMSANALYSIS_POSSIBLE_MUTATIONS.out.possible_mutations.map { _meta, f -> f }
 
     // One item per library
-    def ch_vc = VARIANTCOUNTING.out.variant_counts   // tuple(val(meta), path)
+    def ch_vc = MERGE_ALIGN_COUNT.out.variant_counts // tuple(val(meta), path)
 
     DMSANALYSIS_PROCESS_VARIANT_COUNTS(
       ch_vc,                        // tuple(val(meta), path(variantCounts))
@@ -481,7 +476,7 @@ workflow DEEPMUTSCAN {
     multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
     bwa_index      = BWAMEM3_INDEX.out.index
-    merged_bam     = MERGE_ALIGN.out.bam
+    merged_bam     = MERGE_ALIGN_COUNT.out.bam
 }
 
 /*
