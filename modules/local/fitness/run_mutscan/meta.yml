@@ -82,3 +82,27 @@ output:
 authors:
   - "@BenjaminWehnert1008"
   - "@MaximilianStammnitz"
+containers:
+  docker:
+    linux/arm64:
+      name: community.wave.seqera.io/library/bioconductor-edger_bioconductor-limma_r-base_r-ggally_r-ggplot2:3ce7cfd545605b12
+      build_id: bd-3ce7cfd545605b12_1
+      scan_id: sc-65f830ce3dcb8dba_1
+    linux/amd64:
+      name: community.wave.seqera.io/library/bioconductor-edger_bioconductor-limma_r-base_r-ggally_r-ggplot2:826c68a10b1231ea
+      build_id: bd-826c68a10b1231ea_1
+      scan_id: sc-97ed66aecda47764_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/bioconductor-edger_bioconductor-limma_r-base_r-ggally_r-ggplot2:b4fdbe6e432037f0
+      build_id: bd-b4fdbe6e432037f0_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/4a/4a4c1441760e6f27f01d8930305d8a9770e864b951b46cc4cf946e4509da6140/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/bioconductor-edger_bioconductor-limma_r-base_r-ggally_r-ggplot2:9516bf02d209f24b
+      build_id: bd-9516bf02d209f24b_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/5a/5ab9026526c0b725a7b7161726afeb1b246c22f7b58644841f9737c0f37cd7cf/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/fitness/run_mutscan/.conda-lock/linux_amd64-bd-826c68a10b1231ea_1.txt
+    linux/arm64:
+      lock_file: modules/local/fitness/run_mutscan/.conda-lock/linux_arm64-bd-3ce7cfd545605b12_1.txt

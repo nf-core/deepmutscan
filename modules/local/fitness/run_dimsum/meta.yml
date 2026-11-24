@@ -61,3 +61,27 @@ output:
 authors:
   - "@BenjaminWehnert1008"
   - "@MaximilianStammnitz"
+containers:
+  docker:
+    linux/arm64:
+      name: community.wave.seqera.io/library/pandoc_r-base_r-cowplot_r-data.table_pruned:62cb1e5610084bcf
+      build_id: bd-62cb1e5610084bcf_1
+      scan_id: sc-c03743e092404804_1
+    linux/amd64:
+      name: community.wave.seqera.io/library/pandoc_r-base_r-cowplot_r-data.table_pruned:688adb584e6a94cf
+      build_id: bd-688adb584e6a94cf_1
+      scan_id: sc-c46bd594a2f4fe0c_1
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/pandoc_r-base_r-cowplot_r-data.table_pruned:a74585ddb77477dd
+      build_id: bd-a74585ddb77477dd_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/20/20484f8dc0be43013272e8a46fd62a8da52f68cb542dc739e3529573ae4b16a3/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/pandoc_r-base_r-cowplot_r-data.table_pruned:9c46468878571b02
+      build_id: bd-9c46468878571b02_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/65/65d232f07cc98be32d0ee29842ea1cd398eff35dfeb513e9027cd257e6d9e804/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/fitness/run_dimsum/.conda-lock/linux_amd64-bd-688adb584e6a94cf_1.txt
+    linux/arm64:
+      lock_file: modules/local/fitness/run_dimsum/.conda-lock/linux_arm64-bd-62cb1e5610084bcf_1.txt

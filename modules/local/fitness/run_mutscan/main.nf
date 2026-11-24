@@ -5,8 +5,8 @@ process RUN_MUTSCAN {
   conda "${moduleDir}/environment.yml"
 
   container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-      ? 'REPLACE_WITH_SINGULARITY_HTTPS_URL'
-      : 'REPLACE_WITH_DOCKER_IMAGE'}"
+      ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/4a/4a4c1441760e6f27f01d8930305d8a9770e864b951b46cc4cf946e4509da6140/data'
+      : 'community.wave.seqera.io/library/bioconductor-edger_bioconductor-limma_r-base_r-ggally_r-ggplot2:826c68a10b1231ea'}"
 
   input:
     tuple val(sample), path(counts_merged)
