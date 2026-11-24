@@ -4,4 +4,5 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
+  - bioconda::bwa-mem3=0.17.0
   - conda-forge::gawk=5.3.1

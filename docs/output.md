@@ -83,7 +83,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - `intermediate_files/`
   - `aa_seq.txt`: wildtype amino acid sequence translated from `--reading_frame`.
   - `possible_mutations.csv`: all programmed codon variants per position, as defined by `--mutagenesis_type`; used for library filtering and visualisation.
-  - `bwamem3/`: bwa-mem3 index of the reference FASTA.
+  - `bwamem3/`: bwa-mem3 index of the reference FASTA in upper case (`<name>.uppercase.fasta.{amb,ann,bwt.2bit.64,pac}`).
   - `merged_reads/<library>.vsearch_mergepairs.log`: read-pair merging statistics from vsearch (pairs merged, reasons for failed merges, fragment lengths, expected errors).
   - `bam_files/sorted/<library>.sorted.bam` and `.bai` (only with `--save_bam`): the coordinate-sorted,
     indexed alignments of the merged read pairs, after filtering (mapped, primary, MAPQ >= 30) - what
