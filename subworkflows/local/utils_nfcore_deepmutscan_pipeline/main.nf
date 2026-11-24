@@ -211,6 +211,16 @@ def asInt(value) {
 def validateInputParameters() {
     readingFrameError()
     customCodonLibraryError()
+    tiledFlanksWarning()
+}
+
+//
+// The constant flanks only have an effect with --sequencing tiled
+//
+def tiledFlanksWarning() {
+    if (params.sequencing != 'tiled' && (params.flank_5prime || params.flank_3prime)) {
+        log.warn("'--flank_5prime' and '--flank_3prime' only have an effect with '--sequencing tiled'; they are ignored for '--sequencing ${params.sequencing}'.")
+    }
 }
 
 //

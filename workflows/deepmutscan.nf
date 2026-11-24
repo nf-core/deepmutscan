@@ -140,7 +140,9 @@ workflow DEEPMUTSCAN {
       reading_frame_ch,                // val(reading_frame string, 1-based inclusive)
       base_qual_ch,                    // val(base_qual)
       min_flank_ch,                    // val(min_flank)
-      asBool(params.save_bam)          // val(save_bam)
+      asBool(params.save_bam),         // val(save_bam)
+      params.sequencing,               // val(sequencing): shotgun or tiled
+      [params.flank_5prime ?: '', params.flank_3prime ?: '']   // tuple(val(flank_5prime), val(flank_3prime)); '' = find
     )
 
     //

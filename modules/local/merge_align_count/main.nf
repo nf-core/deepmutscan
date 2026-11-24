@@ -4,8 +4,8 @@ process MERGE_ALIGN_COUNT {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/67/6749b447ff36bedbae41e1cd651673e714ec69d8f67facd631d6fd373e098f44/data'
-        : 'community.wave.seqera.io/library/bwa-mem3_dms-count_samtools_vsearch:0a05801b076ff393'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/27/27427bda431adc41c9e70eebef7a52ee94cfcdac453b9d783b3b684b36b0115a/data'
+        : 'community.wave.seqera.io/library/bwa-mem3_dms-count_samtools_vsearch_gawk:63772d442a4ff48b'}"
 
     input:
     tuple val(meta), path(reads)
@@ -15,12 +15,15 @@ process MERGE_ALIGN_COUNT {
     val base_qual
     val min_flank
     val save_bam
+    val sequencing
+    tuple val(flank_5prime), val(flank_3prime)
 
     output:
     tuple val(meta), path("*.variant_counts.tsv")                       , emit: variant_counts
     path "variant_counts_columns.tsv"                                   , emit: columns
     tuple val(meta), path("*.vsearch_mergepairs.log")                   , emit: log
     tuple val(meta), path("*.sorted.bam"), path("*.sorted.bam.bai")     , emit: bam, optional: true
+    tuple val(meta), path("*.tiled_flanks.tsv")                         , emit: tiled_flanks, optional: true
     tuple val("${task.process}"), val('vsearch'), eval("vsearch --version 2>&1 | head -n1 | sed 's/vsearch v//; s/_.*//'"), topic: versions, emit: versions_vsearch
     tuple val("${task.process}"), val('bwa-mem3'), eval("bwa-mem3 version | sed -nE '1 s/^([0-9]+(\\.[0-9]+)+).*/\\1/p'"), topic: versions, emit: versions_bwamem3
     tuple val("${task.process}"), val('samtools'), eval("samtools version | sed '1!d;s/.* //'"), topic: versions, emit: versions_samtools
@@ -45,6 +48,71 @@ process MERGE_ALIGN_COUNT {
     """ : ''
     def bam_tee  = save_bam ? '| tee alignments.fifo \\' : '\\'
     def bam_wait = save_bam ? 'wait \$sort_pid' : ''
+    // --sequencing tiled: every read of a tiled amplicon spans its tile, so the reads run past the ends
+    // of a tile-sized reference. Whatever lies beyond the reference must be soft-clipped, not aligned:
+    // ext.args3 then uses a low clipping penalty (conf/modules.config), and the constant flanks are
+    // added to the reference when it does not contain them, so that the clip falls outside them.
+    def tiled = sequencing == 'tiled'
+    def f5 = (flank_5prime ?: '').toString().toUpperCase()
+    def f3 = (flank_3prime ?: '').toString().toUpperCase()
+    def tiled_start = tiled ? """
+    # --sequencing tiled. The merged reads of a tiled amplicon carry, beyond the tile, the constant
+    # sequences the amplicon was amplified with (primer sites, adapters) and often a variable spacer
+    # before them. The constant flanks must be part of the reference: the variable part is then
+    # soft-clipped (ext.args3), and a codon change at the first or last codon of the tile lies well
+    # inside the alignment rather than next to the clip, where a local alignment would clip it away.
+    # Flanks that were not given (--flank_5prime/--flank_3prime) are found from the first 20,000 read
+    # pairs: merged and aligned with bwa-mem3's default scoring, the sequence clipped beyond each
+    # reference end is read off as long as >= 90 % of the reads agree (bin/tile_flanks.sh). A flank
+    # the reference does not already start or end with is added to it, and the tile's coordinates are
+    # shifted back in the count table, so positions stay those of --fasta.
+    F5='${f5}'; F3='${f3}'; SRC5=given; SRC3=given
+    if [ -z "\$F5" ] || [ -z "\$F3" ]; then
+        (
+            set +o pipefail
+            gzip -cdf ${reads[0]} | head -n 80000 > flank_sample_1.fastq
+            gzip -cdf ${reads[1]} | head -n 80000 > flank_sample_2.fastq
+        )
+        vsearch --fastq_mergepairs flank_sample_1.fastq --reverse flank_sample_2.fastq --fastqout - \\
+            --threads $task.cpus --no_progress $args 2> /dev/null \\
+            | bwa-mem3 mem -t $task.cpus \$INDEX - 2> /dev/null \\
+            | samtools view $args2 - \\
+            | tile_flanks.sh "\$(grep -v '^>' ${fasta} | tr -d '\\n\\r' | wc -c)" > flanks.detected
+        rm flank_sample_1.fastq flank_sample_2.fastq
+        if [ -z "\$F5" ]; then F5=\$(awk -F '\\t' '\$1 == "5prime" { print \$2 }' flanks.detected); SRC5=detected; fi
+        if [ -z "\$F3" ]; then F3=\$(awk -F '\\t' '\$1 == "3prime" { print \$2 }' flanks.detected); SRC3=detected; fi
+    fi
+    SEQ=\$(grep -v '^>' ${fasta} | tr -d '\\n\\r')
+    ADD5=''; ADD3=''
+    if [ -n "\$F5" ] && [ "\${SEQ#"\$F5"}" = "\$SEQ" ]; then ADD5=\$F5; fi
+    if [ -n "\$F3" ] && [ "\${SEQ%"\$F3"}" = "\$SEQ" ]; then ADD3=\$F3; fi
+    REF=${fasta}
+    if [ -n "\$ADD5\$ADD3" ]; then
+        mkdir tiled_reference
+        { awk '/^>/ { print; exit }' ${fasta}; echo "\$ADD5\$SEQ\$ADD3"; } > tiled_reference/reference.fasta
+        bwa-mem3 index tiled_reference/reference.fasta 2> /dev/null
+        INDEX=tiled_reference/reference.fasta; REF=tiled_reference/reference.fasta
+    fi
+    OFF=\${#ADD5}
+    RF=${reading_frame}; RF_START=\$(( \${RF%-*} + OFF )); RF_END=\$(( \${RF#*-} + OFF ))
+    {
+        printf 'end\\tflank\\tsource\\tadded_to_reference\\n'
+        printf '5prime\\t%s\\t%s\\t%s\\n' "\$F5" "\$( [ -n "\$F5" ] && echo \$SRC5 || echo none)" "\$( [ -n "\$ADD5" ] && echo yes || echo no)"
+        printf '3prime\\t%s\\t%s\\t%s\\n' "\$F3" "\$( [ -n "\$F3" ] && echo \$SRC3 || echo none)" "\$( [ -n "\$ADD3" ] && echo yes || echo no)"
+    } > ${prefix}.tiled_flanks.tsv
+    """ : ''
+    def ref_arg = tiled ? '\$REF' : "${fasta}"
+    def rf_arg  = tiled ? '\${RF_START}-\${RF_END}' : "${reading_frame}"
+    // positions back to --fasta's coordinates when a 5' flank was added to the reference
+    def tiled_end = tiled ? """
+    if [ "\$OFF" -gt 0 ]; then
+        awk -v off="\$OFF" 'BEGIN { FS = OFS = "\\t" } {
+            n = split(\$5, a, ", "); s = ""
+            for (i = 1; i <= n; i++) { split(a[i], b, ":"); s = s (i > 1 ? ", " : "") (b[1] - off) ":" b[2] }
+            \$5 = s; print }' ${prefix}.variant_counts.tsv > shifted.tsv
+        mv shifted.tsv ${prefix}.variant_counts.tsv
+    fi
+    """ : ''
     """
     # The bwa-mem3 index prefix (same files as a bwa-mem2 index: .0123 .amb .ann .bwt.2bit.64 .pac),
     # resolved with a glob and bash parameter expansion instead of `find`.
@@ -101,6 +169,7 @@ process MERGE_ALIGN_COUNT {
     # share the task's CPUs; samtools view and dms_count need well under a CPU together. With a
     # single CPU the stream still works, but bwa-mem3 then reads and aligns in turns and the
     # stages run one after the other.
+    ${tiled_start}
     ${bam_start}
     vsearch --fastq_mergepairs ${reads[0]} \\
         --reverse ${reads[1]} \\
@@ -114,8 +183,8 @@ process MERGE_ALIGN_COUNT {
         ${bam_tee}
         | dms_count \\
             --bam - \\
-            --fasta ${fasta} \\
-            --reading_frame ${reading_frame} \\
+            --fasta ${ref_arg} \\
+            --reading_frame ${rf_arg} \\
             --base_qual ${base_qual} \\
             --min_flank ${min_flank} \\
             --skip_indel_reads \\
@@ -125,7 +194,7 @@ process MERGE_ALIGN_COUNT {
             --out ${prefix}.variant_counts.tsv \\
             $args4
     ${bam_wait}
-
+    ${tiled_end}
     # vsearch's first log line reports the host's RAM and core count, so the file differs
     # between machines and the nf-test snapshot can never match across them. Drop that line and
     # keep the statistics, which are reproducible; the version is reported through the versions
@@ -143,5 +212,6 @@ process MERGE_ALIGN_COUNT {
     touch variant_counts_columns.tsv
     touch ${prefix}.vsearch_mergepairs.log
     ${save_bam ? "touch ${prefix}.sorted.bam ${prefix}.sorted.bam.bai" : ''}
+    ${sequencing == 'tiled' ? "touch ${prefix}.tiled_flanks.tsv" : ''}
     """
 }

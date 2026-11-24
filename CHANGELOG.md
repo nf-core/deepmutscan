@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Carbon-footprint estimate of every run with the [nf-co2footprint](https://nextflow-io.github.io/nf-co2footprint/) plugin: `pipeline_info/co2footprint_{report,summary,trace}_<timestamp>.*`, with `--co2_location` for the compute site's grid zone
 - `--dimsum_error_model` (default `true`): whether DiMSum fits its error model (`--fitnessErrorModel`)
+- `--sequencing tiled` (default `shotgun`), with `--flank_5prime` and `--flank_3prime`: for libraries of tiled amplicons, whose reads run past both ends of a tile-sized reference. The overhang is soft-clipped (bwa-mem3 `-L 5 -y 20`) instead of being aligned as an insertion that made the counter skip the read (89-99.5 % of the reads of three tiled libraries), and the constant flanks - given, or found from each library's first 20,000 read pairs - are added to the reference for the alignment when it does not contain them, so that codon changes at the ends of the tile are not clipped. Positions in all outputs stay those of `--fasta`; the flanks used are written to `intermediate_files/merged_reads/<library>.tiled_flanks.tsv`
 
 ### `Fixed`
 

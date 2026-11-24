@@ -64,6 +64,23 @@
                     "description": "Nucleotide coordinates of the mutagenised open reading frame within the reference FASTA, in the format 'start-stop' (1-based, inclusive), e.g. '352-1383'.",
                     "pattern": "^\\d+-\\d+$"
                 },
+                "sequencing": {
+                    "type": "string",
+                    "description": "How the sequenced fragments were made: 'shotgun' (fragments from anywhere along the mutagenised gene) or 'tiled' (amplicons that each span one tile of the gene, with the tile as reference).",
+                    "help_text": "With 'tiled', every merged read runs past both ends of a tile-sized reference: through the constant sequences the amplicon was amplified with (primer sites, adapters) and often a variable spacer beyond them. The reads are then aligned with a low clipping penalty, so that the variable overhang is soft-clipped instead of being aligned as an insertion (which the counter skips), and the constant flanks are added to the reference for the alignment when the reference does not already contain them, so that a codon change at either end of the tile is never clipped. Give the flanks with '--flank_5prime' and '--flank_3prime', or leave them out to have them found from each library's reads. Positions in every output stay those of '--fasta'.",
+                    "default": "shotgun",
+                    "enum": ["shotgun", "tiled"]
+                },
+                "flank_5prime": {
+                    "type": "string",
+                    "description": "With '--sequencing tiled': the constant sequence every read carries before the tile, in the orientation of the reference (e.g. the forward primer site). Leave unset to have it found from the reads.",
+                    "pattern": "^[ACGTacgt]+$"
+                },
+                "flank_3prime": {
+                    "type": "string",
+                    "description": "With '--sequencing tiled': the constant sequence every read carries after the tile, in the orientation of the reference (e.g. the reverse complement of the reverse primer site). Leave unset to have it found from the reads.",
+                    "pattern": "^[ACGTacgt]+$"
+                },
                 "mutagenesis_type": {
                     "type": "string",
                     "description": "Codons programmed at each position of the library. When using 'custom', also provide '--custom_codon_library'.",
