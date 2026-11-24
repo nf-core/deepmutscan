@@ -4,8 +4,8 @@ process MERGE_ALIGN_COUNT {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/67/6749b447ff36bedbae41e1cd651673e714ec69d8f67facd631d6fd373e098f44/data'
-        : 'community.wave.seqera.io/library/bwa-mem3_dms-count_samtools_vsearch:0a05801b076ff393'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/27/27427bda431adc41c9e70eebef7a52ee94cfcdac453b9d783b3b684b36b0115a/data'
+        : 'community.wave.seqera.io/library/bwa-mem3_dms-count_samtools_vsearch_gawk:63772d442a4ff48b'}"
 
     input:
     tuple val(meta), path(reads)

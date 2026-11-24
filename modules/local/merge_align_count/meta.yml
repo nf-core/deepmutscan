@@ -174,24 +174,24 @@ authors:
 containers:
   docker:
     linux/amd64:
-      name: community.wave.seqera.io/library/bwa-mem3_dms-count_samtools_vsearch:0a05801b076ff393
-      build_id: bd-0a05801b076ff393_1
-      scan_id: sc-64774866ff8df2cd_1
+      name: community.wave.seqera.io/library/bwa-mem3_dms-count_samtools_vsearch_gawk:63772d442a4ff48b
+      build_id: bd-63772d442a4ff48b_1
+      scan_id: sc-e8ac2e2729cf8b66_1
     linux/arm64:
-      name: community.wave.seqera.io/library/bwa-mem3_dms-count_samtools_vsearch:e3376b3512bfbc33
-      build_id: bd-e3376b3512bfbc33_1
-      scan_id: sc-6967561e64605661_1
+      name: community.wave.seqera.io/library/bwa-mem3_dms-count_samtools_vsearch_gawk:546a028b96bfc4a8
+      build_id: bd-546a028b96bfc4a8_1
+      scan_id: sc-545ebe26c34b4f04_1
   singularity:
     linux/amd64:
-      name: oras://community.wave.seqera.io/library/bwa-mem3_dms-count_samtools_vsearch:7e1cb6bc867e998d
-      build_id: bd-7e1cb6bc867e998d_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/67/6749b447ff36bedbae41e1cd651673e714ec69d8f67facd631d6fd373e098f44/data
+      name: oras://community.wave.seqera.io/library/bwa-mem3_dms-count_samtools_vsearch_gawk:9387fce5a233c0ec
+      build_id: bd-9387fce5a233c0ec_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/27/27427bda431adc41c9e70eebef7a52ee94cfcdac453b9d783b3b684b36b0115a/data
     linux/arm64:
-      name: oras://community.wave.seqera.io/library/bwa-mem3_dms-count_samtools_vsearch:cf6fba7f71ec0738
-      build_id: bd-cf6fba7f71ec0738_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/68/68c3f48a0a3501677efd43b2fdbbfcb3ef67b75d259da97b3432efe4fea0f0c4/data
+      name: oras://community.wave.seqera.io/library/bwa-mem3_dms-count_samtools_vsearch_gawk:31ceecb7bb98454d
+      build_id: bd-31ceecb7bb98454d_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/89/8921821cc5a2054568abbd1fecc43d0b302f09bbe5503926bfd038e720177c78/data
   conda:
     linux/amd64:
-      lock_file: modules/local/merge_align_count/.conda-lock/linux_amd64-bd-0a05801b076ff393_1.txt
+      lock_file: modules/local/merge_align_count/.conda-lock/linux_amd64-bd-63772d442a4ff48b_1.txt
     linux/arm64:
-      lock_file: modules/local/merge_align_count/.conda-lock/linux_arm64-bd-e3376b3512bfbc33_1.txt
+      lock_file: modules/local/merge_align_count/.conda-lock/linux_arm64-bd-546a028b96bfc4a8_1.txt
