@@ -1,0 +1,154 @@
+name: "visualization_library_qc"
+description: Library QC of one library in one task - count and counts-per-coverage heatmaps, sliding-window count and coverage profiles along the ORF, the LogDiff distribution of counts per coverage and, optionally, the sequencing-depth rarefaction curve.
+keywords:
+  - deep mutational scanning
+  - dms
+  - visualization
+  - quality control
+  - heatmap
+  - coverage
+  - logdiff
+  - sequencing depth
+tools: null
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'test', single_end:false ]`
+    - variantCounts_filtered_by_library:
+        type: file
+        description: CSV table of the programmed variants with their counts, coverage and counts per coverage (error-corrected when correction ran)
+        pattern: "*.{csv}"
+    - variantCounts_for_heatmaps:
+        type: file
+        description: CSV table of counts and counts per coverage per position and mutant amino acid, formatted for the heatmaps
+        pattern: "*.{csv}"
+    - library_completed_variantCounts:
+        type: file
+        description: CSV table of every programmed variant, with 0 counts for the unobserved ones
+        pattern: "*.{csv}"
+  - - aa_seq:
+        type: file
+        description: Wildtype amino-acid sequence of the ORF, one line
+        pattern: "*.{txt}"
+  - - possible_mutations:
+        type: file
+        description: CSV table of all programmed codon variants (read for the rarefaction only)
+        pattern: "*.{csv}"
+  - - sliding_window_size:
+        type: integer
+        description: Window size (amino-acid positions) of the rolling count and coverage profiles
+  - - aimed_cov:
+        type: integer
+        description: Aimed counts per amino-acid variant, drawn as the required-coverage line
+  - - run_seqdepth:
+        type: boolean
+        description: Whether to compute the sequencing-depth rarefaction (SeqDepth.pdf, seqdepth_curve.csv)
+
+output:
+  - counts_heatmap:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - counts_heatmap.pdf:
+          type: file
+          description: Heatmap of variant counts per position and mutant amino acid
+          pattern: "counts_heatmap.pdf"
+  - counts_per_cov_heatmap:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - counts_per_cov_heatmap.pdf:
+          type: file
+          description: Heatmap of counts per coverage per position and mutant amino acid
+          pattern: "counts_per_cov_heatmap.pdf"
+  - rolling_counts:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - rolling_counts.pdf:
+          type: file
+          description: Sliding-window variant counts along the ORF, by number of changed nucleotides per codon
+          pattern: "rolling_counts.pdf"
+  - rolling_counts_per_cov:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - rolling_counts_per_cov.pdf:
+          type: file
+          description: Sliding-window counts per coverage along the ORF, by number of changed nucleotides per codon
+          pattern: "rolling_counts_per_cov.pdf"
+  - rolling_coverage:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - rolling_coverage.pdf:
+          type: file
+          description: Sliding-window sequencing coverage along the ORF, with the coverage required for `aimed_cov` counts per variant
+          pattern: "rolling_coverage.pdf"
+  - logdiff_plot:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - logdiff_plot.pdf:
+          type: file
+          description: Sorted, log-scale distribution of counts per coverage of all programmed variants, with LogDiff
+          pattern: "logdiff_plot.pdf"
+  - logdiff_varying_bases:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - logdiff_varying_bases.pdf:
+          type: file
+          description: The same distribution, coloured by the number of changed nucleotides per codon
+          pattern: "logdiff_varying_bases.pdf"
+  - SeqDepth:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - SeqDepth.pdf:
+          type: file
+          description: Sequencing-depth rarefaction curve (only with run_seqdepth)
+          pattern: "SeqDepth.pdf"
+  - curve:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - seqdepth_curve.csv:
+          type: file
+          description: Rarefaction curve points, re-plotted interactively by the summary report (only with run_seqdepth)
+          pattern: "seqdepth_curve.csv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@BenjaminWehnert1008"
+  - "@MaximilianStammnitz"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-dplyr_r-ggplot2_pruned:32f1af0a83a018e7
+      build_id: bd-32f1af0a83a018e7_1
+      scan_id: sc-337510c2c910aa1c_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-dplyr_r-ggplot2_pruned:880bbdecb19543bb
+      build_id: bd-880bbdecb19543bb_1
+      scan_id: sc-09c9d098a09068b9_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-dplyr_r-ggplot2_pruned:7202e5d19667bddb
+      build_id: bd-7202e5d19667bddb_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/79/7988a2e369e98cec897d48bab3e55daddd8a973d9b7491ad27b6b15d550a4c5b/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-dplyr_r-ggplot2_pruned:db46247d9810b3e7
+      build_id: bd-db46247d9810b3e7_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/02/02db891e505b0ec37ba6de21f08d576b15a95991026542455b209e20959e50b1/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/visualization/library_qc/.conda-lock/linux_amd64-bd-32f1af0a83a018e7_1.txt
+    linux/arm64:
+      lock_file: modules/local/visualization/library_qc/.conda-lock/linux_arm64-bd-880bbdecb19543bb_1.txt
