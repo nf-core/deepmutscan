@@ -49,7 +49,7 @@ For more details on the individual steps, please read the [usage documentation](
 4. Filtering of unmapped, secondary, supplementary and low mapping-quality alignments ([`samtools`](https://www.htslib.org/))
 5. Variant counting from the alignment stream, skipping indel-containing reads ([`dms_count`](https://github.com/MaximilianStammnitz/dms-count), a single-pass counter in C on [`htslib`](https://www.htslib.org/)); steps 2-5 run as one stream per library
 6. Annotation and filtering of variant counts against the programmed mutagenesis library
-7. Single-nucleotide variant sequencing-error correction via false double mutants or wildtype sequencing
+7. Single-nucleotide variant sequencing-error correction via false double mutants ([`dms-fdmcorrect`](https://github.com/MaximilianStammnitz/dms-fdmcorrect)) or wildtype sequencing
 8. DMS library quality control and visualisation
 9. _Optional:_ fitness estimation from matched input/output samples (default estimator, [`DiMSum`](https://github.com/lehner-lab/DiMSum), [`mutscan`](https://github.com/fmicompbio/mutscan)) and interactive 3D variant effect inspection tool ([`3Dmol.js`](https://3dmol.csb.pitt.edu/))
 10. An all-in-one `deepmutscan_report.html`

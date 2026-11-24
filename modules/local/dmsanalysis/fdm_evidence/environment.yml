@@ -1,0 +1,9 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
+# The false-doubles model is the fdmcorrect R package (bioconda::dms-fdmcorrect), which needs base R only.
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::dms-fdmcorrect=0.1.2
+  - conda-forge::r-base=4.5.1

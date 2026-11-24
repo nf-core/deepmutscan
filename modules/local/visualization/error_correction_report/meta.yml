@@ -32,7 +32,22 @@ input:
         description: Error-correction method label (`false_doubles` or `wildtype`).
   - - false_doubles_method:
         type: string
-        description: Estimator naming in the report heading, `mle` or `eb`.
+        description: False-doubles estimator actually used (`mle` or `eb`); named in the report heading.
+  - - rate_tables:
+        type: file
+        description: With `--error_correction false_doubles`, the pooled (`fdm_rates.csv`) and per-library (`fdm_rates_per_library.csv`) error-rate tables of every pool, shown against each other at the top of the report. Empty otherwise.
+        pattern: "fdm_rates*.csv"
+  - - signatures:
+        type: file
+        description: With `--error_correction false_doubles` (unless `--skip_error_signatures`), the `error_signatures.json` of every pool - error spectra and their signature fits, shown in their own report section. Empty otherwise.
+        pattern: "error_signatures.json"
+  - - anchor_profiles:
+        type: file
+        description: With `--error_correction false_doubles`, the `fdm_distance_profile.csv` of every library - the false-double and genuine-double rates against the codon distance to the anchor, shown in the report's anchor section. Empty otherwise.
+        pattern: "fdm_distance_profile.csv"
+  - - min_fd_dist:
+        type: integer
+        description: The `--min_FDdist` value the evidence step used, so the report can mark the excluded anchor range.
   - - template_html:
         type: file
         description: The report's HTML shell; data and plots are injected into it.

@@ -1,0 +1,90 @@
+name: "dmsanalysis_error_signatures"
+description: "Fits the error spectrum of one false-double pool - the false-double error rates, the wildtype-template error rates and their difference (the excess, after removing genuine double mutants) - to a candidate set of mutational signatures by two-stage non-negative least squares with site bootstrap."
+keywords:
+  - deep mutational scanning
+  - error correction
+  - false doubles
+  - mutational signatures
+  - NNLS
+tools:
+  - "python":
+      description: "The Python programming language"
+      homepage: "https://www.python.org/"
+      licence: ["PSF-2.0"]
+  - "pandas":
+      description: "Data analysis library for Python"
+      homepage: "https://pandas.pydata.org/"
+      licence: ["BSD-3-Clause"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map with the pool identifier, e.g. `[ id:'ORF1' ]`
+    - evidence:
+        type: file
+        description: One `fdm_evidence.csv` per library of the pool.
+        pattern: "fdm_evidence.csv"
+    - summaries:
+        type: file
+        description: One `fdm_evidence_summary.csv` per library of the pool (genuine-double reads and exposure).
+        pattern: "fdm_evidence_summary.csv"
+    - wt_evidence:
+        type: file
+        description: "`fdm_evidence.csv` of the sample's wildtype-template library; empty if the sample has none (then only the false-double spectrum is fitted)."
+        pattern: "fdm_evidence.csv"
+  - - candidates:
+        type: file
+        description: Candidate signatures, one column per signature, 96 rows in COSMIC channel notation (e.g. `A[C>A]A`), defined on GRCh37 trinucleotide composition.
+        pattern: "*.csv"
+  - - trinucleotides:
+        type: file
+        description: GRCh37 counts of the 32 pyrimidine-centred trinucleotides, to put the measured rates on the signatures' composition.
+        pattern: "*.csv"
+  - - max_cosine:
+        type: float
+        description: Two signatures whose cosine similarity is at or above this value are not both kept.
+  - - bootstraps:
+        type: integer
+        description: Site bootstrap resamples for the screen and the exposure intervals.
+  - - genuine_doubles:
+        type: boolean
+        description: Remove the expected genuine-double reads from F before forming the excess.
+
+output:
+  - json:
+      - meta:
+          type: map
+          description: Groovy Map with the pool identifier
+      - error_signatures.json:
+          type: file
+          description: Spectra, screen, forward-selection curve, elbow, exposures with bootstrap intervals, per-signature contributions, cosine and reads accounted for - read by the error-correction report.
+          pattern: "error_signatures.json"
+  - fit:
+      - meta:
+          type: map
+          description: Groovy Map with the pool identifier
+      - error_signatures.csv:
+          type: file
+          description: One row per spectrum and selected signature - exposure, bootstrap 95 % interval, reconstruction cosine, reads accounted for.
+          pattern: "error_signatures.csv"
+  - spectra:
+      - meta:
+          type: map
+          description: Groovy Map with the pool identifier
+      - error_spectra.csv:
+          type: file
+          description: The 96-channel spectra (GRCh37 composition) and each selected signature's contribution to their reconstruction.
+          pattern: "error_spectra.csv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@MaximilianStammnitz"
+  - "@BenjaminWehnert1008"
+maintainers:
+  - "@MaximilianStammnitz"
+  - "@BenjaminWehnert1008"

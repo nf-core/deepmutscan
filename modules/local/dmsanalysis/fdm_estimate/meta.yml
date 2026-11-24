@@ -1,0 +1,85 @@
+name: "dmsanalysis_fdm_estimate"
+description: "Estimates per-variant sequencing error rates for one pool of libraries from their false-double-mutant evidence, by maximum likelihood or by Gamma-Poisson empirical Bayes with substitution-type or trinucleotide-context priors."
+keywords:
+  - deep mutational scanning
+  - error correction
+  - false doubles
+  - empirical Bayes
+tools:
+  - "dms-fdmcorrect":
+      description: "Sequencing-error correction of deep mutational scanning counts by false double mutants (R package fdmcorrect)"
+      homepage: "https://github.com/MaximilianStammnitz/dms-fdmcorrect"
+      licence: ["MIT"]
+  - "r-base":
+      description: "The R programming language"
+      homepage: "https://www.r-project.org/"
+      licence: ["GPL-2.0-or-later"]
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map with the pool identifier and whether the pool is a wildtype-template library
+          e.g. `[ id:'ORF1_input', wildtype:false ]`
+    - evidence:
+        type: file
+        description: One `fdm_evidence.csv` per library of the pool.
+        pattern: "fdm_evidence.csv"
+  - - method:
+        type: string
+        description: Estimator, `eb` or `mle`.
+  - - prior:
+        type: string
+        description: Empirical-Bayes prior classes, `trinucleotide_context` or `substitution_type`.
+
+output:
+  - rates:
+      - meta:
+          type: map
+          description: Groovy Map with the pool identifier
+      - fdm_rates.csv:
+          type: file
+          description: Per single-nucleotide variant - pooled `F` and `M`, prior mean and strength, shrinkage weight and error rate `e` (NA = no rate, variant left uncorrected).
+          pattern: "fdm_rates.csv"
+  - prior_fit:
+      - meta:
+          type: map
+          description: Groovy Map with the pool identifier
+      - fdm_prior_fit.csv:
+          type: file
+          description: Fitted prior per level and class - pooled rate, prior mean and strength (nu), whether nu was fitted or inherited, and the pool's median shrinkage weight.
+          pattern: "fdm_prior_fit.csv"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+
+authors:
+  - "@MaximilianStammnitz"
+  - "@BenjaminWehnert1008"
+maintainers:
+  - "@MaximilianStammnitz"
+  - "@BenjaminWehnert1008"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/dms-fdmcorrect_r-base:373aad1776732a61
+      build_id: bd-373aad1776732a61_1
+      scan_id: sc-6660e7874574306a_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/dms-fdmcorrect_r-base:bfb60589c0e91857
+      build_id: bd-bfb60589c0e91857_1
+      scan_id: sc-01d4a0fc590dc19e_1
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/dms-fdmcorrect_r-base:e4d02356c866c62b
+      build_id: bd-e4d02356c866c62b_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/86/868dd2e940a1ccf9a77cddcfce9671ac041a2544777c438737d308fa1d30c8f0/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/dms-fdmcorrect_r-base:b09746d08c67dfee
+      build_id: bd-b09746d08c67dfee_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/76/76821c826dabd8d88eb42b9075e8648d371a14b560ac3dc755dafd5dfc46fb07/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/dmsanalysis/fdm_estimate/.conda-lock/linux_amd64-bd-373aad1776732a61_1.txt

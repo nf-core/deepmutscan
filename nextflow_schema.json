@@ -120,15 +120,77 @@
                 },
                 "false_doubles_method": {
                     "type": "string",
-                    "description": "Estimator used by the false-doubles correction. 'mle' (default) is a per-variant maximum-likelihood error rate; 'eb' is an empirical-Bayes estimate that pools across variants and shrinks per substitution class (steadier for sparse variants). Only applies when error_correction = 'false_doubles'.",
-                    "enum": ["mle", "eb"],
-                    "default": "mle"
+                    "description": "Estimator used by the false-doubles correction. 'eb' (default) is an empirical-Bayes estimate: each variant's error rate is shrunk towards the mean of its class (see `false_doubles_prior`) in proportion to how little evidence it has, so sparsely observed variants get a stable rate. 'mle' is the per-variant maximum-likelihood rate F/M, which is zero for every variant without an observed false double and therefore depth-sensitive. Only applies when error_correction = 'false_doubles'.",
+                    "enum": ["eb", "mle"],
+                    "default": "eb"
                 },
-                "false_doubles_codon_window": {
+                "false_doubles_prior": {
+                    "type": "string",
+                    "description": "Prior classes of the empirical-Bayes estimator. 'trinucleotide_context' (default) shrinks each variant towards the mean of its trinucleotide context (substitution type plus both flanking bases, 96 classes), which is itself shrunk towards its substitution type; 'substitution_type' shrinks towards the mean of the six pyrimidine-folded substitution types only. Only applies when false_doubles_method = 'eb'.",
+                    "enum": ["trinucleotide_context", "substitution_type"],
+                    "default": "trinucleotide_context"
+                },
+                "false_doubles_pooling": {
+                    "type": "string",
+                    "description": "Libraries that share one error-rate estimate in the false-doubles correction. 'all' (default) pools every non-wildtype library of a `sample`; 'replicates' pools the replicates of each `sample` and `type`; 'none' estimates every library on its own. Pooled libraries sum their false-double evidence per variant, the rates are estimated once and each library is corrected at its own coverage. Pooling assumes one error process across the pool, i.e. libraries prepared, processed and sequenced together. Use 'replicates' if conditions or sorting bins were amplified or sequenced separately, as a pool with different error rates gets a confidently wrong common rate. Per-library estimates are always reported next to the pooled ones. Wildtype-template libraries are never pooled or corrected.",
+                    "enum": ["all", "replicates", "none"],
+                    "default": "all"
+                },
+                "max_FDdist": {
                     "type": "integer",
-                    "description": "Window (in codons, upstream and downstream) within which programmed multi-nucleotide codon variants are used to estimate the error rate of a single-nucleotide variant during false-doubles correction.",
+                    "description": "Maximum distance, in codons, between a single-nucleotide variant and the programmed multi-nucleotide variant used as its anchor in the false-doubles correction.",
+                    "help_text": "With --min_FDdist this bounds the anchors each variant's error rate is read from: min_FDdist < distance <= max_FDdist. Anchors farther away are observed on fewer and fewer molecules, because both changes must sit on one fragment, and the evidence they carry is biased as well as thin: estimated from anchors 40-60 codons away, the error rate of the rarest quartile of variants runs about three times the rate measured on a matched wildtype template, while abundant variants are unaffected - an additive background of order 1e-5, consistent with PCR template switching, which the genuine-double subtraction does not remove. Swept from 15 to 120 codons on five libraries, 40 gives the best agreement with wildtype-template sequencing; below 25 the evidence collapses and the estimate falls back on the class prior. Raise it only to look at the anchor profile itself, and lower it if the sequencing fragments are shorter than about 250 bp.",
+                    "fa_icon": "fas fa-arrows-alt-h",
                     "minimum": 1,
                     "default": 40
+                },
+                "min_FDdist": {
+                    "type": "integer",
+                    "description": "Minimum distance, in codons, between a single-nucleotide variant and the programmed multi-nucleotide variant used as its anchor in the false-doubles correction.",
+                    "help_text": "Within one mutagenesis primer's footprint the false doubles are dominated by that primer's own recurrent synthesis or sequencing errors: they travel with the anchor by construction, so they are not the per-site error the model estimates, and they inflate the rate of variants that happen to lie near an anchor. A genuine second primer integration is near-impossible at those distances, because the two footprints would clash. The default of 13 codons covers the footprint of a typical nicking-mutagenesis primer (about 40 bp either side of the randomised codon); set it to 0 for libraries made without nicking mutagenesis, such as a tile synthesis, which has no primer footprint: there the exclusion removes evidence without removing an artefact. The excluded region is still measured and reported.",
+                    "minimum": 0,
+                    "default": 13
+                },
+                "subtract_genuine_doubles": {
+                    "type": "boolean",
+                    "description": "Subtract genuine double mutants from the false-double evidence before estimating the error rate.",
+                    "help_text": "Two mutagenesis primers can integrate into the same molecule, so a read can carry a programmed anchor next to a variant without any sequencing error. Those reads are in F and are not error. The rate of genuine co-integration relative to independence, kappa(d), is measured on reads carrying two programmed multi-nucleotide variants - which no sequencing error can create - pooled over the libraries of each pool and taken at each codon distance, smoothed over neighbouring distances. Each variant's expected genuine-double reads are then G = f * sum_p kappa(d) m_p, and the estimator splits F between error and genuine doubles by expectation-maximisation. Turning this off (false) estimates the rate from the raw false-double reads, which overstates it, most of all for abundant variants in libraries with widely spaced primers.",
+                    "fa_icon": "fas fa-clone",
+                    "default": true
+                },
+                "skip_error_signatures": {
+                    "type": "boolean",
+                    "description": "Skip the mutational-signature fit of the error spectrum (false-doubles correction only).",
+                    "help_text": "With false-doubles correction, the 96-channel error spectrum of every pool is fitted to a candidate set of mutational signatures: the false-double error rates, and, if the sample has a wildtype-template library, the wildtype-template error rates and the excess of the former over the latter. The fit is two-stage non-negative least squares with a site bootstrap; results appear in the error-correction report and in error_signatures/. Reporting only: the correction itself does not use it.",
+                    "fa_icon": "fas fa-forward"
+                },
+                "error_signatures_candidates": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.csv$",
+                    "description": "Candidate signatures for the error-spectrum fit: CSV with a `channel` column in COSMIC notation (e.g. A[C>A]A, 96 rows) and one column per signature, on GRCh37 trinucleotide composition.",
+                    "help_text": "The default holds the 19 COSMIC v3.4 SBS signatures flagged as possible sequencing or library artefacts (SBS27, SBS43, SBS45-SBS60, SBS95) plus DNA-damage chemistry that can act on DNA in vitro: the unrepaired and repaired FFPE signatures of Guo et al. (2022, Nat Commun 13:4487), SBS30 and SBS18. Clock-like signatures are excluded by default. Leave unset to use it (assets/error_signatures/candidate_signatures_GRCh37.csv)."
+                },
+                "error_signatures_max_cosine": {
+                    "type": "number",
+                    "description": "Signatures whose cosine similarity to an already selected signature is at or above this value are not added in the forward selection of the error-spectrum fit.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.5
+                },
+                "error_signatures_bootstraps": {
+                    "type": "integer",
+                    "description": "Site bootstrap resamples for the candidate screen and the exposure intervals of the error-spectrum fit.",
+                    "minimum": 0,
+                    "default": 200
+                },
+                "error_signatures_genuine_doubles": {
+                    "type": "boolean",
+                    "description": "Remove the expected genuine double-mutant reads from the false doubles before forming the excess error spectrum.",
+                    "help_text": "Reads carrying two programmed multi-nucleotide codon variants are genuine double mutants (synthesis, PCR chimeras). Their rate relative to the variants' library frequencies (kappa) is measured per library in the evidence step and used to subtract the expected genuine doubles from each single-nucleotide variant's false doubles.",
+                    "default": true
                 }
             }
         },

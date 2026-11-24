@@ -10,8 +10,11 @@ include { MERGE_ALIGN_COUNT      } from '../modules/local/merge_align_count/main
 include { DMSANALYSIS_AASEQ      } from '../modules/local/dmsanalysis/aa_seq/main'
 include { DMSANALYSIS_POSSIBLE_MUTATIONS      } from '../modules/local/dmsanalysis/possible_mutations/main'
 include { DMSANALYSIS_PROCESS_VARIANT_COUNTS      } from '../modules/local/dmsanalysis/process_variant_counts/main'
+include { DMSANALYSIS_FDM_EVIDENCE                  } from '../modules/local/dmsanalysis/fdm_evidence/main'
+include { DMSANALYSIS_FDM_ESTIMATE                  } from '../modules/local/dmsanalysis/fdm_estimate/main'
 include { DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES } from '../modules/local/dmsanalysis/error_correction_false_doubles/main'
 include { DMSANALYSIS_ERROR_CORRECTION_WILDTYPE      } from '../modules/local/dmsanalysis/error_correction_wildtype/main'
+include { DMSANALYSIS_ERROR_SIGNATURES              } from '../modules/local/dmsanalysis/error_signatures/main'
 include { VISUALIZATION_COUNTS_PER_COV      } from '../modules/local/visualization/counts_per_cov/main'
 include { VISUALIZATION_COUNTS_HEATMAP      } from '../modules/local/visualization/counts_heatmap/main'
 include { VISUALIZATION_GLOBAL_POS_BIASES_COUNTS      } from '../modules/local/visualization/global_pos_biases_counts/main'
@@ -49,6 +52,13 @@ workflow DEEPMUTSCAN {
     outdir
 
     main:
+
+    // `--false_doubles_codon_window` became `--max_FDdist` before the first release: it is the upper
+    // bound of the same anchor-distance range that `--min_FDdist` bounds from below. Fail with a clear
+    // message rather than silently ignoring the old name.
+    if (params.containsKey('false_doubles_codon_window')) {
+        error("--false_doubles_codon_window has been renamed to --max_FDdist (default 40), the companion of --min_FDdist. Anchors are used when min_FDdist < distance <= max_FDdist.")
+    }
 
     def ch_versions = Channel.empty()
     def ch_multiqc_files = Channel.empty()
@@ -175,14 +185,89 @@ workflow DEEPMUTSCAN {
     // Replaces the filtered + heatmap channels with corrected versions; downstream fitness
     // picks up correction via the `counts_corrected` column, count heatmaps via canonical names.
     //
+    def ch_fdm_rate_tables = channel.value([])   // filled by the false-doubles branch, for the report
+    def ch_signature_json  = channel.value([])   // error-spectrum signature fits, for the report
+    def ch_anchor_profiles = channel.value([])   // per-library anchor distance profiles, for the report
     if (params.error_correction == 'false_doubles') {
       // per sample: counts + library-filtered counts + completed library table
       def ch_fd_in       = ch_vc.join(variantCounts_filtered_by_library_ch).join(library_completed_variantCounts_ch)  // (meta, raw, filtered, completed)
-      // the reference the reads were aligned to (base_mut is in this fasta's coordinate frame);
-      // the estimator and the mode/window are run-level constants.
+      // the reference the reads were aligned to (base_mut is in this fasta's coordinate frame) is ch_fasta_file
+
+      // 1. per library: false-double reads F and exposure M for every single-nucleotide variant
+      DMSANALYSIS_FDM_EVIDENCE(
+        ch_fd_in.map { meta, raw, filt, comp -> tuple(meta, raw, filt) },
+        ch_fasta_file, params.max_FDdist, params.min_FDdist
+      )
+      ch_versions = ch_versions.mix(DMSANALYSIS_FDM_EVIDENCE.out.versions)
+
+      // 2. per pool: sum F and M across the pooled libraries and estimate the error rates once
+      //    the distance profiles and distance-resolved exposures travel with the evidence, so that the
+      //    genuine-double rate kappa(d) is fitted on the pool rather than on one library
+      def ch_pools = DMSANALYSIS_FDM_EVIDENCE.out.evidence
+        .join(DMSANALYSIS_FDM_EVIDENCE.out.profile)
+        .join(DMSANALYSIS_FDM_EVIDENCE.out.exposure)
+        .map { meta, ev, prof, expo ->
+          tuple(falseDoublesPool(meta, params.false_doubles_pooling), meta.id, meta.type == 'wildtype', ev, prof, expo) }
+        .groupTuple()
+        // the libraries of a pool in the order of their ids, whatever order their tasks finished in:
+        // the pooled sums, and with them the estimate, must not depend on scheduling
+        .map { pool, ids, is_wt, evs, profs, expos ->
+          def idx = byId(ids)
+          tuple([id: pool, wildtype: is_wt.every { w -> w }], idx.collect { i -> evs[i] }, idx.collect { i -> profs[i] }, idx.collect { i -> expos[i] }) }
+      DMSANALYSIS_FDM_ESTIMATE(ch_pools, params.false_doubles_method, params.false_doubles_prior,
+                               params.max_FDdist, params.subtract_genuine_doubles)
+      ch_versions = ch_versions.mix(DMSANALYSIS_FDM_ESTIMATE.out.versions)
+      // pooled and per-library rates of every pool, for the error-correction report
+      ch_fdm_rate_tables = DMSANALYSIS_FDM_ESTIMATE.out.rates.map { _pmeta, f -> f }
+        .mix(DMSANALYSIS_FDM_ESTIMATE.out.rates_per_library.map { _pmeta, f -> f })
+        .toSortedList { a, b -> a.toString() <=> b.toString() }
+
+      ch_anchor_profiles = DMSANALYSIS_FDM_EVIDENCE.out.profile.map { _meta, f -> f }
+        .toSortedList { a, b -> a.toString() <=> b.toString() }
+
+      // 4. per pool, reporting only: signature fit of the error spectrum - the false-double rates, the
+      //    sample's wildtype-template rates (if any) and the excess of the former over the latter
+      if (!params.skip_error_signatures) {
+        def ch_ev_sum = DMSANALYSIS_FDM_EVIDENCE.out.evidence.join(DMSANALYSIS_FDM_EVIDENCE.out.summary)  // (meta, evidence, summary)
+        // wildtype-template evidence of every sample, as one map sample -> [evidence, ...] (empty if none)
+        def ch_wt_by_sample = ch_ev_sum
+          .filter { meta, _ev, _sm -> meta.type == 'wildtype' }
+          .map { meta, ev, _sm -> [meta.sample, meta.id, ev] }
+          .toList()
+          .map { rows -> rows.groupBy { row -> row[0] }.collectEntries { k, v -> [(k): v.sort { a, b -> a[1] <=> b[1] }.collect { row -> row[2] }] } }
+        def ch_sig_in = ch_ev_sum
+          .filter { meta, _ev, _sm -> meta.type != 'wildtype' }
+          .map { meta, ev, sm -> tuple(falseDoublesPool(meta, params.false_doubles_pooling), meta.sample, meta.id, ev, sm) }
+          .groupTuple()
+          .combine(ch_wt_by_sample)
+          .map { pool, samples, ids, evs, sms, wt_map ->
+            def idx = byId(ids)
+            tuple(pool, [id: pool, sample: samples[0]], idx.collect { i -> evs[i] }, idx.collect { i -> sms[i] }, wt_map[samples[0]] ?: [])
+          }
+          // the pooled rates carry G, the distance-weighted genuine-double reads the estimator removed,
+          // so the spectrum is built on exactly the evidence the correction used
+          .combine(DMSANALYSIS_FDM_ESTIMATE.out.rates.map { pmeta, rates -> tuple(pmeta.id, rates) }, by: 0)
+          .map { _pool, pmeta, evs, sms, wts, rates -> tuple(pmeta, evs, sms, wts, rates) }
+        DMSANALYSIS_ERROR_SIGNATURES(
+          ch_sig_in,
+          file(params.error_signatures_candidates ?: "${projectDir}/assets/error_signatures/candidate_signatures_GRCh37.csv", checkIfExists: true),
+          file("${projectDir}/assets/error_signatures/trinucleotide_counts_GRCh37.csv", checkIfExists: true),
+          file("${projectDir}/assets/error_signatures/signature_descriptions.csv", checkIfExists: true),
+          params.error_signatures_max_cosine, params.error_signatures_bootstraps, params.error_signatures_genuine_doubles
+        )
+        ch_versions = ch_versions.mix(DMSANALYSIS_ERROR_SIGNATURES.out.versions)
+        ch_signature_json = DMSANALYSIS_ERROR_SIGNATURES.out.json.map { _pmeta, f -> f }
+          .toSortedList { a, b -> a.toString() <=> b.toString() }
+      }
+
+      // 3. per library: subtract e_j x coverage using its pool's rates
+      def ch_apply = ch_fd_in
+        .join(DMSANALYSIS_FDM_EVIDENCE.out.evidence)
+        .map { meta, raw, filt, comp, ev -> tuple(falseDoublesPool(meta, params.false_doubles_pooling), meta, filt, comp, ev) }
+        .combine(DMSANALYSIS_FDM_ESTIMATE.out.rates.map { pmeta, rates -> tuple(pmeta.id, rates) }, by: 0)
+        .map { _pool, meta, filt, comp, ev, rates -> tuple(meta, filt, comp, ev, rates) }
       DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES(
-        ch_fd_in, ch_fasta_file, ch_aa_seq,
-        params.false_doubles_method, asInt(params.false_doubles_codon_window)
+        ch_apply, ch_fasta_file, ch_aa_seq
       )
       ch_versions = ch_versions.mix(DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.versions)
       variantCounts_filtered_by_library_ch = DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.corrected.map { meta, filt, heat, comp -> tuple(meta, filt) }
@@ -221,6 +306,10 @@ workflow DEEPMUTSCAN {
         ch_ec.map { rows -> rows.collect { it[1] } },
         params.error_correction,
         params.false_doubles_method,
+        ch_fdm_rate_tables,
+        ch_signature_json,
+        ch_anchor_profiles,
+        params.min_FDdist,
         file("${projectDir}/assets/error_correction_report/ec_report_template.html", checkIfExists: true)
       )
       ch_versions = ch_versions.mix(VISUALIZATION_ERROR_CORRECTION_REPORT.out.versions)
@@ -477,6 +566,27 @@ workflow DEEPMUTSCAN {
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
     bwa_index      = BWAMEM3_INDEX.out.index
     merged_bam     = MERGE_ALIGN_COUNT.out.bam
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    FUNCTIONS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+// Pool of libraries that share one false-doubles error-rate estimate (--false_doubles_pooling).
+// Wildtype-template libraries carry no programmed variants and are never pooled.
+def falseDoublesPool(meta, pooling) {
+    if (meta.type == 'wildtype' || pooling == 'none') {
+        return meta.id as String
+    }
+    return pooling == 'replicates' ? "${meta.sample}_${meta.type}" as String : meta.sample as String
+}
+
+// Positions 0..n-1 of `ids` in ascending id order: grouped per-library files are put in this order, so a
+// pooled computation sees its libraries in the same order whichever task finished first.
+def byId(ids) {
+    return (0..<ids.size()).toList().sort { a, b -> ids[a] <=> ids[b] }
 }
 
 /*
