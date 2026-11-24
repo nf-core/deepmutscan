@@ -5,8 +5,8 @@ process RUN_DIMSUM {
   conda "${moduleDir}/environment.yml"
 
   container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-      ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/65/65d232f07cc98be32d0ee29842ea1cd398eff35dfeb513e9027cd257e6d9e804/data'
-      : 'community.wave.seqera.io/library/pandoc_r-base_r-cowplot_r-data.table_pruned:688adb584e6a94cf'}"
+      ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/e2/e2d657c330e5ac4dcc3b40ef513d377367e60c293e01003906877e40f6865d75/data'
+      : 'community.wave.seqera.io/library/bioconductor-edger_bioconductor-impute_bioconductor-limma_dms-fdmcorrect_pruned:be9da4b29f56a3d0'}"
 
   input:
     tuple val(sample), path(counts_merged)
