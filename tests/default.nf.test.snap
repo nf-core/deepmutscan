@@ -2,14 +2,6 @@
     "-profile test, without fitness, error correction, SeqDepth and structure": {
         "content": [
             {
-                "DMSANALYSIS_AASEQ": {
-                    "r-base": "4.5.1",
-                    "r-Biostrings": "2.78.0"
-                },
-                "DMSANALYSIS_POSSIBLE_MUTATIONS": {
-                    "r-base": "4.5.1",
-                    "biostrings": "2.78.0"
-                },
                 "DMSANALYSIS_PROCESS_VARIANT_COUNTS": {
                     "r-base": "4.5.1",
                     "r-dplyr": "1.1.4",
@@ -19,6 +11,10 @@
                     "r-tidyr": "1.3.1",
                     "r-reshape2": "1.4.4",
                     "r-scales": "1.4.0"
+                },
+                "DMSANALYSIS_REFERENCE_TABLES": {
+                    "r-base": "4.5.1",
+                    "r-Biostrings": "2.78.0"
                 },
                 "MERGE_ALIGN_COUNT": {
                     "bwa-mem3": "0.17.0",
@@ -35,35 +31,12 @@
                     "falco": "2.0.3",
                     "fq": "0.12.0"
                 },
-                "VISUALIZATION_COUNTS_HEATMAP": {
-                    "r-base": "4.5.1",
-                    "r-dplyr": "1.1.4",
-                    "r-ggplot2": "4.0.2"
-                },
-                "VISUALIZATION_COUNTS_PER_COV": {
-                    "r-base": "4.5.1",
-                    "r-dplyr": "1.1.4",
-                    "r-ggplot2": "4.0.2"
-                },
-                "VISUALIZATION_GLOBAL_POS_BIASES_COUNTS": {
+                "VISUALIZATION_LIBRARY_QC": {
                     "r-base": "4.5.1",
                     "r-dplyr": "1.1.4",
                     "r-ggplot2": "4.0.2",
                     "r-scales": "1.4.0",
                     "r-zoo": "1.8.15"
-                },
-                "VISUALIZATION_GLOBAL_POS_BIASES_COV": {
-                    "r-base": "4.5.1",
-                    "r-dplyr": "1.1.4",
-                    "r-ggplot2": "4.0.2",
-                    "r-scales": "1.4.0",
-                    "r-zoo": "1.8.15"
-                },
-                "VISUALIZATION_LOGDIFF": {
-                    "r-base": "4.5.1",
-                    "r-dplyr": "1.1.4",
-                    "r-ggplot2": "4.0.2",
-                    "r-scales": "1.4.0"
                 },
                 "Workflow": {
                     "nf-core/deepmutscan": "v1.1.0dev"
@@ -274,7 +247,7 @@
                 "GID1A_output_2_pe_2_fastqc_data.txt:md5,02329f5724d6c3a7089b3a6707e7edfa"
             ]
         ],
-        "timestamp": "2026-11-24T14:59:24.991019",
+        "timestamp": "2026-11-24T15:17:00.76885",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
@@ -284,10 +257,6 @@
         "content": [
             {
                 "COUNTS_TO_FITNESS": {
-                    "r-base": "4.5.1",
-                    "r-Biostrings": "2.78.0"
-                },
-                "DMSANALYSIS_AASEQ": {
                     "r-base": "4.5.1",
                     "r-Biostrings": "2.78.0"
                 },
@@ -308,10 +277,6 @@
                     "r-base": "4.5.1",
                     "dms-fdmcorrect": "0.1.2"
                 },
-                "DMSANALYSIS_POSSIBLE_MUTATIONS": {
-                    "r-base": "4.5.1",
-                    "biostrings": "2.78.0"
-                },
                 "DMSANALYSIS_PROCESS_VARIANT_COUNTS": {
                     "r-base": "4.5.1",
                     "r-dplyr": "1.1.4",
@@ -322,26 +287,17 @@
                     "r-reshape2": "1.4.4",
                     "r-scales": "1.4.0"
                 },
-                "EXPDESIGN_FITNESS": {
-                    "r-base": "4.5.1"
-                },
-                "FIND_SYNONYMOUS_MUTATION": {
+                "DMSANALYSIS_REFERENCE_TABLES": {
                     "r-base": "4.5.1",
                     "r-Biostrings": "2.78.0"
                 },
-                "FITNESS_CALCULATION": {
+                "FITNESS_ESTIMATION": {
                     "r-base": "4.5.1",
-                    "r-Biostrings": "2.78.0"
-                },
-                "FITNESS_HEATMAP": {
-                    "r-base": "4.5.1",
+                    "r-Biostrings": "2.78.0",
                     "r-dplyr": "1.1.4",
                     "r-ggplot2": "4.0.2",
                     "r-methods": "4.5.1",
                     "r-grid": "4.5.1"
-                },
-                "FITNESS_QC": {
-                    "r-base": "4.5.1"
                 },
                 "MERGE_ALIGN_COUNT": {
                     "bwa-mem3": "0.17.0",
@@ -349,9 +305,6 @@
                     "htslib": 1.25,
                     "samtools": 1.25,
                     "vsearch": "2.32.0"
-                },
-                "MERGE_COUNTS": {
-                    "r-base": "4.5.1"
                 },
                 "PREPARE_REFERENCE": {
                     "bwa-mem3": "0.17.0",
@@ -375,44 +328,17 @@
                     "pandas": "2.2.1",
                     "numpy": "1.26.4"
                 },
-                "VISUALIZATION_COUNTS_HEATMAP": {
-                    "r-base": "4.5.1",
-                    "r-dplyr": "1.1.4",
-                    "r-ggplot2": "4.0.2"
-                },
-                "VISUALIZATION_COUNTS_PER_COV": {
-                    "r-base": "4.5.1",
-                    "r-dplyr": "1.1.4",
-                    "r-ggplot2": "4.0.2"
-                },
                 "VISUALIZATION_ERROR_CORRECTION_REPORT": {
                     "python": "3.12.3",
                     "pandas": "2.2.1",
                     "numpy": "1.26.4"
                 },
-                "VISUALIZATION_GLOBAL_POS_BIASES_COUNTS": {
+                "VISUALIZATION_LIBRARY_QC": {
                     "r-base": "4.5.1",
                     "r-dplyr": "1.1.4",
                     "r-ggplot2": "4.0.2",
                     "r-scales": "1.4.0",
                     "r-zoo": "1.8.15"
-                },
-                "VISUALIZATION_GLOBAL_POS_BIASES_COV": {
-                    "r-base": "4.5.1",
-                    "r-dplyr": "1.1.4",
-                    "r-ggplot2": "4.0.2",
-                    "r-scales": "1.4.0",
-                    "r-zoo": "1.8.15"
-                },
-                "VISUALIZATION_LOGDIFF": {
-                    "r-base": "4.5.1",
-                    "r-dplyr": "1.1.4",
-                    "r-ggplot2": "4.0.2",
-                    "r-scales": "1.4.0"
-                },
-                "VISUALIZATION_SEQDEPTH": {
-                    "r-base": "4.5.1",
-                    "r-ggplot2": "4.0.2"
                 },
                 "Workflow": {
                     "nf-core/deepmutscan": "v1.1.0dev"
@@ -762,7 +688,7 @@
                 "limma_rowCount": 792
             }
         ],
-        "timestamp": "2026-11-24T14:58:25.741251",
+        "timestamp": "2026-11-24T15:16:15.293789",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
@@ -772,9 +698,6 @@
         "content": [
             {
                 "COUNTS_TO_FITNESS": {
-                    "stub-version": "0.0.0"
-                },
-                "DMSANALYSIS_AASEQ": {
                     "stub-version": "0.0.0"
                 },
                 "DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES": {
@@ -793,26 +716,18 @@
                     "r-base": "0.0.0",
                     "dms-fdmcorrect": "0.0.0"
                 },
-                "DMSANALYSIS_POSSIBLE_MUTATIONS": {
-                    "stub-version": "0.0.0"
-                },
                 "DMSANALYSIS_PROCESS_VARIANT_COUNTS": {
                     "stub-version": "0.0.0"
                 },
-                "EXPDESIGN_FITNESS": {
-                    "r-base": "0.0.0"
+                "DMSANALYSIS_REFERENCE_TABLES": {
+                    "r-base": "0.0.0",
+                    "r-Biostrings": "0.0.0"
                 },
-                "FIND_SYNONYMOUS_MUTATION": {
-                    "r-base": "0.0.0"
-                },
-                "FITNESS_CALCULATION": {
-                    "stub-version": "0.0.0"
-                },
-                "FITNESS_HEATMAP": {
-                    "stub-version": "0.0.0"
-                },
-                "FITNESS_QC": {
-                    "stub-version": "0.0.0"
+                "FITNESS_ESTIMATION": {
+                    "r-base": "0.0.0",
+                    "r-Biostrings": "0.0.0",
+                    "r-dplyr": "0.0.0",
+                    "r-ggplot2": "0.0.0"
                 },
                 "MERGE_ALIGN_COUNT": {
                     "bwa-mem3": "0.17.0",
@@ -820,9 +735,6 @@
                     "htslib": 1.25,
                     "samtools": 1.25,
                     "vsearch": "2.32.0"
-                },
-                "MERGE_COUNTS": {
-                    "r-base": "0.0.0"
                 },
                 "PREPARE_REFERENCE": {
                     "bwa-mem3": "0.17.0",
@@ -843,28 +755,16 @@
                     "python": "0.0.0",
                     "pandas": "0.0.0"
                 },
-                "VISUALIZATION_COUNTS_HEATMAP": {
-                    "stub-version": "0.0.0"
-                },
-                "VISUALIZATION_COUNTS_PER_COV": {
-                    "stub-version": "0.0.0"
-                },
                 "VISUALIZATION_ERROR_CORRECTION_REPORT": {
                     "python": "0.0.0",
                     "pandas": "0.0.0"
                 },
-                "VISUALIZATION_GLOBAL_POS_BIASES_COUNTS": {
-                    "stub-version": "0.0.0"
-                },
-                "VISUALIZATION_GLOBAL_POS_BIASES_COV": {
-                    "stub-version": "0.0.0"
-                },
-                "VISUALIZATION_LOGDIFF": {
-                    "stub-version": "0.0.0"
-                },
-                "VISUALIZATION_SEQDEPTH": {
+                "VISUALIZATION_LIBRARY_QC": {
                     "r-base": "0.0.0",
-                    "r-ggplot2": "0.0.0"
+                    "r-dplyr": "0.0.0",
+                    "r-ggplot2": "0.0.0",
+                    "r-scales": "0.0.0",
+                    "r-zoo": "0.0.0"
                 },
                 "Workflow": {
                     "nf-core/deepmutscan": "v1.1.0dev"
@@ -1071,7 +971,7 @@
                 "variant_effect_inspection_tool/variant_effect_inspection_tool.html"
             ]
         ],
-        "timestamp": "2026-11-24T15:00:11.253918",
+        "timestamp": "2026-11-24T15:17:37.99132",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
