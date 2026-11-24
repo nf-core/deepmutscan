@@ -3,18 +3,10 @@
         "content": [
             {
                 "DMSANALYSIS_PROCESS_VARIANT_COUNTS": {
-                    "r-base": "4.5.1",
-                    "r-dplyr": "1.1.4",
-                    "r-Biostrings": "2.78.0",
-                    "r-stringr": "1.6.0",
-                    "r-ggplot2": "4.0.2",
-                    "r-tidyr": "1.3.1",
-                    "r-reshape2": "1.4.4",
-                    "r-scales": "1.4.0"
+                    "r-base": "4.5.1"
                 },
                 "DMSANALYSIS_REFERENCE_TABLES": {
-                    "r-base": "4.5.1",
-                    "r-Biostrings": "2.78.0"
+                    "r-base": "4.5.1"
                 },
                 "MERGE_ALIGN_COUNT": {
                     "bwa-mem3": "0.17.0",
@@ -33,10 +25,8 @@
                 },
                 "VISUALIZATION_LIBRARY_QC": {
                     "r-base": "4.5.1",
-                    "r-dplyr": "1.1.4",
                     "r-ggplot2": "4.0.2",
-                    "r-scales": "1.4.0",
-                    "r-zoo": "1.8.15"
+                    "r-scales": "1.4.0"
                 },
                 "Workflow": {
                     "nf-core/deepmutscan": "v1.1.0dev"
@@ -247,7 +237,7 @@
                 "GID1A_output_2_pe_2_fastqc_data.txt:md5,02329f5724d6c3a7089b3a6707e7edfa"
             ]
         ],
-        "timestamp": "2026-11-24T15:17:00.76885",
+        "timestamp": "2026-11-24T18:09:15.688611",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
@@ -257,8 +247,7 @@
         "content": [
             {
                 "COUNTS_TO_FITNESS": {
-                    "r-base": "4.5.1",
-                    "r-Biostrings": "2.78.0"
+                    "r-base": "4.5.1"
                 },
                 "DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES": {
                     "r-base": "4.5.1",
@@ -278,25 +267,14 @@
                     "dms-fdmcorrect": "0.1.2"
                 },
                 "DMSANALYSIS_PROCESS_VARIANT_COUNTS": {
-                    "r-base": "4.5.1",
-                    "r-dplyr": "1.1.4",
-                    "r-Biostrings": "2.78.0",
-                    "r-stringr": "1.6.0",
-                    "r-ggplot2": "4.0.2",
-                    "r-tidyr": "1.3.1",
-                    "r-reshape2": "1.4.4",
-                    "r-scales": "1.4.0"
+                    "r-base": "4.5.1"
                 },
                 "DMSANALYSIS_REFERENCE_TABLES": {
-                    "r-base": "4.5.1",
-                    "r-Biostrings": "2.78.0"
+                    "r-base": "4.5.1"
                 },
                 "FITNESS_ESTIMATION": {
                     "r-base": "4.5.1",
-                    "r-Biostrings": "2.78.0",
-                    "r-dplyr": "1.1.4",
                     "r-ggplot2": "4.0.2",
-                    "r-methods": "4.5.1",
                     "r-grid": "4.5.1"
                 },
                 "MERGE_ALIGN_COUNT": {
@@ -315,14 +293,14 @@
                     "fq": "0.12.0"
                 },
                 "RUN_DIMSUM": {
-                    "r-base": "4.4.2",
+                    "r-base": "4.5.1",
                     "DiMSum": "1.4 (stages 4-5, bin/dimsum_fitness.R)"
                 },
                 "RUN_MUTSCAN": {
                     "r-base": "4.5.1",
                     "r-edgeR": "4.8.2",
                     "r-limma": "3.66.0",
-                    "r-ggplot2": "4.0.3",
+                    "r-ggplot2": "4.0.2",
                     "r-GGally": "2.4.0"
                 },
                 "VARIANT_EFFECT_INSPECTION_TOOL": {
@@ -337,10 +315,8 @@
                 },
                 "VISUALIZATION_LIBRARY_QC": {
                     "r-base": "4.5.1",
-                    "r-dplyr": "1.1.4",
                     "r-ggplot2": "4.0.2",
-                    "r-scales": "1.4.0",
-                    "r-zoo": "1.8.15"
+                    "r-scales": "1.4.0"
                 },
                 "Workflow": {
                     "nf-core/deepmutscan": "v1.1.0dev"
@@ -690,7 +666,7 @@
                 "limma_rowCount": 792
             }
         ],
-        "timestamp": "2026-11-24T16:19:42.030184",
+        "timestamp": "2026-11-24T18:08:42.281374",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
@@ -722,13 +698,10 @@
                     "stub-version": "0.0.0"
                 },
                 "DMSANALYSIS_REFERENCE_TABLES": {
-                    "r-base": "0.0.0",
-                    "r-Biostrings": "0.0.0"
+                    "r-base": "0.0.0"
                 },
                 "FITNESS_ESTIMATION": {
                     "r-base": "0.0.0",
-                    "r-Biostrings": "0.0.0",
-                    "r-dplyr": "0.0.0",
                     "r-ggplot2": "0.0.0"
                 },
                 "MERGE_ALIGN_COUNT": {
@@ -765,10 +738,8 @@
                 },
                 "VISUALIZATION_LIBRARY_QC": {
                     "r-base": "0.0.0",
-                    "r-dplyr": "0.0.0",
                     "r-ggplot2": "0.0.0",
-                    "r-scales": "0.0.0",
-                    "r-zoo": "0.0.0"
+                    "r-scales": "0.0.0"
                 },
                 "Workflow": {
                     "nf-core/deepmutscan": "v1.1.0dev"
@@ -975,7 +946,7 @@
                 "variant_effect_inspection_tool/variant_effect_inspection_tool.html"
             ]
         ],
-        "timestamp": "2026-11-24T16:20:54.76081",
+        "timestamp": "2026-11-24T18:09:42.498781",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"

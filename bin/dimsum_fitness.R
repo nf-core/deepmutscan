@@ -18,7 +18,10 @@
 #     Biostrings for translation, reverse complement and the three-letter amino-acid code (base-R
 #     versions below) and Cairo for PNG devices (grDevices::png(type = "cairo")); the other three were
 #     only used by WRAP. What remains is data.table, ggplot2, GGally, hexbin, reshape2, plyr, seqinr,
-#     cowplot, gridExtra, optparse and rmarkdown (with pandoc) - all of them with linux-aarch64 builds;
+#     cowplot, gridExtra, optparse, mgcv and rmarkdown (with pandoc) - all of them with linux-aarch64
+#     builds;
+#   - it runs on ggplot2 4 (DiMSum 1.4 was written for 3.5): the four ggplot2 changes that would move
+#     marks in its figures are undone below, so that the figures are those of ggplot2 3.5;
 #   - the per-variant Hamming distances are a byte comparison instead of one strsplit() per variant,
 #     the count-histogram jitter is drawn in one vectorised step, and the report is rendered once, at
 #     the end, instead of also before stage 4 (DiMSum renders a preliminary report so that users of a
@@ -84,7 +87,7 @@ dimsum_fitness__save_png_pdf <- function(
     res = plot_dpi,
     bg = "white",
     type = "cairo")
-  if(names(plot_object)[1]=="grobs"){
+  if(isTRUE(names(plot_object)[1]=="grobs")){
     #Already a gtable (gridExtra::arrangeGrob): drawn as dimsum__save_png draws it
     g <- plot_object
     plot(g)
@@ -124,6 +127,51 @@ dimsum_fitness__with_worker_stream <- function(iseed, expr){
 }
 
 DIMSUM_FITNESS_VERSION <- "1.4 (STEAM stages, nf-core/deepmutscan)"
+
+####################################################################################################
+# ggplot2 4: DiMSum's figures as ggplot2 3.5 drew them
+####################################################################################################
+
+# DiMSum 1.4 was written for ggplot2 3.5; the pipeline's R environment has ggplot2 4. Four of the
+# changes move marks in DiMSum's figures, and are undone here:
+#   - geom_abline() now ends the line at the panel's y range too, not only at its x range: the line is
+#     the same, but a dashed line's dashes start elsewhere. dimsum__geom_abline() draws it from the
+#     end points ggplot2 3.5 used;
+#   - a log10 scale's minor breaks were taken from the major breaks of the expanded range before they
+#     were cut to that range, so the minor break beyond the last major one sat halfway (in log space)
+#     to the next major break; ggplot2 4 cuts first and extrapolates. dimsum__scale_x_log10() and
+#     dimsum__scale_y_log10() compute them as ggplot2 3.5 did;
+#   - a density's legend key is now drawn with the curve's round line joins (3.5: mitred corners):
+#     dimsum__draw_key_polygon() mitres them again;
+#   - text is now 11 / .pt = 3.87 mm by default (from the theme's font size), not 3.88 mm.
+# (ggplot objects are also no longer lists, which the plot-saving functions above account for.)
+dimsum__GeomAbline <- ggplot2::ggproto("dimsum__GeomAbline", ggplot2::GeomAbline,
+  draw_panel = function(data, panel_params, coord, lineend = "butt"){
+    ranges <- coord$backtransform_range(panel_params)
+    if(coord$clip == "on" && coord$is_linear()){
+      ranges$x <- ranges$x + c(-1, 1) * diff(ranges$x)
+    }
+    data$x <- ranges$x[1]
+    data$xend <- ranges$x[2]
+    data$y <- ranges$x[1] * data$slope + data$intercept
+    data$yend <- ranges$x[2] * data$slope + data$intercept
+    ggplot2::GeomSegment$draw_panel(unique(data), panel_params, coord, lineend = lineend)
+  })
+dimsum__geom_abline <- function(...){
+  layer <- ggplot2::geom_abline(...)
+  layer$geom <- dimsum__GeomAbline
+  layer
+}
+dimsum__minor_breaks_log10 <- function(limits, breaks){
+  10^scales::regular_minor_breaks()(log10(scales::breaks_log(base = 10)(limits)), log10(limits), 2)
+}
+dimsum__scale_x_log10 <- function(...){ggplot2::scale_x_log10(..., minor_breaks = dimsum__minor_breaks_log10)}
+dimsum__scale_y_log10 <- function(...){ggplot2::scale_y_log10(..., minor_breaks = dimsum__minor_breaks_log10)}
+dimsum__draw_key_polygon <- function(data, params, size){
+  params$linejoin <- "mitre"
+  ggplot2::draw_key_polygon(data, params, size)
+}
+ggplot2::update_geom_defaults("text", list(size = 3.88))
 
 ####################################################################################################
 # Base-R replacements for the Biostrings calls
@@ -364,7 +412,7 @@ dimsum__aggregate_AA_variants_fitness <- function(
 
 }
 
-# ---- dimsum__bayesian_double_fitness
+# ---- dimsum__bayesian_double_fitness [modified, see the header and the generator]
 dimsum__bayesian_double_fitness <- function(
   dimsum_meta,
   doubles_dt,
@@ -387,14 +435,14 @@ dimsum__bayesian_double_fitness <- function(
   doubles_dt[,fitness_for_bins := .SD[[1]],,.SDcols = paste0("fitness",all_reps[1],"_uncorr")]
   if(report){
     d <- ggplot2::ggplot(doubles_dt[between(bin_count,2,8) & !is.infinite(fitness_for_bins)],ggplot2::aes(fitness_for_bins,..density..,color=factor(bin_count))) +
-      ggplot2::geom_density(adjust=1)
+      ggplot2::geom_density(adjust=1, key_glyph = dimsum__draw_key_polygon)
     dimsum__save_png(file.path(report_outpath, "dimsum_stage_fitness_report_4_doubles_bayesian_framework1.png"), d, width = 7, height = 5)
   }
 
   #Plot fitness densities for mean counts greater/less than 50 (replicate 1)
   if(report){
     d <- ggplot2::ggplot(doubles_dt[!is.infinite(fitness_for_bins) & !is.na(fitness_for_bins)],ggplot2::aes(fitness_for_bins,..density..,color=counts_for_bins >= dimsum_meta[["fitnessDoubleHighConfidenceCount"]])) +
-      ggplot2::geom_density(adjust=1)
+      ggplot2::geom_density(adjust=1, key_glyph = dimsum__draw_key_polygon)
     dimsum__save_png(file.path(report_outpath, "dimsum_stage_fitness_report_4_doubles_bayesian_framework2.png"), d, width = 7, height = 5)
   }
   #>> try to estimate what fitness scores are for variants with low sequence coverage
@@ -1538,7 +1586,7 @@ dimsum__error_model <- function(
       ggplot2::geom_hex(size = 0.2, color = "lightgrey") +
       # ggplot2::scale_fill_viridis_c(trans="log10") +
       ggplot2::scale_fill_gradientn(colours = c("white", "black"), trans = "log10") +
-      ggplot2::scale_x_log10() +
+      dimsum__scale_x_log10() +
       ggplot2::geom_vline(xintercept = input_count_threshold, lty = 2) +
       ggplot2::geom_hline(yintercept = 0, lty = 2, color = "darkgrey") +
       ggplot2::facet_wrap(rep ~ .) + ggplot2::theme_bw() +
@@ -1561,7 +1609,7 @@ dimsum__error_model <- function(
     X <- reshape2::melt(work_data[input_above_threshold == T & all_reads == T,.SD,.SDcols=grep("fitness",names(work_data))],measure.vars=grep("fitness",names(work_data),value=T))
     X[,replicate := gsub("fitness", "", as.character(variable)),variable]
     d <- ggplot2::ggplot(X,ggplot2::aes(value,color=replicate)) +
-      ggplot2::geom_density() +
+      ggplot2::geom_density(key_glyph = dimsum__draw_key_polygon) +
       ggplot2::labs(x = "Fitness", y = "Density", color = "replicate") +#, title = "Before inter-replicate normalisation") +
       ggplot2::geom_vline(xintercept = 0, lty = 2, color = "darkgrey") +
       ggplot2::theme_bw()
@@ -1618,7 +1666,7 @@ dimsum__error_model <- function(
     X <- reshape2::melt(work_data[input_above_threshold == T & all_reads==T,.SD,.SDcols=grep("_norm",names(work_data))],measure.vars=grep("_norm",names(work_data),value=T))
     X[,replicate := gsub("_norm", "", gsub("fitness", "", as.character(variable))),variable]
     d <- ggplot2::ggplot(X,ggplot2::aes(value,color=replicate)) +
-      ggplot2::geom_density() +
+      ggplot2::geom_density(key_glyph = dimsum__draw_key_polygon) +
       ggplot2::labs(x = "Fitness", y = "Density", color = "replicate") +#, title = "After inter-replicate normalisation") +
       ggplot2::geom_vline(xintercept = 0, lty = 2, color = "darkgrey") +
       ggplot2::theme_bw()
@@ -1787,7 +1835,7 @@ dimsum__error_model <- function(
     a <- ggplot2::ggplot(plot_error_model[parameter %in% c("input","output")],
       ggplot2::aes(x=interaction(parameter, rep), mean_value, ymin = CI90_lower, ymax = CI90_upper, color = factor(rep))) +
       ggplot2::geom_pointrange(show.legend = F) +
-      ggplot2::scale_y_log10(limits = c(min(1, plot_error_model[parameter %in% c("input","output"), mean_value], plot_error_model[parameter %in% c("input", "output"), CI90_lower]),
+      dimsum__scale_y_log10(limits = c(min(1, plot_error_model[parameter %in% c("input","output"), mean_value], plot_error_model[parameter %in% c("input", "output"), CI90_lower]),
         max(3, plot_error_model[parameter %in% c("input","output"), mean_value], plot_error_model[parameter %in% c("input", "output"), CI90_upper]))) +
       # ggplot2::scale_y_log10() +
       ggplot2::theme_bw() +
@@ -1797,7 +1845,7 @@ dimsum__error_model <- function(
     #Plot2: replicate error parameters +- sd
     b <- ggplot2::ggplot(plot_error_model[parameter == "reperror"], ggplot2::aes(x = factor(rep), y = sqrt(mean_value), ymin = sqrt(CI90_lower), ymax = sqrt(CI90_upper), color = factor(rep))) +
       ggplot2::geom_pointrange(show.legend = F) +
-      ggplot2::scale_y_log10(limits = c(min(0.01, plot_error_model[parameter == "reperror", sqrt(CI90_lower)]),
+      dimsum__scale_y_log10(limits = c(min(0.01, plot_error_model[parameter == "reperror", sqrt(CI90_lower)]),
         max(c(0.1, plot_error_model[parameter == "reperror", sqrt(CI90_upper)])))) +
       # ggplot2::scale_y_log10() +
       ggplot2::theme_bw() +
@@ -1812,15 +1860,15 @@ dimsum__error_model <- function(
     temp_mean_error[ymax > bs_data[,quantile(v, 0.999)], ymax := bs_data[,quantile(v, 0.999)]]
     c <- ggplot2::ggplot(bs_data[v>=bs_data[,quantile(v, 0.001)] & v<=bs_data[,quantile(v, 0.999)],]) +
       ggplot2::stat_binhex(ggplot2::aes(mean_cbe^2, v), bins = 100, size = 0.2, color = "lightgrey") +
-      ggplot2::geom_abline(linetype = 2, size = 1) +
+      dimsum__geom_abline(linetype = 2, size = 1) +
       # ggplot2::geom_abline(intercept = log10(mult_error_slope), linetype = 2, size = 1, color = plot_cols[2]) +
       # ggplot2::geom_hline(yintercept = rep_error_intercept, linetype = 2, size = 1, color = plot_cols[2]) +
       ggplot2::geom_pointrange(inherit.aes = F, data = temp_mean_error,
         ggplot2::aes(x = bin_mean_error, y = bin_mean_var, ymin = ymin, ymax = ymax), color = plot_cols[5]) +
       ggplot2::geom_line(inherit.aes = F, data = melt_bs_data[variable=="bin_pred_error",],
         ggplot2::aes(bin_mean_error, value), size = 1, color = plot_cols[1]) +
-      ggplot2::scale_y_log10(limits = c(bs_data[,quantile(v, 0.001)], bs_data[,quantile(v, 0.999)])) +
-      ggplot2::scale_x_log10() +
+      dimsum__scale_y_log10(limits = c(bs_data[,quantile(v, 0.001)], bs_data[,quantile(v, 0.999)])) +
+      dimsum__scale_x_log10() +
       ggplot2::scale_fill_gradientn(colours = c("white", "black"), trans = "log10") +
       ggplot2::coord_cartesian(xlim = c(min((bs_data[,mean_cbe])^2), 10^max(error_range))) +
       ggplot2::theme_bw() + ggplot2::theme(panel.grid.minor = ggplot2::element_blank()) +
@@ -1840,8 +1888,8 @@ dimsum__error_model <- function(
         ggplot2::aes(bin_mean_error, value), size = 1, color = plot_cols[6]) +
       ggplot2::geom_line(inherit.aes = F, data = melt_bs_data[variable=="bin_pred_error_outputonly",],
         ggplot2::aes(bin_mean_error, value), size = 0.3, color = plot_cols[6], linetype = 2) +
-      ggplot2::scale_y_log10(limits = c(bs_data[,quantile(v, 0.001)], bs_data[,quantile(v, 0.999)])) +
-      ggplot2::scale_x_log10() +
+      dimsum__scale_y_log10(limits = c(bs_data[,quantile(v, 0.001)], bs_data[,quantile(v, 0.999)])) +
+      dimsum__scale_x_log10() +
       ggplot2::coord_cartesian(xlim = c(min((bs_data[,mean_cbe])^2), 10^max(error_range))) +
       ggplot2::theme_bw() +
       ggplot2::theme(panel.grid.minor = ggplot2::element_blank(),
@@ -2006,7 +2054,7 @@ dimsum__error_model_qqplot <- function(
   names(plot_cols) <- c("All", all_reps)
   zrange = 3.5
   p <- ggplot2::ggplot(dt_zscore_melt, ggplot2::aes(sample = value, color = test_rep)) +
-    ggplot2::geom_abline(lty = 2) +
+    dimsum__geom_abline(lty = 2) +
     ggplot2::geom_qq(geom = "line") +
     ggplot2::scale_colour_manual(name=c("Replicate"), values=plot_cols, guide='legend') +
     ggplot2::coord_cartesian(xlim = c(-zrange, zrange), ylim = c(-zrange, zrange)) +
@@ -2596,7 +2644,7 @@ dimsum__ggpairs_binhex <- function(
         }
         dpiece <- dpiece +
           ggplot2::scale_fill_gradientn(colours = c("white", "black"), trans = "log10") +
-          ggplot2::geom_abline(color = "darkgrey", lty = 2)
+          dimsum__geom_abline(color = "darkgrey", lty = 2)
       d <- GGally::putPlot(d, dpiece, y, x)
       }
     }
@@ -3971,7 +4019,7 @@ dimsum__sample_count_distributions <- function(
   if(length(fcols)==1){
     #Plot without subplot stratification (Nham_nt)
     d <- ggplot2::ggplot(plot_dt, ggplot2::aes(value, color = Hamming_distance)) +
-      ggplot2::geom_density() + ggplot2::scale_x_log10() + ggplot2::theme_bw() +
+      ggplot2::geom_density(key_glyph = dimsum__draw_key_polygon) + dimsum__scale_x_log10() + ggplot2::theme_bw() +
       ggplot2::labs(x = "variant count + 1 (log scale)", y = "Density", title = title, color='Nucleotide\nHamming dist.') +
       # ggplot2::geom_vline(data = plot_dt_ma, ggplot2::aes(xintercept = value), linetype = 2) +
       ggplot2::geom_vline(data = plot_dt_wt, ggplot2::aes(xintercept = value), linetype = 2) +
@@ -3987,7 +4035,7 @@ dimsum__sample_count_distributions <- function(
       this_plot_dt <- plot_dt[get(fcols[2])==i & get(fcols[1])<=max((i*3), 3) & get(fcols[1])>=i,]
       this_plot_dt[, Hamming_distance := factor(.SD[[1]], levels = 1:max((i*3), 3)),,.SDcols = fcols]
       plot_list[[as.character(i)]] <- ggplot2::ggplot(this_plot_dt, ggplot2::aes(value, color = Hamming_distance)) +
-        ggplot2::geom_density() + ggplot2::scale_x_log10() + ggplot2::theme_bw() +
+        ggplot2::geom_density(key_glyph = dimsum__draw_key_polygon) + dimsum__scale_x_log10() + ggplot2::theme_bw() +
         ggplot2::labs(x = "variant count + 1 (log scale)", y = "Density", title = paste0("Amino acid Hamming distance: ", i), color='Nucleotide\nHamming dist.') +
         # ggplot2::geom_vline(data = plot_dt_ma, ggplot2::aes(xintercept = value), linetype = 2) +
         ggplot2::geom_vline(data = plot_dt_wt, ggplot2::aes(xintercept = value), linetype = 2) +
@@ -4036,7 +4084,7 @@ dimsum__save_png <- function(
     bg = "white",
     type = "cairo")
   #Plot
-  if(names(plot_object)[1]=="grobs"){
+  if(isTRUE(names(plot_object)[1]=="grobs")){
     plot(plot_object)
   }else{
     print(plot_object)

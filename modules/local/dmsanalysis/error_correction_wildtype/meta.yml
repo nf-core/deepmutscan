@@ -63,25 +63,25 @@ maintainers:
   - "@BenjaminWehnert1008"
 containers:
   docker:
-    linux/arm64:
-      name: community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-dplyr_r-ggplot2_pruned:880bbdecb19543bb
-      build_id: bd-880bbdecb19543bb_1
-      scan_id: sc-09c9d098a09068b9_1
     linux/amd64:
-      name: community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-dplyr_r-ggplot2_pruned:32f1af0a83a018e7
-      build_id: bd-32f1af0a83a018e7_1
-      scan_id: sc-337510c2c910aa1c_1
+      name: community.wave.seqera.io/library/bioconductor-edger_bioconductor-impute_bioconductor-limma_dms-fdmcorrect_pruned:be9da4b29f56a3d0
+      build_id: bd-be9da4b29f56a3d0_1
+      scan_id: sc-b58d72517313fe11_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/bioconductor-edger_bioconductor-impute_bioconductor-limma_dms-fdmcorrect_pruned:eb9c67f0bb37af3d
+      build_id: bd-eb9c67f0bb37af3d_1
+      scan_id: sc-e7e364da4422530e_1
   singularity:
-    linux/amd64:
-      name: oras://community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-dplyr_r-ggplot2_pruned:7202e5d19667bddb
-      build_id: bd-7202e5d19667bddb_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/79/7988a2e369e98cec897d48bab3e55daddd8a973d9b7491ad27b6b15d550a4c5b/data
     linux/arm64:
-      name: oras://community.wave.seqera.io/library/bioconductor-biostrings_r-base_r-dplyr_r-ggplot2_pruned:db46247d9810b3e7
-      build_id: bd-db46247d9810b3e7_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/02/02db891e505b0ec37ba6de21f08d576b15a95991026542455b209e20959e50b1/data
+      name: oras://community.wave.seqera.io/library/bioconductor-edger_bioconductor-impute_bioconductor-limma_dms-fdmcorrect_pruned:398a3d0efdf8d7c1
+      build_id: bd-398a3d0efdf8d7c1_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/00/0088037623e1808bc9fd91628123a8b57da15ecc509c8ceaad1f252e8cc15edf/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/bioconductor-edger_bioconductor-impute_bioconductor-limma_dms-fdmcorrect_pruned:396e0feac8ac61b9
+      build_id: bd-396e0feac8ac61b9_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/e2/e2d657c330e5ac4dcc3b40ef513d377367e60c293e01003906877e40f6865d75/data
   conda:
     linux/amd64:
-      lock_file: modules/local/dmsanalysis/error_correction_wildtype/.conda-lock/linux_amd64-bd-32f1af0a83a018e7_1.txt
+      lock_file: modules/local/dmsanalysis/error_correction_wildtype/.conda-lock/linux_amd64-bd-be9da4b29f56a3d0_1.txt
     linux/arm64:
-      lock_file: modules/local/dmsanalysis/error_correction_wildtype/.conda-lock/linux_arm64-bd-880bbdecb19543bb_1.txt
+      lock_file: modules/local/dmsanalysis/error_correction_wildtype/.conda-lock/linux_arm64-bd-eb9c67f0bb37af3d_1.txt

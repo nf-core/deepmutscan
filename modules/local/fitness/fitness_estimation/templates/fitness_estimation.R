@@ -5,7 +5,8 @@
 # FITNESS_HEATMAP), run in sequence in one R session on the same image. The functions below are those
 # scripts' code; the count merging, which was top-level script code, is wrapped in merge_counts().
 # Every intermediate file is still written (and published) as before, and the next step reads it back
-# exactly as the separate process did.
+# exactly as the separate process did. The Biostrings and dplyr calls of those scripts are base R
+# (helpers below, with the same results).
 #
 # Inputs:  input_counts / output_counts (per-library DiMSum-format count tables of the sample, sorted
 #          by replicate), samplesheet_csv, wt_fasta, pos_range ("start-end", 1-based inclusive),
@@ -15,12 +16,90 @@
 #          fitness_heatmap.pdf
 
 suppressPackageStartupMessages({
-  library(Biostrings)
-  library(methods)
-  library(dplyr)
   library(ggplot2)
   library(grid)        # for unit()
 })
+
+####################################################################################################
+# Base-R replacements for Biostrings (readDNAStringSet, subseq, translate), with Biostrings' results
+####################################################################################################
+
+# The standard genetic code (Biostrings::GENETIC_CODE); stop codons are "*"
+GENETIC_CODE_STANDARD <- c(
+  TTT = "F", TTC = "F", TTA = "L", TTG = "L", CTT = "L", CTC = "L", CTA = "L", CTG = "L",
+  ATT = "I", ATC = "I", ATA = "I", ATG = "M", GTT = "V", GTC = "V", GTA = "V", GTG = "V",
+  TCT = "S", TCC = "S", TCA = "S", TCG = "S", CCT = "P", CCC = "P", CCA = "P", CCG = "P",
+  ACT = "T", ACC = "T", ACA = "T", ACG = "T", GCT = "A", GCC = "A", GCA = "A", GCG = "A",
+  TAT = "Y", TAC = "Y", TAA = "*", TAG = "*", CAT = "H", CAC = "H", CAA = "Q", CAG = "Q",
+  AAT = "N", AAC = "N", AAA = "K", AAG = "K", GAT = "D", GAC = "D", GAA = "E", GAG = "E",
+  TGT = "C", TGC = "C", TGA = "*", TGG = "W", CGT = "R", CGC = "R", CGA = "R", CGG = "R",
+  AGT = "S", AGC = "S", AGA = "R", AGG = "R", GGT = "G", GGC = "G", GGA = "G", GGG = "G"
+)
+
+# Sequences of a FASTA file, as readDNAStringSet() reads them: one string per record, sequence lines
+# joined, upper case, letters outside the DNA alphabet (IUPAC codes, "-", "+", ".") dropped
+read_fasta <- function(path) {
+  lines <- readLines(path, warn = FALSE)
+  starts <- grep("^>", lines)
+  if (length(starts) == 0) stop("no FASTA record in ", path)
+  ends <- c(starts[-1] - 1L, length(lines))
+  seqs <- mapply(function(s, e) if (e > s) paste(lines[(s + 1L):e], collapse = "") else "", starts, ends)
+  gsub("[^ACGTMRWSYKVHDBN.+-]", "", toupper(seqs))
+}
+
+# subseq(): stops on a range outside the sequence, as Biostrings does
+subseq_checked <- function(x, start, end) {
+  if (is.na(start) || is.na(end) || start < 1 || end > nchar(x) || end < start - 1)
+    stop("Invalid sequence coordinates: ", start, "-", end, " in a sequence of length ", nchar(x))
+  substr(x, start, end)
+}
+
+# translate(x, no.init.codon = TRUE): the codons of each sequence by the standard code, trailing
+# bases beyond the last full codon ignored. A codon with a letter outside ACGT stops the run, as
+# Biostrings does (fuzzy = "error"), or becomes "X" (fuzzy = "X", Biostrings' if.fuzzy.codon = "X").
+translate_dna <- function(x, fuzzy = c("error", "X")) {
+  fuzzy <- match.arg(fuzzy)
+  x <- toupper(x)
+  n <- nchar(x) %/% 3L
+  out <- character(length(x))
+  for (len in unique(n)) {
+    i <- which(n == len)
+    if (len == 0L) next
+    aa <- lapply(seq_len(len), function(k) GENETIC_CODE_STANDARD[substr(x[i], 3L * k - 2L, 3L * k)])
+    bad <- vapply(aa, anyNA, logical(1))
+    if (any(bad)) {
+      if (fuzzy == "error") stop("not a base in codon ", which(bad)[1], " of a sequence to translate")
+      aa <- lapply(aa, function(a) { a[is.na(a)] <- "X"; a })
+    }
+    out[i] <- do.call(paste0, unname(aa))
+  }
+  out
+}
+
+# Row indices of a join on one key (dplyr 1.1 semantics): every row of x in order, each with all
+# matching rows of y in y order (NA where there is none)
+join_rows <- function(x_key, y_key) {
+  u <- unique(y_key)
+  y_by_key <- split(seq_along(y_key), match(y_key, u))
+  g <- match(x_key, u)
+  n <- ifelse(is.na(g), 1L, lengths(y_by_key)[g])
+  x_rows <- rep(seq_along(x_key), n)
+  y_rows <- unlist(lapply(seq_along(g), function(i) if (is.na(g[i])) NA_integer_ else y_by_key[[g[i]]]),
+                   use.names = FALSE)
+  if (is.null(y_rows)) y_rows <- integer(0)
+  list(x = x_rows, y = y_rows)
+}
+
+# dplyr::left_join(x, y, by): the columns of x, then those of y except the keys; key columns that
+# are integer on one side and double on the other become double, as in dplyr
+left_join_base <- function(x, y, by) {
+  key <- function(d) do.call(paste, c(lapply(by, function(b) as.character(d[[b]])), sep = "\\r"))
+  j <- join_rows(key(x), key(y))
+  out <- lapply(x, function(col) col[j\$x])
+  for (b in by) if (is.double(y[[b]]) && is.integer(out[[b]])) out[[b]] <- as.double(out[[b]])
+  for (col in setdiff(names(y), by)) out[[col]] <- y[[col]][j\$y]
+  as.data.frame(out, stringsAsFactors = FALSE, optional = TRUE)
+}
 
 ####################################################################################################
 # 1. Merge the per-library counts of the sample (counts_merged.tsv)
@@ -232,13 +311,12 @@ pick_synonymous_wt_from_range <- function(wt_fasta, counts_merged_tsv, pos_range
     stop("Invalid pos_range: ", pos_range)
 
   ## ---- WT window ----
-  wt_set <- Biostrings::readDNAStringSet(wt_fasta)
+  wt_set <- read_fasta(wt_fasta)
   if (length(wt_set) != 1L) stop("WT FASTA must contain exactly one sequence.")
-  wt_subseq <- Biostrings::subseq(wt_set[[1]], start = start_pos, end = end_pos)
-  wt_seq_chr <- as.character(wt_subseq)
+  wt_seq_chr <- subseq_checked(wt_set[1], start = start_pos, end = end_pos)
   wt_len <- nchar(wt_seq_chr)
   if ((wt_len %% 3) != 0) stop("Provided window length is not divisible by 3: ", wt_len)
-  wt_aa  <- Biostrings::translate(wt_subseq, if.fuzzy.codon = "X", no.init.codon = TRUE)
+  wt_aa  <- translate_dna(wt_seq_chr, fuzzy = "X")
   wt_chars <- strsplit(wt_seq_chr, "", fixed = TRUE)[[1]]
 
   ## ---- counts ----
@@ -258,9 +336,8 @@ pick_synonymous_wt_from_range <- function(wt_fasta, counts_merged_tsv, pos_range
   input_mean <- if (length(input_cols) == 1L) input_mat[[1]] else rowMeans(as.matrix(input_mat), na.rm = TRUE)
 
   ## ---- synonymous filter ----
-  var_set <- Biostrings::DNAStringSet(df\$nt_seq)
-  var_aa  <- Biostrings::translate(var_set, if.fuzzy.codon = "X", no.init.codon = TRUE)
-  syn_idx <- which(as.character(var_aa) == as.character(wt_aa))
+  var_aa  <- translate_dna(df\$nt_seq, fuzzy = "X")
+  syn_idx <- which(var_aa == wt_aa)
   if (length(syn_idx) == 0L) stop("No fully-synonymous variants found relative to WT translation.")
 
   # helpers
@@ -326,7 +403,7 @@ compute_nt_hamming <- function(merged.counts, wt.seq) {
 
 # translate sequences and add aa_seq
 add_aa_seq <- function(merged.counts) {
-  merged.counts <- cbind("aa_seq" = as.character(translate(DNAStringSet(merged.counts\$nt_seq), no.init.codon = TRUE)), merged.counts)
+  merged.counts <- cbind("aa_seq" = translate_dna(merged.counts\$nt_seq), merged.counts)
   merged.counts
 }
 
@@ -566,8 +643,8 @@ run_fitness_estimation <- function(counts_path,
 
   merged.counts <- read.table(counts_path, sep = "\t", header = TRUE, check.names = FALSE)
   exp.design   <- read.table(design_path, sep = "\t", header = TRUE, check.names = FALSE)
-  wt.seq       <- DNAString(as.character(read.table(wt_seq_path)))
-  wt.seq.aa    <- translate(wt.seq, no.init.codon = TRUE)
+  wt.seq       <- toupper(as.character(read.table(wt_seq_path)))
+  wt.seq.aa    <- translate_dna(wt.seq)
 
   ## 2. Pre-processing the count table ##
   #######################################
@@ -787,20 +864,20 @@ build_heatmap_long <- function(df,
   wt_len  <- length(letters)
 
   # normalize data
-  df0 <- df %>%
-    transmute(
-      position = suppressWarnings(as.numeric(.data[[pos_col]])),
-      wt_aa_in = .data[[wt_aa_col]],
-      mut_aa   = .data[[mut_aa_col]],
-      fitness  = suppressWarnings(as.numeric(.data[[fitness_col]]))
-    ) %>%
-    filter(is.finite(position))
+  df0 <- data.frame(
+    position = suppressWarnings(as.numeric(df[[pos_col]])),
+    wt_aa_in = df[[wt_aa_col]],
+    mut_aa   = df[[mut_aa_col]],
+    fitness  = suppressWarnings(as.numeric(df[[fitness_col]])),
+    stringsAsFactors = FALSE
+  )
+  df0 <- df0[which(is.finite(df0\$position)), , drop = FALSE]
 
   # drop any rows that claim positions beyond WT length
   if (nrow(df0) && any(df0\$position > wt_len, na.rm = TRUE)) {
     dropped <- sum(df0\$position > wt_len, na.rm = TRUE)
     warning(sprintf("Dropping %d row(s) with position > WT length (%d).", dropped, wt_len))
-    df0 <- df0 %>% filter(position <= wt_len)
+    df0 <- df0[which(df0\$position <= wt_len), , drop = FALSE]
   }
 
   # pad to next multiple of 75 (by rows)
@@ -815,32 +892,27 @@ build_heatmap_long <- function(df,
 
   grid_df <- expand.grid(position = all_positions,
                          mut_aa   = all_amino_acids,
-                         KEEP.OUT.ATTRS = FALSE, stringsAsFactors = FALSE) %>%
-    mutate(is_padded = position > wt_len)
+                         KEEP.OUT.ATTRS = FALSE, stringsAsFactors = FALSE)
+  grid_df\$is_padded <- grid_df\$position > wt_len
 
   # join fitness only for real positions (<= wt_len)
-  fit_df <- df0 %>% select(position, mut_aa, fitness)
-  d <- grid_df %>%
-    left_join(fit_df, by = c("position","mut_aa"))
+  fit_df <- df0[, c("position", "mut_aa", "fitness"), drop = FALSE]
+  d <- left_join_base(grid_df, fit_df, by = c("position", "mut_aa"))
 
   if (fill_missing_as_zero) {
     d\$fitness[is.na(d\$fitness) & d\$position <= wt_len] <- 0
   }
 
   # authoritative WT AA per real position; tail gets placeholder 'Y'
-  wt_map <- tibble(position = seq_len(wt_len), wt_aa = letters)
-  d <- d %>%
-    left_join(wt_map, by = "position") %>%
-    mutate(wt_aa = ifelse(is.na(wt_aa) & position > wt_len, "Y", wt_aa))
+  wt_map <- data.frame(position = seq_len(wt_len), wt_aa = letters, stringsAsFactors = FALSE)
+  d <- left_join_base(d, wt_map, by = "position")
+  d\$wt_aa <- ifelse(is.na(d\$wt_aa) & d\$position > wt_len, "Y", d\$wt_aa)
 
   # layout fields
-  d <- d %>%
-    mutate(
-      row_group = ((position - 1) %/% positions_per_row) + 1,
-      wt_aa_pos = paste0(wt_aa, position),
-      wt_aa_pos = factor(wt_aa_pos, levels = unique(wt_aa_pos)),
-      synonymous = mut_aa == wt_aa
-    )
+  d\$row_group  <- ((d\$position - 1) %/% positions_per_row) + 1
+  d\$wt_aa_pos  <- paste0(d\$wt_aa, d\$position)
+  d\$wt_aa_pos  <- factor(d\$wt_aa_pos, levels = unique(d\$wt_aa_pos))
+  d\$synonymous <- d\$mut_aa == d\$wt_aa
 
   # IMPORTANT: use WT length as the true end of the protein
   d\$max_pos <- wt_len
@@ -851,29 +923,28 @@ syn_segments <- function(d, positions_per_row = 75) {
   amino_order <- rev(c("G", "A", "V", "L", "M", "I", "F",
                          "Y", "W", "K", "R", "H", "D", "E",
                          "S", "T", "C", "N", "Q", "P", "*"))
-  d %>%
-    mutate(
-      mut_aa = factor(mut_aa, levels = amino_order),
-      x = as.numeric(factor(wt_aa_pos, levels = levels(wt_aa_pos))) -
-          ((row_group - 1) * positions_per_row),
-      y = as.numeric(factor(mut_aa, levels = amino_order))
-    ) %>%
-    filter(synonymous, position <= max_pos)
+  d\$mut_aa <- factor(d\$mut_aa, levels = amino_order)
+  d\$x <- as.numeric(factor(d\$wt_aa_pos, levels = levels(d\$wt_aa_pos))) -
+          ((d\$row_group - 1) * positions_per_row)
+  d\$y <- as.numeric(factor(d\$mut_aa, levels = amino_order))
+  d <- d[which(d\$synonymous & d\$position <= d\$max_pos), , drop = FALSE]
+  rownames(d) <- NULL
+  d
 }
 
 # Draw one solid white rectangle per row group covering the padded tail region
 white_tail_rects <- function(d, positions_per_row = 75) {
   wt_len <- unique(d\$max_pos)[1]
-  if (!is.finite(wt_len)) return(dplyr::tibble()[0,])
+  if (!is.finite(wt_len)) return(data.frame())
 
   # if perfectly divisible by 75, there is no tail to cover
-  if (wt_len %% positions_per_row == 0) return(dplyr::tibble()[0,])
+  if (wt_len %% positions_per_row == 0) return(data.frame())
 
   # which facet (row group) contains the last real position?
   last_group     <- ((wt_len - 1) %/% positions_per_row) + 1
   last_local_idx <- ((wt_len - 1) %% positions_per_row) + 1  # 1..75 within the facet
 
-  tibble::tibble(
+  data.frame(
     row_group = last_group,
     xmin = last_local_idx + 0.5 - 0.025,     # tiny epsilon to avoid hairlines
     xmax = positions_per_row + 0.5 + 0.025,
@@ -886,7 +957,7 @@ plot_heatmap <- function(d, title_text, positions_per_row = 75) {
   amino_order <- rev(c("G", "A", "V", "L", "M", "I", "F",
                          "Y", "W", "K", "R", "H", "D", "E",
                          "S", "T", "C", "N", "Q", "P", "*"))
-  d <- d %>% mutate(mut_aa = factor(mut_aa, levels = amino_order))
+  d\$mut_aa <- factor(d\$mut_aa, levels = amino_order)
 
   min_f <- suppressWarnings(min(d\$fitness, na.rm = TRUE)); if (!is.finite(min_f)) min_f <- 0
   max_f <- suppressWarnings(max(d\$fitness, na.rm = TRUE)); if (!is.finite(max_f)) max_f <- 0
@@ -1042,17 +1113,11 @@ run_fitness_rescaled_heatmaps(
 # create versions.yml
 ####
 r_version <- strsplit(version[['version.string']], ' ')[[1]][3]
-Biostrings_version <- as.character(packageVersion("Biostrings"))
-dplyr_version <- as.character(packageVersion("dplyr"))
 ggplot2_version <- as.character(packageVersion("ggplot2"))
-methods_version <- as.character(packageVersion("methods"))
 grid_version <- as.character(packageVersion("grid"))
 
 if (is.null(r_version)) r_version <- "unknown"
-if (length(Biostrings_version) == 0) Biostrings_version <- "unknown"
-if (length(dplyr_version) == 0) dplyr_version <- "unknown"
 if (length(ggplot2_version) == 0) ggplot2_version <- "unknown"
-if (length(methods_version) == 0) methods_version <- "unknown"
 if (length(grid_version) == 0) grid_version <- "unknown"
 
 f <- file("versions.yml", "w")
@@ -1060,10 +1125,7 @@ writeLines(
   c(
     '"${task.process}":',
     paste('    r-base:', r_version),
-    paste('    r-Biostrings:', Biostrings_version),
-    paste('    r-dplyr:', dplyr_version),
     paste('    r-ggplot2:', ggplot2_version),
-    paste('    r-methods:', methods_version),
     paste('    r-grid:', grid_version)
   ),
   f

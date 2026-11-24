@@ -90,22 +90,24 @@ maintainers:
 containers:
   docker:
     linux/amd64:
-      name: community.wave.seqera.io/library/dms-fdmcorrect_r-base:373aad1776732a61
-      build_id: bd-373aad1776732a61_1
-      scan_id: sc-6660e7874574306a_1
+      name: community.wave.seqera.io/library/bioconductor-edger_bioconductor-impute_bioconductor-limma_dms-fdmcorrect_pruned:be9da4b29f56a3d0
+      build_id: bd-be9da4b29f56a3d0_1
+      scan_id: sc-b58d72517313fe11_1
     linux/arm64:
-      name: community.wave.seqera.io/library/dms-fdmcorrect_r-base:bfb60589c0e91857
-      build_id: bd-bfb60589c0e91857_1
-      scan_id: sc-01d4a0fc590dc19e_1
+      name: community.wave.seqera.io/library/bioconductor-edger_bioconductor-impute_bioconductor-limma_dms-fdmcorrect_pruned:eb9c67f0bb37af3d
+      build_id: bd-eb9c67f0bb37af3d_1
+      scan_id: sc-e7e364da4422530e_1
   singularity:
-    linux/amd64:
-      name: oras://community.wave.seqera.io/library/dms-fdmcorrect_r-base:b09746d08c67dfee
-      build_id: bd-b09746d08c67dfee_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/76/76821c826dabd8d88eb42b9075e8648d371a14b560ac3dc755dafd5dfc46fb07/data
     linux/arm64:
-      name: oras://community.wave.seqera.io/library/dms-fdmcorrect_r-base:e4d02356c866c62b
-      build_id: bd-e4d02356c866c62b_1
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/86/868dd2e940a1ccf9a77cddcfce9671ac041a2544777c438737d308fa1d30c8f0/data
+      name: oras://community.wave.seqera.io/library/bioconductor-edger_bioconductor-impute_bioconductor-limma_dms-fdmcorrect_pruned:398a3d0efdf8d7c1
+      build_id: bd-398a3d0efdf8d7c1_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/00/0088037623e1808bc9fd91628123a8b57da15ecc509c8ceaad1f252e8cc15edf/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/bioconductor-edger_bioconductor-impute_bioconductor-limma_dms-fdmcorrect_pruned:396e0feac8ac61b9
+      build_id: bd-396e0feac8ac61b9_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/e2/e2d657c330e5ac4dcc3b40ef513d377367e60c293e01003906877e40f6865d75/data
   conda:
     linux/amd64:
-      lock_file: modules/local/dmsanalysis/error_correction_false_doubles/.conda-lock/linux_amd64-bd-373aad1776732a61_1.txt
+      lock_file: modules/local/dmsanalysis/error_correction_false_doubles/.conda-lock/linux_amd64-bd-be9da4b29f56a3d0_1.txt
+    linux/arm64:
+      lock_file: modules/local/dmsanalysis/error_correction_false_doubles/.conda-lock/linux_arm64-bd-eb9c67f0bb37af3d_1.txt

@@ -32,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--dimsum`: figures that DiMSum writes as both PNG and PDF are laid out once and drawn into both files, R's just-in-time compiler is off for the script, and with the error model on one CPU (the default) the 100 bootstraps run in the main R process - from the random-number stream DiMSum's one-worker cluster used - with the per-row variances and the model columns computed without per-call overhead. Every table, `.RData` object and PNG is identical (the PDFs show the same figures, laid out with the PNG device's font metrics); a full-depth sample takes 28 s instead of 39 s, and 51 s instead of 79 s with `--fitnessErrorModel T`
 - `--dimsum`: DiMSum's error model is fitted by default (`--dimsum_error_model`, default `true`; previously `--fitnessErrorModel F` in `ext.args`): replicate-specific error terms and replicate normalisation, as in DiMSum's own default. The `test` profile switches it off, because its subsampled libraries have too few variants covered in every replicate; a library that is too sparse makes `RUN_DIMSUM` stop with DiMSum's message and a pointer to `--dimsum_error_model false`
 
+- One R environment and container image for all eleven R modules: base R, ggplot2 4.0.2 and scales for the plots, `dms-fdmcorrect` 0.1.2, edgeR, limma and GGally for `--mutscan`, the packages of DiMSum's STEAM stages for `--dimsum` (data.table, GGally, hexbin, cowplot, gridExtra, plyr, reshape2, seqinr, optparse, mgcv, rmarkdown and pandoc), and CmdStan 2.35 with cmdstanr, posterior and impute for rosace (planned for v1.2.0; 9 MB of the download). The scripts of the reference tables, counts processing, fitness input, library QC and default fitness estimation no longer load Biostrings, dplyr, tidyr, stringr, reshape2, zoo or the tidyverse: reading and translating the reference, the joins, grouped sums and sorting, and the sliding-window means of the library QC are base R, with byte-identical outputs (every table and plot of 97 runs against the previous scripts, test and full-depth data); since loading those packages took about 3 s per task, these tasks use 0.1-0.6x the CPU time and 0.3-0.6x the peak memory (reference tables, counts processing, fitness input), 0.8x the CPU time (library QC, fitness estimation). DiMSum and mutscan now run on R 4.5.1 and ggplot2 4.0.2 (DiMSum: R 4.4.2 and ggplot2 3.5.1; mutscan: ggplot2 4.0.3) with identical tables, `.RData` objects, PNG figures and report, and PDF figures that render to the same pixels; DiMSum takes 1.3-1.4x the CPU time (a full-depth sample 39 s instead of 28 s, 65 s instead of 49 s with the error model), because ggplot2 4 lays out its scatterplot matrices more slowly. 110 instead of 271 R packages from conda, one R image of 441 MB to download (1.7 GB unpacked) instead of four of 1,491 MB (6.3 GB), and DiMSum and mutscan run on arm64 too
+- `--dimsum`: `bin/dimsum_fitness.R` runs on ggplot2 4. A ggplot is no longer a list, which stopped DiMSum's merge and diagnostics reports and then stage 4 (`object 'dimsum_meta_new_report' not found`); and four ggplot2 changes that move marks in DiMSum's figures - where the dashes of a dashed `geom_abline()` start, the minor break of a log10 scale beyond its last major break, the corners of a density's legend key and the default text size - are undone, so that the figures are those of ggplot2 3.5. mgcv, which ggplot2 3.5 brought along and DiMSum's replicate-deviation smoother needs, is now in the environment
+
 ### `Added`
 
 - Carbon-footprint estimate of every run with the [nf-co2footprint](https://nextflow-io.github.io/nf-co2footprint/) plugin: `pipeline_info/co2footprint_{report,summary,trace}_<timestamp>.*`, with `--co2_location` for the compute site's grid zone
@@ -50,30 +53,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - False-doubles correction: `--false_doubles_method mle` needs at least 1,000 false-double reads in a pool (`eb`: 100); measured on GID1A and OsTIR1 pools thinned to 0.02-30 % of their reads, the per-variant _F_/_M_ is worse than no correction below that, while `eb` beats no correction at every depth
 - Library QC: a plot that cannot be drawn for a very sparse library (for example the sliding-window or sequencing-depth curves of a library with only a handful of covered positions) is replaced by a one-page PDF giving the reason, with a warning in the log, instead of stopping the run
 - A reference FASTA with lower-case (soft-masked) bases no longer stops the false-doubles correction with a reference/counts coordinate mismatch, nor gives its positions substitution classes outside the 6 types and 96 contexts: the reference is converted to upper case before any step reads it. `PREPARE_REFERENCE` does this with GNU Awk and builds the bwa-mem3 index of the upper-case reference, in one task per run; the index files are named after the reference (`intermediate_files/bwamem3/<name>.uppercase.fasta.*`)
+- Counts processing: a library in which no read carries a programmed variant no longer stops `DMSANALYSIS_PROCESS_VARIANT_COUNTS` with a type error in a join of the empty summary; its heatmap table is written with every cell empty
+- `--dimsum`: the scatterplot matrices of DiMSum's diagnostics report (`dimsum__diagnostics_report_scatterplotmatrix_all`, `_singles_doubles`) are drawn again. In the previous DiMSum environment, as conda solves it today, GGally's dependency ggstats requires ggplot2 4, so the report caught the error and left both as empty placeholders
 
 ### `Dependencies`
 
-| Dependency        | Version             |
-| ----------------- | ------------------- |
-| `nf-co2footprint` | 1.4.1 (new)         |
-| `falco`           | 2.0.3 (new)         |
-| `fastqc`          | 0.13.0 (removed)    |
-| `bwa-mem3`        | 0.17.0 (new)        |
-| `bwa`             | 0.7.19 (removed)    |
-| `samtools`        | 1.25 (was 1.21)     |
-| `dms-count`       | 0.1.0 (new)         |
-| `dms-fdmcorrect`  | 0.1.2 (new)         |
-| `htslib`          | 1.25 (new)          |
-| `pysam`           | 0.24.0 (removed)    |
-| `polars`          | 1.33.1 (removed)    |
-| `pyarrow`         | 24.0.0 (removed)    |
-| `biopython`       | 1.87 (removed)      |
-| `vsearch`         | 2.32.0 (was 2.30.0) |
-| `mutscan`         | 1.0.0 (removed)     |
-| `edgeR`           | 4.8.2 (direct)      |
-| `limma`           | 3.66.0 (direct)     |
-| `r-dimsum`        | 1.4 (removed)       |
-| `gawk`            | 5.3.1 (new)         |
+| Dependency        | Version                  |
+| ----------------- | ------------------------ |
+| `nf-co2footprint` | 1.4.1 (new)              |
+| `falco`           | 2.0.3 (new)              |
+| `fastqc`          | 0.13.0 (removed)         |
+| `bwa-mem3`        | 0.17.0 (new)             |
+| `bwa`             | 0.7.19 (removed)         |
+| `samtools`        | 1.25 (was 1.21)          |
+| `dms-count`       | 0.1.0 (new)              |
+| `dms-fdmcorrect`  | 0.1.2 (new)              |
+| `htslib`          | 1.25 (new)               |
+| `pysam`           | 0.24.0 (removed)         |
+| `polars`          | 1.33.1 (removed)         |
+| `pyarrow`         | 24.0.0 (removed)         |
+| `biopython`       | 1.87 (removed)           |
+| `vsearch`         | 2.32.0 (was 2.30.0)      |
+| `mutscan`         | 1.0.0 (removed)          |
+| `edgeR`           | 4.8.2 (direct)           |
+| `limma`           | 3.66.0 (direct)          |
+| `r-dimsum`        | 1.4 (removed)            |
+| `gawk`            | 5.3.1 (new)              |
+| `biostrings`      | 2.78.0 (removed)         |
+| `r-tidyverse`     | 2.0.0 (removed)          |
+| `r-reshape2`      | 1.4.5 (was 1.4.4)        |
+| `r-zoo`           | 1.8_15 (removed)         |
+| `r-base`          | 4.5.1 (was 4.4.2, 4.5.1) |
+| `r-ggplot2`       | 4.0.2 (was 3.5.1, 4.0.2) |
+| `cmdstan`         | 2.35.0 (new)             |
 
 ## v1.0.0 - Puyol - [2026-11-14]
 

@@ -6,8 +6,8 @@ process DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES {
     conda "${moduleDir}/environment.yml"
 
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/76/76821c826dabd8d88eb42b9075e8648d371a14b560ac3dc755dafd5dfc46fb07/data'
-        : 'community.wave.seqera.io/library/dms-fdmcorrect_r-base:373aad1776732a61'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/e2/e2d657c330e5ac4dcc3b40ef513d377367e60c293e01003906877e40f6865d75/data'
+        : 'community.wave.seqera.io/library/bioconductor-edger_bioconductor-impute_bioconductor-limma_dms-fdmcorrect_pruned:be9da4b29f56a3d0'}"
 
     input:
     tuple val(meta), path(filtered), path(completed), path(evidence), path(rates)
