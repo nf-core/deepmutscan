@@ -125,6 +125,16 @@ CITATIONS = [
      "title": "mutscan - a flexible R package for efficient end-to-end analysis of multiplexed assays of variant effect data",
      "journal": "Genome Biology", "year": "2023", "volume": "24", "number": "1", "pages": "132",
      "doi": "10.1186/s13059-023-02967-0", "key": "Soneson2023"},
+    {"id": "edger", "pkgs": ["r-edger", "edger", "bioconductor-edger"],
+     "authors": "Robinson MD, McCarthy DJ, Smyth GK",
+     "title": "edgeR: a Bioconductor package for differential expression analysis of digital gene expression data",
+     "journal": "Bioinformatics", "year": "2010", "volume": "26", "number": "1", "pages": "139--140",
+     "doi": "10.1093/bioinformatics/btp616", "key": "Robinson2010"},
+    {"id": "limma", "pkgs": ["r-limma", "limma", "bioconductor-limma"],
+     "authors": "Ritchie ME, Phipson B, Wu D, Hu Y, Law CW, Shi W, Smyth GK",
+     "title": "limma powers differential expression analyses for RNA-sequencing and microarray studies",
+     "journal": "Nucleic Acids Research", "year": "2015", "volume": "43", "number": "7", "pages": "e47",
+     "doi": "10.1093/nar/gkv007", "key": "Ritchie2015"},
 ]
 
 

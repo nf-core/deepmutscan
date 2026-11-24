@@ -316,12 +316,14 @@
                 },
                 "RUN_DIMSUM": {
                     "r-base": "4.4.2",
-                    "DiMSum": 1.4
+                    "DiMSum": "1.4 (stages 4-5, bin/dimsum_fitness.R)"
                 },
                 "RUN_MUTSCAN": {
                     "r-base": "4.5.1",
-                    "r-mutscan": "1.0.0",
-                    "r-Biostrings": "2.78.0"
+                    "r-edgeR": "4.8.2",
+                    "r-limma": "3.66.0",
+                    "r-ggplot2": "4.0.3",
+                    "r-GGally": "2.4.0"
                 },
                 "VARIANT_EFFECT_INSPECTION_TOOL": {
                     "python": "3.12.3",
@@ -592,7 +594,7 @@
                 "fitness_singles.txt:md5,0bc864da014d266b7a1470982fa32fa1",
                 "fitness_singles_MaveDB.csv:md5,f98f6dd1db59217431cc9b018165b661",
                 "fitness_wildtype.txt:md5,9739c293a0570888d00aafd47fed87bd",
-                "report.Rmd:md5,a19acae87f16d0059c6699bc1e818d95",
+                "report.Rmd:md5,84c965c6cf57ea58441c4e9091bbd8d1",
                 "experimentalDesign.tsv:md5,f95dea4a3e6cf7e206e789a96e502604",
                 "synonymous_wt.txt:md5,bb94c5975185b80f8d63acebfbf4a0da",
                 "aa_seq.txt:md5,421287586f566191f7da4a7aad7d24a8",
@@ -688,7 +690,7 @@
                 "limma_rowCount": 792
             }
         ],
-        "timestamp": "2026-11-24T15:16:15.293789",
+        "timestamp": "2026-11-24T16:19:42.030184",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
@@ -749,7 +751,9 @@
                     "DiMSum": "0.0.0"
                 },
                 "RUN_MUTSCAN": {
-                    "r-base": "0.0.0"
+                    "r-base": "0.0.0",
+                    "r-edgeR": "0.0.0",
+                    "r-limma": "0.0.0"
                 },
                 "VARIANT_EFFECT_INSPECTION_TOOL": {
                     "python": "0.0.0",
@@ -971,7 +975,7 @@
                 "variant_effect_inspection_tool/variant_effect_inspection_tool.html"
             ]
         ],
-        "timestamp": "2026-11-24T15:17:37.99132",
+        "timestamp": "2026-11-24T16:20:54.76081",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"

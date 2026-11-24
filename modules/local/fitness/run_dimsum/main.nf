@@ -4,9 +4,9 @@ process RUN_DIMSUM {
 
   conda "${moduleDir}/environment.yml"
 
-  container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-      ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/92/9298c391f285d7f2c1155f6a519a96c4f7591971780ba4f10569558282f40b6f/data'
-      : 'community.wave.seqera.io/library/bioconductor-biostrings_r-dimsum_r-base_r-data.table_pruned:cca13eed371a9d84' }"
+  container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
+      ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/65/65d232f07cc98be32d0ee29842ea1cd398eff35dfeb513e9027cd257e6d9e804/data'
+      : 'community.wave.seqera.io/library/pandoc_r-base_r-cowplot_r-data.table_pruned:688adb584e6a94cf'}"
 
   input:
     tuple val(sample), path(counts_merged)
@@ -14,6 +14,8 @@ process RUN_DIMSUM {
     path(exp_design)
     val(min_counts)
     val(output_pseudocount)
+    path(report_rmd)      // assets/dimsum/report.Rmd
+    path(logo_png)        // assets/dimsum/Dumpling.png
 
   output:
     path "dimsum_results**", emit: results_dir
@@ -27,25 +29,38 @@ process RUN_DIMSUM {
   # DiMSum expects the sequence string, not a file path
   WT=\$(tr -d ' \r\\n\\t' < "$wt_txt")
 
-  DiMSum \
-      --experimentDesignPath "$exp_design" \
-      --wildtypeSequence "\$WT" \
-      --countPath "$counts_merged" \
-      --startStage 4 \
-      --stopStage 5 \
-      --fitnessMinInputCountAll ${min_counts} \
-      --fitnessDropoutPseudocount ${output_pseudocount} \
-      --numCores $task.cpus \
-      --projectName "dimsum_results" \
-      --fastqFileDir . \
-      $args
+  # DiMSum's STEAM stages (4: process variants, 5: fitness) from bin/dimsum_fitness.R - DiMSum 1.4's own
+  # code, run without the package; the same options as DiMSum's command line. Its error messages are
+  # kept so that a library too sparse for the error model gets a pointer to --dimsum_error_model.
+  status=0
+  dimsum_fitness.R \\
+      --experimentDesignPath "$exp_design" \\
+      --wildtypeSequence "\$WT" \\
+      --countPath "$counts_merged" \\
+      --startStage 4 \\
+      --stopStage 5 \\
+      --fitnessMinInputCountAll ${min_counts} \\
+      --fitnessDropoutPseudocount ${output_pseudocount} \\
+      --numCores $task.cpus \\
+      --projectName "dimsum_results" \\
+      --fastqFileDir . \\
+      --reportRmd "$report_rmd" \\
+      --logoPng "$logo_png" \\
+      $args \\
+      2> dimsum_fitness.err || status=\$?
+  cat dimsum_fitness.err >&2
+  if [ \$status -ne 0 ]; then
+      if grep -q "insufficent number of variants satisfying full fitness range" dimsum_fitness.err; then
+          echo "DiMSum's error model needs at least 30 variants per replicate (90 for three replicates) that pass --min_counts and are observed in every replicate. Rerun with --dimsum_error_model false (count-based errors only)." >&2
+      fi
+      exit \$status
+  fi
 
   R_VERSION=\$(R --version | head -n 1 | sed -E 's/^R version ([0-9.]+).*/\\1/')
-  DIMSUM_VERSION=\$(Rscript -e 'cat(as.character(packageVersion("DiMSum")))')
   cat <<-END_VERSIONS > versions.yml
   "${task.process}":
       r-base: \$R_VERSION
-      DiMSum: \$DIMSUM_VERSION
+      DiMSum: 1.4 (stages 4-5, bin/dimsum_fitness.R)
 END_VERSIONS
   """
 

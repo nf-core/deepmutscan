@@ -5,8 +5,8 @@ process RUN_MUTSCAN {
   conda "${moduleDir}/environment.yml"
 
   container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-      ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/0a/0a32a5f637634c064a3caecc77d9e99f4367efd459bc28d1d4971ed5d05b73a7/data'
-      : 'community.wave.seqera.io/library/bioconductor-biostrings_bioconductor-mutscan_r-base:c5cefc95c9f1002e'}"
+      ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/4a/4a4c1441760e6f27f01d8930305d8a9770e864b951b46cc4cf946e4509da6140/data'
+      : 'community.wave.seqera.io/library/bioconductor-edger_bioconductor-limma_r-base_r-ggally_r-ggplot2:826c68a10b1231ea'}"
 
   input:
     tuple val(sample), path(counts_merged)
@@ -21,7 +21,7 @@ process RUN_MUTSCAN {
     path "versions.yml", emit: versions
 
   script:
-  template 'fitness_calculation_mutscan.R'
+  template 'fitness_mutscan.R'
 
   stub:
   """
@@ -29,6 +29,8 @@ process RUN_MUTSCAN {
   cat <<-END_VERSIONS > versions.yml
   "${task.process}":
       r-base: "0.0.0"
+      r-edgeR: "0.0.0"
+      r-limma: "0.0.0"
   END_VERSIONS
   """
 }

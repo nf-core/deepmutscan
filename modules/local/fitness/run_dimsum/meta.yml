@@ -1,5 +1,5 @@
 name: "run_dimsum"
-description: Runs DiMSum to estimate fitness and functionality scores from Deep Mutational Scanning (DMS) count data.
+description: DiMSum's STEAM stages (4 - variant processing and filtering, 5 - fitness and error model) on the pipeline's merged count table, run from bin/dimsum_fitness.R - DiMSum 1.4's own code for those stages, without the package and its WRAP-stage dependencies, so that the step runs natively on arm64 as well.
 keywords:
   - deep mutational scanning
   - dms
@@ -10,8 +10,8 @@ tools:
       description: "An error-model-enriched pipeline for analyzing deep mutational scanning data"
       homepage: "https://github.com/lehner-lab/DiMSum"
       documentation: "https://github.com/lehner-lab/DiMSum/blob/master/README.md"
-      doi: "10.1186/s12859-020-03709-3"
-      licence: ["GPL-3.0-or-later"]
+      doi: "10.1186/s13059-020-02091-3"
+      licence: ["MIT"]
 
 input:
   - - sample:
@@ -37,6 +37,14 @@ input:
   - - output_pseudocount:
         type: integer
         description: Pseudocount for output replicates in which a variant observed in the input was not detected; 0 disables (`--output_pseudocount`)
+  - - report_rmd:
+        type: file
+        description: DiMSum's report template (assets/dimsum/report.Rmd)
+        pattern: "report.Rmd"
+  - - logo_png:
+        type: file
+        description: DiMSum's logo for the report (assets/dimsum/Dumpling.png)
+        pattern: "Dumpling.png"
 
 output:
   - results_dir:
@@ -54,18 +62,26 @@ authors:
   - "@BenjaminWehnert1008"
   - "@MaximilianStammnitz"
 containers:
-  # Kept on the pre-existing image (built in #84) instead of the one from `nf-core modules containers create`:
-  # the new Wave/pixi builds lack GenomeInfoDbData, whose data is installed by a conda post-link
-  # script that pixi does not run, so DiMSum fails with "there is no package called 'GenomeInfoDbData'".
-  # No arm64 image for the same reason. The conda lock files are kept from the new build.
   docker:
+    linux/arm64:
+      name: community.wave.seqera.io/library/pandoc_r-base_r-cowplot_r-data.table_pruned:62cb1e5610084bcf
+      build_id: bd-62cb1e5610084bcf_1
+      scan_id: sc-c03743e092404804_1
     linux/amd64:
-      name: community.wave.seqera.io/library/bioconductor-biostrings_r-dimsum_r-base_r-data.table_pruned:cca13eed371a9d84
+      name: community.wave.seqera.io/library/pandoc_r-base_r-cowplot_r-data.table_pruned:688adb584e6a94cf
+      build_id: bd-688adb584e6a94cf_1
+      scan_id: sc-c46bd594a2f4fe0c_1
   singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/pandoc_r-base_r-cowplot_r-data.table_pruned:a74585ddb77477dd
+      build_id: bd-a74585ddb77477dd_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/20/20484f8dc0be43013272e8a46fd62a8da52f68cb542dc739e3529573ae4b16a3/data
     linux/amd64:
-      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/92/9298c391f285d7f2c1155f6a519a96c4f7591971780ba4f10569558282f40b6f/data
+      name: oras://community.wave.seqera.io/library/pandoc_r-base_r-cowplot_r-data.table_pruned:9c46468878571b02
+      build_id: bd-9c46468878571b02_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/65/65d232f07cc98be32d0ee29842ea1cd398eff35dfeb513e9027cd257e6d9e804/data
   conda:
     linux/amd64:
-      lock_file: modules/local/fitness/run_dimsum/.conda-lock/linux_amd64-bd-833765ab7b2cf9aa_1.txt
+      lock_file: modules/local/fitness/run_dimsum/.conda-lock/linux_amd64-bd-688adb584e6a94cf_1.txt
     linux/arm64:
-      lock_file: modules/local/fitness/run_dimsum/.conda-lock/linux_arm64-bd-8a66e8e1354d6370_1.txt
+      lock_file: modules/local/fitness/run_dimsum/.conda-lock/linux_arm64-bd-62cb1e5610084bcf_1.txt

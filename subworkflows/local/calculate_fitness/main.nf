@@ -81,7 +81,9 @@ workflow CALCULATE_FITNESS {
             ch_run_wt_d,
             ch_run_exp_d,
             params.min_counts,
-            params.output_pseudocount
+            params.output_pseudocount,
+            file("${projectDir}/assets/dimsum/report.Rmd", checkIfExists: true),
+            file("${projectDir}/assets/dimsum/Dumpling.png", checkIfExists: true)
         )
         ch_versions = ch_versions.mix(RUN_DIMSUM.out.versions)
         ch_dimsum_dir = RUN_DIMSUM.out.results_dir

@@ -247,9 +247,15 @@
                     "description": "Additionally estimate fitness with DiMSum (Faure et al., 2020). Requires '--fitness'.",
                     "default": false
                 },
+                "dimsum_error_model": {
+                    "type": "boolean",
+                    "description": "Fit DiMSum's error model ('--fitnessErrorModel'): replicate-specific error terms and normalisation, estimated by bootstrapping. Needs at least 30 variants per replicate (90 for three replicates) that pass '--min_counts' and are observed in every replicate; set to false for sparse libraries.",
+                    "help_text": "With the error model, DiMSum's fitness sigmas combine count-based and replicate errors, fitted on the variants that are well covered in every input and output replicate (at least 10 per fitted parameter, i.e. 30 per replicate). Without it, the sigmas are count-based only. The fit runs on one CPU so that its bootstrap resamples, and hence its numbers, do not depend on the CPUs a task is given.",
+                    "default": true
+                },
                 "mutscan": {
                     "type": "boolean",
-                    "description": "Additionally estimate variant enrichment with mutscan (Soneson et al., 2023), using edgeR and limma. Requires '--fitness'.",
+                    "description": "Additionally estimate variant enrichment with edgeR and limma-voom, following mutscan's analysis (Soneson et al., 2023). Requires '--fitness'.",
                     "default": false
                 },
                 "pdb": {

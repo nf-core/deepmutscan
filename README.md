@@ -34,7 +34,7 @@ While DNA synthesis and sequencing technologies have advanced substantially, lon
 - Intrinsic sequencing-error correction of single-nucleotide variant counts from read-linked false double mutants (maximum-likelihood or empirical-Bayes estimators), or from additional wildtype template sequencing
 - Read QC with [Falco](https://github.com/smithlabcode/falco) (FastQC's analyses, in C++), aggregated across all libraries with [MultiQC](https://multiqc.info/)
 - Library quality control: mutant count heatmaps, positional coverage and mutation-type biases, sequencing-depth rarefaction
-- Fitness estimation with a built-in log-ratio estimator, plus optional [DiMSum](https://github.com/lehner-lab/DiMSum) and [mutscan](https://github.com/fmicompbio/mutscan)
+- Fitness estimation with a built-in log-ratio estimator, plus optional [DiMSum](https://github.com/lehner-lab/DiMSum) and [mutscan](https://github.com/fmicompbio/mutscan)-style edgeR/limma enrichment
 - Support for degenerate codon libraries (NNK, NNS, NNH, NNN and combinations), e.g. from nicking mutagenesis, and for custom (position-specific) codon libraries, e.g. from Twist tiles
 - A single, self-contained HTML report per run, and an optional interactive 3D variant effect inspection tool when a wildtype structure is supplied
 - Containerisation via Docker, Singularity/Apptainer and Conda; scalability across HPC and cloud systems; a carbon-footprint estimate of every run (nf-co2footprint)
