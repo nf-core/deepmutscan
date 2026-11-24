@@ -4,8 +4,8 @@ process PREPARE_REFERENCE {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container
-        ? 'REPLACE_WITH_SINGULARITY_HTTPS_URL'
-        : 'REPLACE_WITH_DOCKER_IMAGE'}"
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/2c/2cf682587a97332817d9ebb3ea7fdf5e0e73bbb47e084982871f35a0c87a7043/data'
+        : 'community.wave.seqera.io/library/bwa-mem3_gawk:d06b0c4e4fd28ed3'}"
 
     input:
     tuple val(meta), path(fasta)

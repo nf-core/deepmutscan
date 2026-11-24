@@ -70,3 +70,25 @@ output:
 
 authors:
   - "@MaximilianStammnitz"
+containers:
+  docker:
+    linux/arm64:
+      name: community.wave.seqera.io/library/bwa-mem3_gawk:ceb47ebe4f73a311
+      build_id: bd-ceb47ebe4f73a311_1
+      scan_id: sc-fce22257dcd8ebcf_1
+    linux/amd64:
+      name: community.wave.seqera.io/library/bwa-mem3_gawk:d06b0c4e4fd28ed3
+      build_id: bd-d06b0c4e4fd28ed3_1
+      scan_id: sc-ed81cf89b9347a41_1
+  singularity:
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/bwa-mem3_gawk:a7efd88693524af2
+      build_id: bd-a7efd88693524af2_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/9b/9b034a180ded6ce4c81e755ebc05d2a74da763f1d7f06607437f9e5033c08fdb/data
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/bwa-mem3_gawk:838005b0d45490f3
+      build_id: bd-838005b0d45490f3_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/2c/2cf682587a97332817d9ebb3ea7fdf5e0e73bbb47e084982871f35a0c87a7043/data
+  conda:
+    linux/arm64:
+      lock_file: modules/local/prepare_reference/.conda-lock/linux_arm64-bd-ceb47ebe4f73a311_1.txt
