@@ -47,7 +47,7 @@ input:
         description: Groovy Map containing reference information
     - index:
         type: directory
-        description: bwa-mem3 index files, as produced by BWAMEM3_INDEX
+        description: bwa-mem3 index files, as produced by PREPARE_REFERENCE
         pattern: "bwamem3"
   - - fasta:
         type: file

@@ -49,7 +49,7 @@ Mates must be in the same order in `file1` and `file2`, because vsearch pairs re
 
 ## Reference and reading frame
 
-As of v1.0.0, all libraries in one run of `nf-core/deepmutscan` must stem from the same gene. Provide its wildtype sequence as a FASTA file via `--fasta`. We recommend that the reference contains N- and C-terminal flanking sequences of approximately one read length (e.g. from surrounding vector regions amplified during the sequencing library preparation), which helps to align reads more uniformly at the ends of the ORF.
+As of v1.0.0, all libraries in one run of `nf-core/deepmutscan` must stem from the same gene. Provide its wildtype sequence as a FASTA file via `--fasta`. We recommend that the reference contains N- and C-terminal flanking sequences of approximately one read length (e.g. from surrounding vector regions amplified during the sequencing library preparation), which helps to align reads more uniformly at the ends of the ORF. Lower-case (soft-masked) bases are allowed: the pipeline converts the reference to upper case before any step reads it.
 
 Use `--reading_frame` to give the position of the mutagenised ORF within that sequence, as 1-based, inclusive nucleotide coordinates in the format `start-stop`: `start` is the first nucleotide of the first codon and `stop` the last nucleotide of the last codon to be analysed, so the length of the range must be divisible by three. For example, `--reading_frame 151-450` analyses exactly 100 codons of the reference FASTA.
 

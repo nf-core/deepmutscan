@@ -31,7 +31,7 @@ pick_synonymous_wt_from_range <- function(wt_fasta, counts_merged_tsv, pos_range
   wt_seq_chr <- as.character(wt_subseq)
   wt_len <- nchar(wt_seq_chr)
   if ((wt_len %% 3) != 0) stop("Provided window length is not divisible by 3: ", wt_len)
-  wt_aa  <- Biostrings::translate(wt_subseq, if.fuzzy.codon = "X")
+  wt_aa  <- Biostrings::translate(wt_subseq, if.fuzzy.codon = "X", no.init.codon = TRUE)
   wt_chars <- strsplit(wt_seq_chr, "", fixed = TRUE)[[1]]
 
   ## ---- counts ----
@@ -52,7 +52,7 @@ pick_synonymous_wt_from_range <- function(wt_fasta, counts_merged_tsv, pos_range
 
   ## ---- synonymous filter ----
   var_set <- Biostrings::DNAStringSet(df\$nt_seq)
-  var_aa  <- Biostrings::translate(var_set, if.fuzzy.codon = "X")
+  var_aa  <- Biostrings::translate(var_set, if.fuzzy.codon = "X", no.init.codon = TRUE)
   syn_idx <- which(as.character(var_aa) == as.character(wt_aa))
   if (length(syn_idx) == 0L) stop("No fully-synonymous variants found relative to WT translation.")
 

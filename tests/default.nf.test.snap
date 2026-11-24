@@ -2,9 +2,6 @@
     "-profile test, without fitness, error correction, SeqDepth and structure": {
         "content": [
             {
-                "BWAMEM3_INDEX": {
-                    "bwamem3": "0.17.0"
-                },
                 "DMSANALYSIS_AASEQ": {
                     "r-base": "4.5.1",
                     "r-Biostrings": "2.78.0"
@@ -29,6 +26,10 @@
                     "htslib": 1.25,
                     "samtools": 1.25,
                     "vsearch": "2.32.0"
+                },
+                "PREPARE_REFERENCE": {
+                    "bwa-mem3": "0.17.0",
+                    "gawk": "5.3.1"
                 },
                 "RAW_DATA_QC": {
                     "falco": "2.0.3",
@@ -83,10 +84,10 @@
                 "intermediate_files/bam_files/sorted/GID1A_output_2_pe.sorted.bam",
                 "intermediate_files/bam_files/sorted/GID1A_output_2_pe.sorted.bam.bai",
                 "intermediate_files/bwamem3",
-                "intermediate_files/bwamem3/GID1A.fasta.amb",
-                "intermediate_files/bwamem3/GID1A.fasta.ann",
-                "intermediate_files/bwamem3/GID1A.fasta.bwt.2bit.64",
-                "intermediate_files/bwamem3/GID1A.fasta.pac",
+                "intermediate_files/bwamem3/GID1A.uppercase.fasta.amb",
+                "intermediate_files/bwamem3/GID1A.uppercase.fasta.ann",
+                "intermediate_files/bwamem3/GID1A.uppercase.fasta.bwt.2bit.64",
+                "intermediate_files/bwamem3/GID1A.uppercase.fasta.pac",
                 "intermediate_files/merged_reads",
                 "intermediate_files/merged_reads/GID1A_input_1_pe.vsearch_mergepairs.log",
                 "intermediate_files/merged_reads/GID1A_input_2_pe.vsearch_mergepairs.log",
@@ -213,18 +214,18 @@
             ],
             [
                 "aa_seq.txt:md5,421287586f566191f7da4a7aad7d24a8",
-                "GID1A_input_1_pe.sorted.bam:md5,07b12f347c7b4b9f9d4db44e1d621ccd",
-                "GID1A_input_1_pe.sorted.bam.bai:md5,f8db211d8eb1bba592fd3b5cd510855c",
-                "GID1A_input_2_pe.sorted.bam:md5,9483111b5616dd10ad34dd3d0efd8a9d",
-                "GID1A_input_2_pe.sorted.bam.bai:md5,43343ef16207d031581a069ed44991a1",
-                "GID1A_output_1_pe.sorted.bam:md5,1fbd387c95319d22b97d57b6d37ba4e9",
-                "GID1A_output_1_pe.sorted.bam.bai:md5,5d27d91bf2866bd9cd566ba79f0fc280",
-                "GID1A_output_2_pe.sorted.bam:md5,90885b2cabb4c9c1933dd33a11189cf1",
-                "GID1A_output_2_pe.sorted.bam.bai:md5,1206aa485b9225694debbff633972318",
-                "GID1A.fasta.amb:md5,383ef17f6abb846ab669ebac30f5659b",
-                "GID1A.fasta.ann:md5,30c4a2204f9166d9594c790e0ca58793",
-                "GID1A.fasta.bwt.2bit.64:md5,9dffdbe159c10d2c22af7cae3ab22ec3",
-                "GID1A.fasta.pac:md5,104f743d81d39b2527b5ae52db26654c",
+                "GID1A_input_1_pe.sorted.bam:md5,abfbe4226d7253edc253d4ca8332e24f",
+                "GID1A_input_1_pe.sorted.bam.bai:md5,625c346d7717750be39ee45166979e03",
+                "GID1A_input_2_pe.sorted.bam:md5,4c08b16af61b2b87f38b89eae172d496",
+                "GID1A_input_2_pe.sorted.bam.bai:md5,523ffe2bdfae436626170ff06f62c3bf",
+                "GID1A_output_1_pe.sorted.bam:md5,a20ff4fd1bd00adcef3e492438092e27",
+                "GID1A_output_1_pe.sorted.bam.bai:md5,d4f8a95d8913755701790d6ea9507836",
+                "GID1A_output_2_pe.sorted.bam:md5,107f64a16c9f13d0451d94a1f29595fd",
+                "GID1A_output_2_pe.sorted.bam.bai:md5,465a36cb7934c9ab0296c2d6d65a74ea",
+                "GID1A.uppercase.fasta.amb:md5,383ef17f6abb846ab669ebac30f5659b",
+                "GID1A.uppercase.fasta.ann:md5,30c4a2204f9166d9594c790e0ca58793",
+                "GID1A.uppercase.fasta.bwt.2bit.64:md5,9dffdbe159c10d2c22af7cae3ab22ec3",
+                "GID1A.uppercase.fasta.pac:md5,104f743d81d39b2527b5ae52db26654c",
                 "GID1A_input_1_pe.vsearch_mergepairs.log:md5,51c035ba4bcda5576d6e18c56b48a58d",
                 "GID1A_input_2_pe.vsearch_mergepairs.log:md5,0e46e95d1b785d0e960d4dbf3e708ab6",
                 "GID1A_output_1_pe.vsearch_mergepairs.log:md5,48324c59dc485dacd915b56f41df3c3f",
@@ -273,7 +274,7 @@
                 "GID1A_output_2_pe_2_fastqc_data.txt:md5,02329f5724d6c3a7089b3a6707e7edfa"
             ]
         ],
-        "timestamp": "2026-11-23T14:09:33.71848",
+        "timestamp": "2026-11-24T14:59:24.991019",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
@@ -282,9 +283,6 @@
     "-profile test": {
         "content": [
             {
-                "BWAMEM3_INDEX": {
-                    "bwamem3": "0.17.0"
-                },
                 "COUNTS_TO_FITNESS": {
                     "r-base": "4.5.1",
                     "r-Biostrings": "2.78.0"
@@ -354,6 +352,10 @@
                 },
                 "MERGE_COUNTS": {
                     "r-base": "4.5.1"
+                },
+                "PREPARE_REFERENCE": {
+                    "bwa-mem3": "0.17.0",
+                    "gawk": "5.3.1"
                 },
                 "RAW_DATA_QC": {
                     "falco": "2.0.3",
@@ -478,10 +480,10 @@
                 "intermediate_files/bam_files/sorted/GID1A_output_2_pe.sorted.bam",
                 "intermediate_files/bam_files/sorted/GID1A_output_2_pe.sorted.bam.bai",
                 "intermediate_files/bwamem3",
-                "intermediate_files/bwamem3/GID1A.fasta.amb",
-                "intermediate_files/bwamem3/GID1A.fasta.ann",
-                "intermediate_files/bwamem3/GID1A.fasta.bwt.2bit.64",
-                "intermediate_files/bwamem3/GID1A.fasta.pac",
+                "intermediate_files/bwamem3/GID1A.uppercase.fasta.amb",
+                "intermediate_files/bwamem3/GID1A.uppercase.fasta.ann",
+                "intermediate_files/bwamem3/GID1A.uppercase.fasta.bwt.2bit.64",
+                "intermediate_files/bwamem3/GID1A.uppercase.fasta.pac",
                 "intermediate_files/false_doubles_pools",
                 "intermediate_files/false_doubles_pools/GID1A",
                 "intermediate_files/false_doubles_pools/GID1A/fdm_kappa_profile.csv",
@@ -668,18 +670,18 @@
                 "experimentalDesign.tsv:md5,f95dea4a3e6cf7e206e789a96e502604",
                 "synonymous_wt.txt:md5,bb94c5975185b80f8d63acebfbf4a0da",
                 "aa_seq.txt:md5,421287586f566191f7da4a7aad7d24a8",
-                "GID1A_input_1_pe.sorted.bam:md5,07b12f347c7b4b9f9d4db44e1d621ccd",
-                "GID1A_input_1_pe.sorted.bam.bai:md5,f8db211d8eb1bba592fd3b5cd510855c",
-                "GID1A_input_2_pe.sorted.bam:md5,9483111b5616dd10ad34dd3d0efd8a9d",
-                "GID1A_input_2_pe.sorted.bam.bai:md5,43343ef16207d031581a069ed44991a1",
-                "GID1A_output_1_pe.sorted.bam:md5,1fbd387c95319d22b97d57b6d37ba4e9",
-                "GID1A_output_1_pe.sorted.bam.bai:md5,5d27d91bf2866bd9cd566ba79f0fc280",
-                "GID1A_output_2_pe.sorted.bam:md5,90885b2cabb4c9c1933dd33a11189cf1",
-                "GID1A_output_2_pe.sorted.bam.bai:md5,1206aa485b9225694debbff633972318",
-                "GID1A.fasta.amb:md5,383ef17f6abb846ab669ebac30f5659b",
-                "GID1A.fasta.ann:md5,30c4a2204f9166d9594c790e0ca58793",
-                "GID1A.fasta.bwt.2bit.64:md5,9dffdbe159c10d2c22af7cae3ab22ec3",
-                "GID1A.fasta.pac:md5,104f743d81d39b2527b5ae52db26654c",
+                "GID1A_input_1_pe.sorted.bam:md5,abfbe4226d7253edc253d4ca8332e24f",
+                "GID1A_input_1_pe.sorted.bam.bai:md5,625c346d7717750be39ee45166979e03",
+                "GID1A_input_2_pe.sorted.bam:md5,4c08b16af61b2b87f38b89eae172d496",
+                "GID1A_input_2_pe.sorted.bam.bai:md5,523ffe2bdfae436626170ff06f62c3bf",
+                "GID1A_output_1_pe.sorted.bam:md5,a20ff4fd1bd00adcef3e492438092e27",
+                "GID1A_output_1_pe.sorted.bam.bai:md5,d4f8a95d8913755701790d6ea9507836",
+                "GID1A_output_2_pe.sorted.bam:md5,107f64a16c9f13d0451d94a1f29595fd",
+                "GID1A_output_2_pe.sorted.bam.bai:md5,465a36cb7934c9ab0296c2d6d65a74ea",
+                "GID1A.uppercase.fasta.amb:md5,383ef17f6abb846ab669ebac30f5659b",
+                "GID1A.uppercase.fasta.ann:md5,30c4a2204f9166d9594c790e0ca58793",
+                "GID1A.uppercase.fasta.bwt.2bit.64:md5,9dffdbe159c10d2c22af7cae3ab22ec3",
+                "GID1A.uppercase.fasta.pac:md5,104f743d81d39b2527b5ae52db26654c",
                 "fdm_kappa_profile.csv:md5,af8c2c6d21d846c1cf2d82c5cae33986",
                 "fdm_prior_fit.csv:md5,1f1126e88584359315e5acde929c0f34",
                 "fdm_rates.csv:md5,5783a26ce24387587a6d931685d36aad",
@@ -760,7 +762,7 @@
                 "limma_rowCount": 792
             }
         ],
-        "timestamp": "2026-11-23T17:59:37.578289",
+        "timestamp": "2026-11-24T14:58:25.741251",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
@@ -769,9 +771,6 @@
     "-profile test -stub": {
         "content": [
             {
-                "BWAMEM3_INDEX": {
-                    "bwamem3": "0.17.0"
-                },
                 "COUNTS_TO_FITNESS": {
                     "stub-version": "0.0.0"
                 },
@@ -824,6 +823,10 @@
                 },
                 "MERGE_COUNTS": {
                     "r-base": "0.0.0"
+                },
+                "PREPARE_REFERENCE": {
+                    "bwa-mem3": "0.17.0",
+                    "gawk": "5.3.1"
                 },
                 "RAW_DATA_QC": {
                     "falco": "2.0.3",
@@ -908,10 +911,10 @@
                 "intermediate_files/bam_files/sorted/GID1A_output_2_pe.sorted.bam",
                 "intermediate_files/bam_files/sorted/GID1A_output_2_pe.sorted.bam.bai",
                 "intermediate_files/bwamem3",
-                "intermediate_files/bwamem3/GID1A.fasta.amb",
-                "intermediate_files/bwamem3/GID1A.fasta.ann",
-                "intermediate_files/bwamem3/GID1A.fasta.bwt.2bit.64",
-                "intermediate_files/bwamem3/GID1A.fasta.pac",
+                "intermediate_files/bwamem3/GID1A.uppercase.fasta.amb",
+                "intermediate_files/bwamem3/GID1A.uppercase.fasta.ann",
+                "intermediate_files/bwamem3/GID1A.uppercase.fasta.bwt.2bit.64",
+                "intermediate_files/bwamem3/GID1A.uppercase.fasta.pac",
                 "intermediate_files/false_doubles_pools",
                 "intermediate_files/false_doubles_pools/GID1A",
                 "intermediate_files/false_doubles_pools/GID1A/fdm_kappa_profile.csv",
@@ -1068,7 +1071,7 @@
                 "variant_effect_inspection_tool/variant_effect_inspection_tool.html"
             ]
         ],
-        "timestamp": "2026-11-23T17:01:17.847488",
+        "timestamp": "2026-11-24T15:00:11.253918",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"

@@ -27,7 +27,7 @@ aa_seq <- function(wt_seq_input, pos_range, output_file) {
   coding_seq <- subseq(wt_seq, start = start_pos, end = stop_pos)
 
   # Translate the coding sequence into an amino acid sequence
-  aa_seq <- translate(coding_seq)
+  aa_seq <- translate(coding_seq, no.init.codon = TRUE)
 
   # Write the amino acid sequence to a .txt file
   write(as.character(aa_seq), file = output_file)

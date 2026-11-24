@@ -5,7 +5,7 @@
 */
 include { RAW_DATA_QC            } from '../modules/local/raw_data_qc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
-include { BWAMEM3_INDEX          } from '../modules/nf-core/bwamem3/index/main'
+include { PREPARE_REFERENCE      } from '../modules/local/prepare_reference/main'
 include { MERGE_ALIGN_COUNT      } from '../modules/local/merge_align_count/main'
 include { DMSANALYSIS_AASEQ      } from '../modules/local/dmsanalysis/aa_seq/main'
 include { DMSANALYSIS_POSSIBLE_MUTATIONS      } from '../modules/local/dmsanalysis/possible_mutations/main'
@@ -65,9 +65,19 @@ workflow DEEPMUTSCAN {
 
     // Define input channels from parameters. The reference and the samplesheet are one file per run,
     // so they are value channels: every task that needs them reads the same value, however many
-    // libraries there are. Outputs of processes whose inputs are all value channels (BWAMEM3_INDEX,
+    // libraries there are. Outputs of processes whose inputs are all value channels (PREPARE_REFERENCE,
     // DMSANALYSIS_AASEQ, DMSANALYSIS_POSSIBLE_MUTATIONS, EXPDESIGN_FITNESS) are value channels too.
-    def ch_fasta = Channel.value(tuple([id: 'ref'], file(params.fasta, checkIfExists: true)))
+    //
+    // MODULE: the reference, prepared once per run: in upper case, before any step reads it, and its
+    // bwa-mem3 index. Lower-case (soft-masked) bases are the same bases, but the counter, the error
+    // correction and the fitness steps compare reference and read bases as characters, so a
+    // soft-masked stretch would read as mismatches (and stop the error correction with a coordinate
+    // mismatch). Header lines are left as they are; a Windows line end is dropped with the case change.
+    //
+    PREPARE_REFERENCE(
+        Channel.value(tuple([id: 'ref'], file(params.fasta, checkIfExists: true)))
+    )
+    def ch_fasta = PREPARE_REFERENCE.out.fasta                               // tuple(val(meta), path(fasta)), a value channel
     def ch_fasta_file = ch_fasta.map { _meta, fasta -> fasta }               // path(fasta)
 
     // CLI params arrive as Strings; normalise once here (see asBool/asInt)
@@ -124,13 +134,6 @@ workflow DEEPMUTSCAN {
     ch_multiqc_files = ch_multiqc_files.mix(RAW_DATA_QC.out.data.flatMap { _meta, files -> files })
 
     //
-    // MODULE: bwa-mem3 index of the reference ORF
-    //
-    BWAMEM3_INDEX (
-        ch_fasta
-    )
-
-    //
     // MODULE: Merge each raw read pair into a consensus read (vsearch), align the merged reads
     // (bwa-mem3), filter the alignments (samtools) and count the variants (dms_count), streamed in
     // one task per library. The counter reads the alignments as they arrive; a sorted, indexed BAM
@@ -138,7 +141,7 @@ workflow DEEPMUTSCAN {
     //
     MERGE_ALIGN_COUNT(
       ch_reads,                        // tuple(val(meta), path(reads)): checked raw paired-end FASTQ
-      BWAMEM3_INDEX.out.index,         // tuple(val(meta2), path(index)), a value channel
+      PREPARE_REFERENCE.out.index,     // tuple(val(meta2), path(index)), a value channel
       ch_fasta_file,                   // path(fasta)
       reading_frame_ch,                // val(reading_frame string, 1-based inclusive)
       base_qual_ch,                    // val(base_qual)
@@ -564,7 +567,7 @@ workflow DEEPMUTSCAN {
     emit:
     multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
-    bwa_index      = BWAMEM3_INDEX.out.index
+    bwa_index      = PREPARE_REFERENCE.out.index
     merged_bam     = MERGE_ALIGN_COUNT.out.bam
 }
 
