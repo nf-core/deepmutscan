@@ -246,13 +246,6 @@
     "-profile test": {
         "content": [
             {
-                "COUNTS_TO_FITNESS": {
-                    "r-base": "4.5.1"
-                },
-                "DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES": {
-                    "r-base": "4.5.1",
-                    "dms-fdmcorrect": "0.1.2"
-                },
                 "DMSANALYSIS_ERROR_SIGNATURES": {
                     "python": "3.12.3",
                     "pandas": "2.2.1",
@@ -262,12 +255,9 @@
                     "r-base": "4.5.1",
                     "dms-fdmcorrect": "0.1.2"
                 },
-                "DMSANALYSIS_FDM_EVIDENCE": {
+                "DMSANALYSIS_PROCESS_VARIANT_COUNTS": {
                     "r-base": "4.5.1",
                     "dms-fdmcorrect": "0.1.2"
-                },
-                "DMSANALYSIS_PROCESS_VARIANT_COUNTS": {
-                    "r-base": "4.5.1"
                 },
                 "DMSANALYSIS_REFERENCE_TABLES": {
                     "r-base": "4.5.1"
@@ -666,7 +656,7 @@
                 "limma_rowCount": 792
             }
         ],
-        "timestamp": "2026-11-24T18:08:42.281374",
+        "timestamp": "2026-11-25T11:57:32.324845",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
@@ -675,22 +665,12 @@
     "-profile test -stub": {
         "content": [
             {
-                "COUNTS_TO_FITNESS": {
-                    "stub-version": "0.0.0"
-                },
-                "DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES": {
-                    "stub-version": "0.0.0"
-                },
                 "DMSANALYSIS_ERROR_SIGNATURES": {
                     "python": "0.0.0",
                     "pandas": "0.0.0",
                     "numpy": "0.0.0"
                 },
                 "DMSANALYSIS_FDM_ESTIMATE": {
-                    "r-base": "0.0.0",
-                    "dms-fdmcorrect": "0.0.0"
-                },
-                "DMSANALYSIS_FDM_EVIDENCE": {
                     "r-base": "0.0.0",
                     "dms-fdmcorrect": "0.0.0"
                 },
@@ -946,7 +926,7 @@
                 "variant_effect_inspection_tool/variant_effect_inspection_tool.html"
             ]
         ],
-        "timestamp": "2026-11-24T18:09:42.498781",
+        "timestamp": "2026-11-25T11:58:30.31321",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.10.0"
