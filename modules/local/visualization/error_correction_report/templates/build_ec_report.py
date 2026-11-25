@@ -214,6 +214,8 @@ for ap_ in sorted("$anchor_profiles".split()):
                     "gd_reads": [f(v, 6) for v in t_["gd_reads"]], "gd_exposure": [f(v, 6) for v in t_["gd_exposure"]],
                     "gd_anchor_exposure": [f(v, 6) for v in t_["gd_anchor_exposure"]]
                     if "gd_anchor_exposure" in t_.columns else [None] * len(t_)})
+# in the order the experiment ran, not in the order the files were staged (which follows the task hashes)
+anchors.sort(key=lambda a_: file_order_key(a_["library"]))
 
 # error-spectrum signature fits, one per pool (false doubles; empty otherwise or with --skip_error_signatures)
 signatures = []

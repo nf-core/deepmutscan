@@ -16,7 +16,7 @@ include { RUN_MUTSCAN }        from '../../../modules/local/fitness/run_mutscan/
 workflow CALCULATE_FITNESS {
 
     take:
-    ch_fitness_input    // channel: output from COUNTS_TO_FITNESS (grouped by sample/replicate logic)
+    ch_counts           // channel: tuple(val(meta), path) - each library's variant counts (error-corrected, if a correction ran)
     ch_samplesheet_csv  // value channel: path to samplesheet csv
     ch_fasta            // value channel: tuple([meta], path(fasta))
     val_reading_frame   // value channel: reading frame param
@@ -28,29 +28,39 @@ workflow CALCULATE_FITNESS {
     ch_versions = Channel.empty()
 
     // 1. Group per biological sample
-    ch_fitness_input
-        .map { meta, tsv ->
+    ch_counts
+        .map { meta, csv ->
             def s  = meta.sample as String
             def id = meta.id     as String
             def base = s ? (s.replaceFirst(/_(input|output|quality)\d+$/, ''))
                        : (id?.tokenize('_')?.first())
-            tuple(base as String, tuple(meta, tsv))
+            tuple(base as String, meta, csv)
         }
         .groupTuple()
-        .map { base, pairs ->
-            // sort by replicate so the staged file order is deterministic (cacheable)
-            def inputs  = pairs.findAll { it[0].type == 'input'  }.sort { it[0].replicate }.collect { it[1] }
-            def outputs = pairs.findAll { it[0].type == 'output' }.sort { it[0].replicate }.collect { it[1] }
-            tuple([sample: base], inputs, outputs)
+        .map { base, metas, csvs ->
+            // inputs and outputs by replicate (the order in which their tables are merged), then the
+            // sample's other libraries by id, whose tables are written as well; a fixed order keeps the
+            // staged files deterministic (cacheable)
+            def idx = (0..<metas.size()).toList().sort { a, b ->
+                def ra = libraryRank(metas[a])
+                def rb = libraryRank(metas[b])
+                ra != rb ? ra <=> rb : (ra < 2 ? metas[a].replicate <=> metas[b].replicate : metas[a].id <=> metas[b].id)
+            }
+            def libs = idx.collect { i -> metas[i] }
+            tuple([sample: base], libs, idx.collect { i -> csvs[i] })
         }
-        .filter { smeta, ins, outs -> ins && outs }
+        .filter { _smeta, libs, _csvs -> libs.any { m -> m.type == 'input' } && libs.any { m -> m.type == 'output' } }
+        .map { smeta, libs, csvs ->
+            tuple(smeta, libs.collect { m -> m.id }.join(' '), libs.collect { m -> m.type }.join(' '), csvs)
+        }
         .set { ch_fitness_bundled }
 
-    // 2. Default fitness estimation: one task per sample merges the counts, derives the experimental
-    //    design, picks the synonymous wildtype proxy, estimates fitness and draws the QC plots and
-    //    heatmaps. The run-level inputs are value channels, so every sample gets them.
+    // 2. Default fitness estimation: one task per sample writes each library's counts in DiMSum's
+    //    input format, merges them, derives the experimental design, picks the synonymous wildtype
+    //    proxy, estimates fitness and draws the QC plots and heatmaps. The run-level inputs are value
+    //    channels, so every sample gets them.
     FITNESS_ESTIMATION(
-        ch_fitness_bundled,                       // tuple(val(sample), path(inputs), path(outputs))
+        ch_fitness_bundled,                       // tuple(val(sample), val(library_ids), val(library_types), path(counts))
         ch_samplesheet_csv,                       // path(samplesheet)
         ch_fasta.map { _meta, fasta -> fasta },   // path(fasta)
         val_reading_frame,                        // val(pos_range)
@@ -110,4 +120,9 @@ workflow CALCULATE_FITNESS {
     mutscan_plots      = ch_mutscan_plots
     dimsum_dir         = ch_dimsum_dir
     versions           = ch_versions
+}
+
+// Merge order of a library within its sample: inputs, then outputs, then any other libraries
+def libraryRank(meta) {
+    return meta.type == 'input' ? 0 : (meta.type == 'output' ? 1 : 2)
 }
