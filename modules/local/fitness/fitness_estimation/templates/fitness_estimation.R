@@ -1,17 +1,20 @@
 #!/usr/bin/env Rscript
 
-# Default fitness estimation of one biological sample, in one task: the six steps that used to be six
-# processes (MERGE_COUNTS, EXPDESIGN_FITNESS, FIND_SYNONYMOUS_MUTATION, FITNESS_CALCULATION, FITNESS_QC,
-# FITNESS_HEATMAP), run in sequence in one R session on the same image. The functions below are those
+# Default fitness estimation of one biological sample, in one task: the seven steps that used to be
+# seven processes (COUNTS_TO_FITNESS per library, then MERGE_COUNTS, EXPDESIGN_FITNESS,
+# FIND_SYNONYMOUS_MUTATION, FITNESS_CALCULATION, FITNESS_QC, FITNESS_HEATMAP), run in sequence in one R
+# session on the same image. The functions below are those
 # scripts' code; the count merging, which was top-level script code, is wrapped in merge_counts().
 # Every intermediate file is still written (and published) as before, and the next step reads it back
 # exactly as the separate process did. The Biostrings and dplyr calls of those scripts are base R
 # (helpers below, with the same results).
 #
-# Inputs:  input_counts / output_counts (per-library DiMSum-format count tables of the sample, sorted
-#          by replicate), samplesheet_csv, wt_fasta, pos_range ("start-end", 1-based inclusive),
+# Inputs:  library_ids / library_types (the sample's libraries: inputs and outputs by replicate, then
+#          any others), counts (their variant-count tables, error-corrected if a correction ran, in
+#          the same order), samplesheet_csv, wt_fasta, pos_range ("start-end", 1-based inclusive),
 #          wt_seq (wildtype amino-acid sequence, one line), min_counts, output_pseudocount
-# Outputs: counts_merged.tsv, experimentalDesign.tsv, synonymous_wt.txt, fitness_estimation.tsv,
+# Outputs: <library>_fitness_input.tsv (one per library, DiMSum's input format), counts_merged.tsv,
+#          experimentalDesign.tsv, synonymous_wt.txt, fitness_estimation.tsv,
 #          fitness_estimation_count_correlation.pdf, fitness_estimation_fitness_correlation.pdf,
 #          fitness_heatmap.pdf
 
@@ -104,6 +107,79 @@ left_join_base <- function(x, y, by) {
 ####################################################################################################
 # 1. Merge the per-library counts of the sample (counts_merged.tsv)
 ####################################################################################################
+
+####################################################################################################
+# Per-library count table in DiMSum's input format (formerly the COUNTS_TO_FITNESS process): one row
+# per variant, its nucleotide sequence over the reading frame and its count (the corrected count if
+# the table has one), without a header
+####################################################################################################
+
+generate_fitness_input <- function(wt_seq_path, counts_file, pos_range, output_file_path) {
+  # Parse the position range
+  positions <- unlist(strsplit(pos_range, "-"))
+  start_pos <- as.numeric(positions[1])
+  stop_pos <- as.numeric(positions[2])
+
+  # Load the wild-type sequence
+  wt_seq <- read_fasta(wt_seq_path)[1]  # the first sequence
+  wt_seq <- subseq_checked(wt_seq, start = start_pos, end = stop_pos)
+
+  # Split the wild-type sequence into codons (groups of 3 bases)
+  wt_codons <- substring(wt_seq, seq(1, nchar(wt_seq), 3), seq(3, nchar(wt_seq), 3))
+
+  # Helper function to process variant-count CSVs into count data
+  process_counts_file <- function(counts_csv) {
+    # Load the input variant-count CSV file
+    counts_data <- read.csv(counts_csv, stringsAsFactors = FALSE)
+
+    # Pre-allocate one slot per row. Growing `results` with rbind() inside the loop reallocated
+    # the whole frame on every variant (O(n^2)); for a long ORF that dominated the runtime.
+    n_rows <- nrow(counts_data)
+    seq_strings <- character(n_rows)
+    seq_counts  <- numeric(n_rows)
+
+    if (n_rows == 0) {
+      return(data.frame(nt_seq = character(0), count = numeric(0), stringsAsFactors = FALSE))
+    }
+
+    # Iterate over each row in the input data
+    for (i in 1:n_rows) {
+      # Extract the mutation info
+      codon_mut <- counts_data\$codon_mut[i]
+
+      if("counts_corrected" %in% colnames(counts_data)){
+        counts <- counts_data\$counts_corrected[i]
+      }else{
+        counts <- counts_data\$counts[i]
+      }
+
+      # Create a mutable copy of the wild-type codons
+      mutated_codons <- wt_codons
+
+      # Apply the mutation
+      mutations <- strsplit(codon_mut, ", ")[[1]]
+      for (mutation in mutations) {
+        codon_position <- as.numeric(sub(":.*", "", mutation))
+        new_codon <- sub(".*>", "", mutation)
+        # Replace the codon at the specified position
+        mutated_codons[codon_position] <- new_codon
+      }
+
+      # Convert the mutated codons back to a sequence string
+      seq_strings[i] <- paste(mutated_codons, collapse = "")
+      seq_counts[i]  <- counts
+    }
+
+    return(data.frame(nt_seq = seq_strings, count = seq_counts, stringsAsFactors = FALSE))
+  }
+
+  # Process the variant-count file
+  cat("Processing variant-count file...\\n")
+  processed_data <- process_counts_file(counts_file)
+
+  # Write the processed data to a file without column names
+  write.table(processed_data, file = output_file_path, sep = "\\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+}
 
 merge_counts <- function(raw_inputs_str, raw_outputs_str, out_path = "counts_merged.tsv") {
 
@@ -1070,9 +1146,23 @@ run_fitness_rescaled_heatmaps <- function(fitness_table_path,
 #####
 # run functions
 #####
+library_ids    <- strsplit("$library_ids", " ", fixed = TRUE)[[1]]
+library_types  <- strsplit("$library_types", " ", fixed = TRUE)[[1]]
+library_counts <- strsplit("${[counts].flatten().join(' ')}", " ", fixed = TRUE)[[1]]
+stopifnot(length(library_ids) == length(library_types), length(library_ids) == length(library_counts))
+fitness_inputs <- paste0(library_ids, "_fitness_input.tsv")
+for (i in seq_along(library_ids)) {
+  generate_fitness_input(
+    wt_seq_path = "$wt_fasta",
+    counts_file = library_counts[i],
+    pos_range = "$pos_range",
+    output_file_path = fitness_inputs[i]
+  )
+}
+
 merge_counts(
-  raw_inputs_str  = "$input_counts",
-  raw_outputs_str = "$output_counts",
+  raw_inputs_str  = paste(fitness_inputs[library_types == "input"], collapse = " "),
+  raw_outputs_str = paste(fitness_inputs[library_types == "output"], collapse = " "),
   out_path        = "counts_merged.tsv"
 )
 

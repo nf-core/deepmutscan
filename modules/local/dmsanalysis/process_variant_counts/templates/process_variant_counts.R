@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 
-# four parts condensed into one R script
+# four parts condensed into one R script; with --error_correction false_doubles a fifth, the library's
+# false-double-mutant error evidence (formerly the DMSANALYSIS_FDM_EVIDENCE process)
 
 #########
 # process raw counts
@@ -314,6 +315,31 @@ prepare_counts_data_for_counts_heatmaps(
 )
 
 
+#########
+# false-double-mutant (FDM) error evidence, with --error_correction false_doubles
+#########
+
+# For every observed single-nucleotide library variant (SNV) j: F_j, the reads carrying j together with a
+# programmed multi-nucleotide codon variant (an anchor) within max_fd_dist codons but not closer than
+# min_fd_dist, and M_j, the anchor-bearing reads that span codon j (the exposure). Also the genuine double
+# mutants (two programmed multi-nucleotide variants in one read) by codon distance, for the estimate step.
+# The model and its code are the fdmcorrect R package (bioconda::dms-fdmcorrect,
+# https://github.com/MaximilianStammnitz/dms-fdmcorrect); its documentation describes each step.
+fdm_evidence_run <- "${fdm_evidence}" == "true"
+if (fdm_evidence_run) {
+  suppressPackageStartupMessages(library(fdmcorrect))
+  fdm_evidence(
+      raw_counts       = "$variantCounts",
+      library_variants = "variantCounts_filtered_by_library.csv",
+      reference        = "$wt_fasta",
+      id               = "${meta.id}",
+      max_fd_dist      = ${max_fd_dist},
+      min_fd_dist      = ${min_fd_dist},
+      outdir           = "."
+  )
+}
+
+
 
 
 
@@ -330,7 +356,8 @@ f <- file("versions.yml", "w")
 writeLines(
   c(
     '"${task.process}":',
-    paste('    r-base:', r_version)
+    paste('    r-base:', r_version),
+    if (fdm_evidence_run) paste('    dms-fdmcorrect:', as.character(packageVersion("fdmcorrect")))
   ),
   f
 )

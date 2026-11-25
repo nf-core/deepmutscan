@@ -1,7 +1,7 @@
 name: "fitness_estimation"
 description: |
-  Default fitness estimation of one biological sample, in one task: merges the per-library count
-  tables, derives the DiMSum experimental design from the samplesheet, picks the synonymous wildtype
+  Default fitness estimation of one biological sample, in one task: writes each library's counts in
+  DiMSum's input format, merges them, derives the DiMSum experimental design from the samplesheet, picks the synonymous wildtype
   proxy, computes raw and rescaled log-enrichment fitness per replicate (synonymous = 0, stop = -1),
   and draws the count- and fitness-correlation plots and the fitness heatmaps.
 keywords:
@@ -18,14 +18,16 @@ input:
         description: |
           Groovy Map describing the biological sample
           e.g. `[ sample:'GID1A' ]`
-    - input_counts:
+    - library_ids:
+        type: string
+        description: The ids of the sample's libraries, space-separated - its input and output libraries by replicate, then any others
+    - library_types:
+        type: string
+        description: Their types (input, output, wildtype), space-separated, in the same order
+    - counts:
         type: list
-        description: Per-library DiMSum-format count tables of the input (baseline) libraries, sorted by replicate
-        pattern: "*_fitness_input.tsv"
-    - output_counts:
-        type: list
-        description: Per-library DiMSum-format count tables of the output (selection) libraries, sorted by replicate
-        pattern: "*_fitness_input.tsv"
+        description: Their variant-count tables (library-filtered, error-corrected if a correction ran), in the same order
+        pattern: "*.csv"
   - - samplesheet_csv:
         type: file
         description: The pipeline samplesheet (sample, type, replicate, file1, file2)
@@ -49,6 +51,14 @@ input:
         description: Pseudocount added to output dropouts; 0 leaves them without an estimate (`--output_pseudocount`)
 
 output:
+  - fitness_input:
+      - sample:
+          type: map
+          description: Groovy Map describing the biological sample
+      - "*_fitness_input.tsv":
+          type: file
+          description: One per library of the sample - its variants as nucleotide sequences of the reading frame with their (corrected) counts, DiMSum's input format, without a header
+          pattern: "*_fitness_input.tsv"
   - merged_counts:
       - sample:
           type: map

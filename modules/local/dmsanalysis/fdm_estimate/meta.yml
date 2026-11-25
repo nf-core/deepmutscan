@@ -1,5 +1,5 @@
 name: "dmsanalysis_fdm_estimate"
-description: "Estimates per-variant sequencing error rates for one pool of libraries from their false-double-mutant evidence, by maximum likelihood or by Gamma-Poisson empirical Bayes with substitution-type or trinucleotide-context priors."
+description: "Estimates per-variant sequencing error rates for one pool of libraries from their false-double-mutant evidence, by maximum likelihood or by Gamma-Poisson empirical Bayes with substitution-type or trinucleotide-context priors, and corrects the counts of every library of the pool with them."
 keywords:
   - deep mutational scanning
   - error correction
@@ -21,16 +21,51 @@ input:
         description: |
           Groovy Map with the pool identifier and whether the pool is a wildtype-template library
           e.g. `[ id:'ORF1_input', wildtype:false ]`
+    - libraries:
+        type: list
+        description: The metas of the pool's libraries, in id order
+    - library_ids:
+        type: string
+        description: Their ids, space-separated, in the same order
     - evidence:
         type: file
-        description: One `fdm_evidence.csv` per library of the pool.
+        description: One `fdm_evidence.csv` per library of the pool, in the same order.
         pattern: "fdm_evidence.csv"
+    - profiles:
+        type: file
+        description: One `fdm_distance_profile.csv` per library of the pool, in the same order.
+        pattern: "fdm_distance_profile.csv"
+    - exposures:
+        type: file
+        description: One `fdm_exposure_by_distance.csv` per library of the pool, in the same order.
+        pattern: "fdm_exposure_by_distance.csv"
+    - filtered:
+        type: file
+        description: One library-filtered single-codon variant count table per library of the pool, in the same order.
+        pattern: "*.csv"
+    - completed:
+        type: file
+        description: One completed library table (all possible variants) per library of the pool, in the same order.
+        pattern: "*.csv"
+  - - wt_fasta:
+        type: file
+        description: Reference the reads were aligned to (coordinate frame of `base_mut`).
+        pattern: "*.{fa,fasta,fna}"
+  - - aa_seq:
+        type: file
+        description: Reference amino-acid sequence (one line).
   - - method:
         type: string
         description: Estimator, `eb` or `mle`.
   - - prior:
         type: string
         description: Empirical-Bayes prior classes, `trinucleotide_context` or `substitution_type`.
+  - - max_fd_dist:
+        type: integer
+        description: The largest anchor distance of the evidence (`--max_FDdist`).
+  - - subtract_genuine_doubles:
+        type: boolean
+        description: Whether the reads expected from genuine double mutants are removed from the false-double reads first (`--subtract_genuine_doubles`).
 
 output:
   - rates:
@@ -49,6 +84,52 @@ output:
           type: file
           description: Fitted prior per level and class - pooled rate, prior mean and strength (nu), whether nu was fitted or inherited, and the pool's median shrinkage weight.
           pattern: "fdm_prior_fit.csv"
+  - rates_per_library:
+      - meta:
+          type: map
+          description: Groovy Map with the pool identifier
+      - fdm_rates_per_library.csv:
+          type: file
+          description: Per single-nucleotide variant and library of the pool - the library's own `F`, `M`, rate and shrinkage weight, for the error-correction report.
+          pattern: "fdm_rates_per_library.csv"
+  - kappa_profile:
+      - meta:
+          type: map
+          description: Groovy Map with the pool identifier
+      - fdm_kappa_profile.csv:
+          type: file
+          description: The pool's genuine-double rate by codon distance, measured and smoothed (kappa).
+          pattern: "fdm_kappa_profile.csv"
+  - corrected:
+      - meta:
+          type: map
+          description: Groovy Map with the pool identifier
+      - libraries:
+          type: list
+          description: The metas of the pool's libraries, in id order
+      - "*/variantCounts_filtered_by_library_error_corrected.csv":
+          type: file
+          description: One per library of the pool, in a folder named after the library - library-filtered counts with added `counts_corrected` / `counts_per_cov_corrected` columns.
+          pattern: "*/variantCounts_filtered_by_library_error_corrected.csv"
+      - "*/variantCounts_for_heatmaps_error_corrected.csv":
+          type: file
+          description: One per library of the pool, in a folder named after the library - amino-acid-level heatmap table built from corrected counts (canonical `total_counts` columns).
+          pattern: "*/variantCounts_for_heatmaps_error_corrected.csv"
+      - "*/library_completed_variantCounts_error_corrected.csv":
+          type: file
+          description: One per library of the pool, in a folder named after the library - completed library table with corrected counts propagated (for logdiff etc.).
+          pattern: "*/library_completed_variantCounts_error_corrected.csv"
+  - seq_error_rate:
+      - meta:
+          type: map
+          description: Groovy Map with the pool identifier
+      - libraries:
+          type: list
+          description: The metas of the pool's libraries, in id order
+      - "*/seq_error_rate.csv":
+          type: file
+          description: One per library of the pool, in a folder named after the library - every possible single-nucleotide substitution along the reference - observed frequency, applied error rate, this library's `F` and `M`, the pool's `F` and `M`, prior mean, prior strength and shrinkage weight.
+          pattern: "*/seq_error_rate.csv"
   - versions:
       - versions.yml:
           type: file

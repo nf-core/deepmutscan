@@ -1,5 +1,5 @@
 name: "dmsanalysis_process_variant_counts"
-description: "Processes the raw variant count table, filters it against expected libraries, and prepares data for downstream visualization and fitness calculation."
+description: "Processes the raw variant count table, filters it against expected libraries, and prepares data for downstream visualization and fitness calculation; with `--error_correction false_doubles` it also computes the library's false-double-mutant (FDM) error evidence (the evidence, summary, profile and exposure outputs are produced only then)."
 keywords:
   - deep mutational scanning
   - variant counting
@@ -23,7 +23,19 @@ input:
   - - aa_seq:
         type: file
         description: FASTA or text file containing the reference amino acid sequence
-
+  - - wt_fasta:
+        type: file
+        description: Reference the reads were aligned to (coordinate frame of `base_mut`), for the false-double evidence.
+        pattern: "*.{fa,fasta,fna}"
+  - - fdm_evidence:
+        type: boolean
+        description: Whether to also compute the library's false-double-mutant evidence (`--error_correction false_doubles`).
+  - - max_fd_dist:
+        type: integer
+        description: Anchors farther than this many codons from the variant are not used (`--max_FDdist`); beyond it the joint coverage of the two sites is thin and the evidence carries a distance-dependent background.
+  - - min_fd_dist:
+        type: integer
+        description: Anchors closer than this many codons to the variant are not used (`--min_FDdist`); inside a mutagenesis primer's footprint the false doubles carry that primer's own recurrent errors.
 output:
   - processed_variantCounts:
       - meta:
@@ -47,6 +59,38 @@ output:
           type: file
           description: Processed counts formatted specifically for heatmap visualization
           pattern: "variantCounts_for_heatmaps.csv"
+  - evidence:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - fdm_evidence.csv:
+          type: file
+          description: Per single-nucleotide variant - substitution type, trinucleotide context, counts, coverage, false-double reads `F`, exposure `M`, and the numbers of anchor codons and false-double candidates in the window.
+          pattern: "fdm_evidence.csv"
+  - summary:
+      - meta:
+          type: map
+          description: Groovy Map containing sample information
+      - fdm_evidence_summary.csv:
+          type: file
+          description: One-row library summary - false doubles used, outlier threshold, coverage-decay fit, totals of F and M, the numbers of variants with F = 0 and M = 0, the genuine-double measurement (gd_reads, gd_exposure, gd_kappa) on reads carrying two programmed multi-nucleotide variants, and the false-double rate inside versus outside the min_FDdist exclusion (near_*, far_*).
+          pattern: "fdm_evidence_summary.csv"
+  - profile:
+      - meta:
+          type: map
+          description: Groovy Map with the library identifier
+      - fdm_distance_profile.csv:
+          type: file
+          description: Per codon distance between a variant and its anchor - false-double reads and exposure, and genuine-double reads and their expectation under independent integration.
+          pattern: "fdm_distance_profile.csv"
+  - exposure:
+      - meta:
+          type: map
+          description: Groovy Map with the library identifier
+      - fdm_exposure_by_distance.csv:
+          type: file
+          description: Per single-nucleotide variant and codon distance - the anchor-read exposure, for the distance-weighted genuine-double subtraction of the estimate step.
+          pattern: "fdm_exposure_by_distance.csv"
   - versions:
       - versions.yml:
           type: file

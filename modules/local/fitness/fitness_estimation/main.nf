@@ -9,7 +9,10 @@ process FITNESS_ESTIMATION {
       : 'community.wave.seqera.io/library/bioconductor-edger_bioconductor-impute_bioconductor-limma_dms-fdmcorrect_pruned:be9da4b29f56a3d0'}"
 
   input:
-    tuple val(sample), path(input_counts), path(output_counts)   // per-library DiMSum-format counts of one biological sample
+    tuple val(sample), val(library_ids), val(library_types), path(counts, stageAs: 'counts_??/*')
+                                                                 // the libraries of one biological sample (ids and types,
+                                                                 // space-separated: inputs and outputs by replicate, then any
+                                                                 // others) and their variant-count tables, in that order
     path samplesheet_csv
     path wt_fasta
     val pos_range                                                // "start-end", 1-based inclusive
@@ -18,6 +21,7 @@ process FITNESS_ESTIMATION {
     val output_pseudocount
 
   output:
+    tuple val(sample), path("*_fitness_input.tsv"),                        emit: fitness_input
     tuple val(sample), path("counts_merged.tsv"),                          emit: merged_counts
     tuple val(sample), path("experimentalDesign.tsv"),                     emit: experimental_design
     tuple val(sample), path("synonymous_wt.txt"),                          emit: synonymous_wt
@@ -31,7 +35,9 @@ process FITNESS_ESTIMATION {
   template 'fitness_estimation.R'
 
   stub:
+  def stub_inputs = library_ids.tokenize(' ').collect { id -> "${id}_fitness_input.tsv" }.join(' ')
   """
+  touch ${stub_inputs}
   touch counts_merged.tsv experimentalDesign.tsv synonymous_wt.txt fitness_estimation.tsv \\
         fitness_estimation_count_correlation.pdf fitness_estimation_fitness_correlation.pdf fitness_heatmap.pdf
   cat <<-END_VERSIONS > versions.yml

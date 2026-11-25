@@ -9,16 +9,13 @@ include { PREPARE_REFERENCE      } from '../modules/local/prepare_reference/main
 include { MERGE_ALIGN_COUNT      } from '../modules/local/merge_align_count/main'
 include { DMSANALYSIS_REFERENCE_TABLES } from '../modules/local/dmsanalysis/reference_tables/main'
 include { DMSANALYSIS_PROCESS_VARIANT_COUNTS      } from '../modules/local/dmsanalysis/process_variant_counts/main'
-include { DMSANALYSIS_FDM_EVIDENCE                  } from '../modules/local/dmsanalysis/fdm_evidence/main'
 include { DMSANALYSIS_FDM_ESTIMATE                  } from '../modules/local/dmsanalysis/fdm_estimate/main'
-include { DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES } from '../modules/local/dmsanalysis/error_correction_false_doubles/main'
 include { DMSANALYSIS_ERROR_CORRECTION_WILDTYPE      } from '../modules/local/dmsanalysis/error_correction_wildtype/main'
 include { DMSANALYSIS_ERROR_SIGNATURES              } from '../modules/local/dmsanalysis/error_signatures/main'
 include { VISUALIZATION_LIBRARY_QC          } from '../modules/local/visualization/library_qc/main'
 include { VISUALIZATION_ERROR_CORRECTION_REPORT } from '../modules/local/visualization/error_correction_report/main'
 include { VISUALIZATION_SUMMARY_REPORT } from '../modules/local/visualization/summary_report/main'
 include { VARIANT_EFFECT_INSPECTION_TOOL } from '../modules/local/structure/variant_effect_inspection_tool/main'
-include { COUNTS_TO_FITNESS          } from '../modules/local/fitness/counts_to_fitness/main'
 
 include { CALCULATE_FITNESS } from '../subworkflows/local/calculate_fitness/main'
 
@@ -164,10 +161,15 @@ workflow DEEPMUTSCAN {
     // One item per library
     def ch_vc = MERGE_ALIGN_COUNT.out.variant_counts // tuple(val(meta), path)
 
+    // One task per library: its count tables and, with --error_correction false_doubles, its
+    // false-double reads F and exposure M for every single-nucleotide variant (the FDM evidence)
     DMSANALYSIS_PROCESS_VARIANT_COUNTS(
       ch_vc,                        // tuple(val(meta), path(variantCounts))
       ch_possible_mutations,        // path(possible_mutations)
-      ch_aa_seq                     // path(aa_seq)
+      ch_aa_seq,                    // path(aa_seq)
+      ch_fasta_file,                // path(fasta): base_mut is in this reference's coordinate frame
+      params.error_correction == 'false_doubles',
+      params.max_FDdist, params.min_FDdist
     )
 
     ch_versions = ch_versions.mix(DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.versions)
@@ -186,32 +188,30 @@ workflow DEEPMUTSCAN {
     def ch_signature_json  = channel.value([])   // error-spectrum signature fits, for the report
     def ch_anchor_profiles = channel.value([])   // per-library anchor distance profiles, for the report
     if (params.error_correction == 'false_doubles') {
-      // per sample: counts + library-filtered counts + completed library table
-      def ch_fd_in       = ch_vc.join(variantCounts_filtered_by_library_ch).join(library_completed_variantCounts_ch)  // (meta, raw, filtered, completed)
-      // the reference the reads were aligned to (base_mut is in this fasta's coordinate frame) is ch_fasta_file
+      // The evidence of each library comes with its counts processing (DMSANALYSIS_PROCESS_VARIANT_COUNTS).
 
-      // 1. per library: false-double reads F and exposure M for every single-nucleotide variant
-      DMSANALYSIS_FDM_EVIDENCE(
-        ch_fd_in.map { meta, raw, filt, comp -> tuple(meta, raw, filt) },
-        ch_fasta_file, params.max_FDdist, params.min_FDdist
-      )
-      ch_versions = ch_versions.mix(DMSANALYSIS_FDM_EVIDENCE.out.versions)
-
-      // 2. per pool: sum F and M across the pooled libraries and estimate the error rates once
-      //    the distance profiles and distance-resolved exposures travel with the evidence, so that the
-      //    genuine-double rate kappa(d) is fitted on the pool rather than on one library
-      def ch_pools = DMSANALYSIS_FDM_EVIDENCE.out.evidence
-        .join(DMSANALYSIS_FDM_EVIDENCE.out.profile)
-        .join(DMSANALYSIS_FDM_EVIDENCE.out.exposure)
-        .map { meta, ev, prof, expo ->
-          tuple(falseDoublesPool(meta, params.false_doubles_pooling), meta.id, meta.type == 'wildtype', ev, prof, expo) }
+      // 1. per pool: sum F and M across the pooled libraries, estimate the error rates once and
+      //    correct every library of the pool with them. The distance profiles and distance-resolved
+      //    exposures travel with the evidence, so that the genuine-double rate kappa(d) is fitted on
+      //    the pool rather than on one library
+      def ch_pools = DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.evidence
+        .join(DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.profile)
+        .join(DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.exposure)
+        .join(variantCounts_filtered_by_library_ch)
+        .join(library_completed_variantCounts_ch)
+        .map { meta, ev, prof, expo, filt, comp ->
+          tuple(falseDoublesPool(meta, params.false_doubles_pooling), meta, ev, prof, expo, filt, comp) }
         .groupTuple()
         // the libraries of a pool in the order of their ids, whatever order their tasks finished in:
         // the pooled sums, and with them the estimate, must not depend on scheduling
-        .map { pool, ids, is_wt, evs, profs, expos ->
-          def idx = byId(ids)
-          tuple([id: pool, wildtype: is_wt.every { w -> w }], idx.collect { i -> evs[i] }, idx.collect { i -> profs[i] }, idx.collect { i -> expos[i] }) }
-      DMSANALYSIS_FDM_ESTIMATE(ch_pools, params.false_doubles_method, params.false_doubles_prior,
+        .map { pool, metas, evs, profs, expos, filts, comps ->
+          def idx  = byId(metas.collect { m -> m.id })
+          def libs = idx.collect { i -> metas[i] }
+          tuple([id: pool, wildtype: libs.every { m -> m.type == 'wildtype' }], libs, libs.collect { m -> m.id }.join(' '),
+                idx.collect { i -> evs[i] }, idx.collect { i -> profs[i] }, idx.collect { i -> expos[i] },
+                idx.collect { i -> filts[i] }, idx.collect { i -> comps[i] }) }
+      DMSANALYSIS_FDM_ESTIMATE(ch_pools, ch_fasta_file, ch_aa_seq,
+                               params.false_doubles_method, params.false_doubles_prior,
                                params.max_FDdist, params.subtract_genuine_doubles)
       ch_versions = ch_versions.mix(DMSANALYSIS_FDM_ESTIMATE.out.versions)
       // pooled and per-library rates of every pool, for the error-correction report
@@ -219,13 +219,13 @@ workflow DEEPMUTSCAN {
         .mix(DMSANALYSIS_FDM_ESTIMATE.out.rates_per_library.map { _pmeta, f -> f })
         .toSortedList { a, b -> a.toString() <=> b.toString() }
 
-      ch_anchor_profiles = DMSANALYSIS_FDM_EVIDENCE.out.profile.map { _meta, f -> f }
+      ch_anchor_profiles = DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.profile.map { _meta, f -> f }
         .toSortedList { a, b -> a.toString() <=> b.toString() }
 
-      // 4. per pool, reporting only: signature fit of the error spectrum - the false-double rates, the
+      // 2. per pool, reporting only: signature fit of the error spectrum - the false-double rates, the
       //    sample's wildtype-template rates (if any) and the excess of the former over the latter
       if (!params.skip_error_signatures) {
-        def ch_ev_sum = DMSANALYSIS_FDM_EVIDENCE.out.evidence.join(DMSANALYSIS_FDM_EVIDENCE.out.summary)  // (meta, evidence, summary)
+        def ch_ev_sum = DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.evidence.join(DMSANALYSIS_PROCESS_VARIANT_COUNTS.out.summary)  // (meta, evidence, summary)
         // wildtype-template evidence of every sample, as one map sample -> [evidence, ...] (empty if none)
         def ch_wt_by_sample = ch_ev_sum
           .filter { meta, _ev, _sm -> meta.type == 'wildtype' }
@@ -257,19 +257,13 @@ workflow DEEPMUTSCAN {
           .toSortedList { a, b -> a.toString() <=> b.toString() }
       }
 
-      // 3. per library: subtract e_j x coverage using its pool's rates
-      def ch_apply = ch_fd_in
-        .join(DMSANALYSIS_FDM_EVIDENCE.out.evidence)
-        .map { meta, raw, filt, comp, ev -> tuple(falseDoublesPool(meta, params.false_doubles_pooling), meta, filt, comp, ev) }
-        .combine(DMSANALYSIS_FDM_ESTIMATE.out.rates.map { pmeta, rates -> tuple(pmeta.id, rates) }, by: 0)
-        .map { _pool, meta, filt, comp, ev, rates -> tuple(meta, filt, comp, ev, rates) }
-      DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES(
-        ch_apply, ch_fasta_file, ch_aa_seq
-      )
-      ch_versions = ch_versions.mix(DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.versions)
-      variantCounts_filtered_by_library_ch = DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.corrected.map { meta, filt, heat, comp -> tuple(meta, filt) }
-      variantCounts_for_heatmaps_ch        = DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.corrected.map { meta, filt, heat, comp -> tuple(meta, heat) }
-      library_completed_variantCounts_ch   = DMSANALYSIS_ERROR_CORRECTION_FALSE_DOUBLES.out.corrected.map { meta, filt, heat, comp -> tuple(meta, comp) }
+      // 3. the corrected tables of each library, from its pool's task
+      def ch_corrected = DMSANALYSIS_FDM_ESTIMATE.out.corrected
+        .flatMap { _pmeta, libs, filts, heats, comps ->
+          libs.collect { m -> tuple(m, fileOfLibrary(filts, m.id), fileOfLibrary(heats, m.id), fileOfLibrary(comps, m.id)) } }
+      variantCounts_filtered_by_library_ch = ch_corrected.map { meta, filt, _heat, _comp -> tuple(meta, filt) }
+      variantCounts_for_heatmaps_ch        = ch_corrected.map { meta, _filt, heat, _comp -> tuple(meta, heat) }
+      library_completed_variantCounts_ch   = ch_corrected.map { meta, _filt, _heat, comp -> tuple(meta, comp) }
     }
     else if (params.error_correction == 'wildtype') {
       // pair each non-wildtype sample with the wildtype sample of the same `sample` base
@@ -360,16 +354,9 @@ workflow DEEPMUTSCAN {
     // Execution of fitness estimation, if --fitness true
     if (run_fitness) {
 
-        // Per-library count tables in DiMSum input format, merged by CALCULATE_FITNESS
-        COUNTS_TO_FITNESS(
-          variantCounts_filtered_by_library_ch, // tuple(val(meta), path)
-          ch_fasta_file,                        // path(fasta)
-          reading_frame_ch                      // val(reading_frame)
-        )
-        ch_versions = ch_versions.mix(COUNTS_TO_FITNESS.out.versions)
-
+        // One task per sample: each library's counts in DiMSum's input format, merged, then fitness
         CALCULATE_FITNESS (
-            COUNTS_TO_FITNESS.out.fitness_input, // Input from previous step
+            variantCounts_filtered_by_library_ch, // tuple(val(meta), path): each library's (corrected) counts
             ch_samplesheet_csv,                   // Path to samplesheet
             ch_fasta,                             // The original Fasta tuple
             reading_frame_ch,                     // Reading frame value channel
@@ -557,6 +544,12 @@ def falseDoublesPool(meta, pooling) {
         return meta.id as String
     }
     return pooling == 'replicates' ? "${meta.sample}_${meta.type}" as String : meta.sample as String
+}
+
+// The file of library `id` among the per-library outputs of a pooled task, which writes each library's
+// files into a folder named after it
+def fileOfLibrary(files, id) {
+    return [files].flatten().find { f -> f.parent.name == id }
 }
 
 // Positions 0..n-1 of `ids` in ascending id order: grouped per-library files are put in this order, so a
